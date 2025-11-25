@@ -29,10 +29,10 @@ import dev.zacsweers.metro.binding
 class NewsFragment :
     BaseFragment<FragmentNewsBinding>(),
     NewsClickListener {
+    override val layoutId: Int = R.layout.fragment_news
+
     @Inject
     override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
-
-    override val layoutId: Int = R.layout.fragment_news
 
     private val newsPagerAdapter by lazy {
         NewsPagerAdapter(this)
