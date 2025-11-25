@@ -37,7 +37,7 @@ fun NoticeScreenContainer(newsViewModel: NewsViewModel) {
 
     NoticeScreen(
         uiState = uiState.value,
-        onNoticeClick = { notice -> newsViewModel.toggleNoticeExpanded(notice) },
+        onNoticeClick = { notice -> newsViewModel.toggleNotice(notice) },
         isRefreshing = isRefreshing,
         onRefresh = {
             val oldNotices =

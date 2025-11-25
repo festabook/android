@@ -25,7 +25,7 @@ private const val PADDING: Int = 8
 fun FAQScreenContainer(newsViewModel: NewsViewModel) {
     val uiState = newsViewModel.faqUiState.collectAsStateWithLifecycle()
 
-    FAQScreen(uiState = uiState.value, onFaqClick = { faq -> newsViewModel.toggleFAQExpanded(faq) })
+    FAQScreen(uiState = uiState.value, onFaqClick = { faq -> newsViewModel.toggleFAQ(faq) })
 }
 
 @Composable

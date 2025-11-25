@@ -12,7 +12,6 @@ import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.main.MainViewModel
 import com.daedan.festabook.presentation.news.adapter.NewsPagerAdapter
 import com.daedan.festabook.presentation.news.faq.model.FAQItemUiModel
-import com.daedan.festabook.presentation.news.lost.model.LostUiModel
 import com.daedan.festabook.presentation.news.notice.adapter.NewsClickListener
 import com.daedan.festabook.presentation.news.notice.model.NoticeUiModel
 import com.google.android.material.tabs.TabLayoutMediator
@@ -54,15 +53,15 @@ class NewsFragment :
     }
 
     override fun onNoticeClick(notice: NoticeUiModel) {
-        newsViewModel.toggleNoticeExpanded(notice)
+        newsViewModel.toggleNotice(notice)
     }
 
     override fun onFAQClick(faqItem: FAQItemUiModel) {
-        newsViewModel.toggleFAQExpanded(faqItem)
+        newsViewModel.toggleFAQ(faqItem)
     }
 
     override fun onLostGuideItemClick() {
-        newsViewModel.toggleLostGuideExpanded()
+        newsViewModel.toggleLostGuide()
     }
 
     private fun setupNewsTabLayout() {

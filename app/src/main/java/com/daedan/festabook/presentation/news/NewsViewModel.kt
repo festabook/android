@@ -79,7 +79,7 @@ class NewsViewModel(
         }
     }
 
-    fun toggleNoticeExpanded(notice: NoticeUiModel) {
+    fun toggleNotice(notice: NoticeUiModel) {
         updateNoticeUiState { notices ->
             notices.map { updatedNotice ->
                 if (notice.id == updatedNotice.id) {
@@ -103,7 +103,7 @@ class NewsViewModel(
         loadAllNotices(NoticeUiState.Refreshing(notices))
     }
 
-    fun toggleFAQExpanded(faqItem: FAQItemUiModel) {
+    fun toggleFAQ(faqItem: FAQItemUiModel) {
         updateFAQUiState { faqItems ->
             faqItems.map { updatedFAQItem ->
                 if (faqItem.questionId == updatedFAQItem.questionId) {
@@ -115,7 +115,7 @@ class NewsViewModel(
         }
     }
 
-    fun toggleLostGuideExpanded() {
+    fun toggleLostGuide() {
         updateLostUiState { lostUiModels ->
             lostUiModels.map { lostUiModel ->
                 if (lostUiModel is LostUiModel.Guide) {

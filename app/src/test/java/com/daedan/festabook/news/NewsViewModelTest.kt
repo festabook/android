@@ -168,7 +168,7 @@ class NewsViewModelTest {
             val notice = FAKE_NOTICES.first().toUiModel()
 
             // when
-            newsViewModel.toggleNoticeExpanded(notice)
+            newsViewModel.toggleNotice(notice)
             advanceUntilIdle()
 
             // then
@@ -194,7 +194,7 @@ class NewsViewModelTest {
             val faq = FAKE_FAQS.first().toUiModel()
 
             // when
-            newsViewModel.toggleFAQExpanded(faq)
+            newsViewModel.toggleFAQ(faq)
             advanceUntilIdle()
 
             // then
@@ -253,7 +253,7 @@ class NewsViewModelTest {
                 )
 
             // when
-            newsViewModel.toggleLostGuideExpanded()
+            newsViewModel.toggleLostGuide()
 
             // then
             val actual = newsViewModel.lostUiState.getOrAwaitValue()

@@ -44,7 +44,7 @@ fun LostItemScreenContainer(newsViewModel: NewsViewModel) {
 
     LostItemScreen(
         lostUiState = uiState.value,
-        onLostGuideClick = { newsViewModel.toggleLostGuideExpanded() },
+        onLostGuideClick = { newsViewModel.toggleLostGuide() },
         isRefreshing = isRefreshing,
         onRefresh = {
             val oldLostItems = (uiState.value as? LostUiState.Success)?.lostItems ?: emptyList()
