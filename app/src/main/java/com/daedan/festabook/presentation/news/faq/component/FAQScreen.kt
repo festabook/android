@@ -10,14 +10,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
+import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.faq.FAQUiState
 import com.daedan.festabook.presentation.news.faq.model.FAQItemUiModel
 import timber.log.Timber
 
 private const val PADDING: Int = 8
+
+@Composable
+fun FAQScreenContainer(newsViewModel: NewsViewModel) {
+    val uiState = newsViewModel.faqUiState.collectAsStateWithLifecycle()
+
+    FAQScreen(uiState = uiState.value, onFaqClick = { faq -> newsViewModel.toggleFAQExpanded(faq) })
+}
 
 @Composable
 fun FAQScreen(

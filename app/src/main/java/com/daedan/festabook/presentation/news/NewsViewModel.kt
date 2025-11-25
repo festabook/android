@@ -42,8 +42,12 @@ class NewsViewModel(
         MutableStateFlow(NoticeUiState.InitialLoading)
     val noticeUiState: StateFlow<NoticeUiState> = _noticeUiState.asStateFlow()
 
-    var faqUiState by mutableStateOf<FAQUiState>(FAQUiState.InitialLoading)
-        private set
+    private val _faqUiState: MutableStateFlow<FAQUiState> =
+        MutableStateFlow(FAQUiState.InitialLoading)
+    val faqUiState: StateFlow<FAQUiState> = _faqUiState.asStateFlow()
+
+//    var faqUiState by mutableStateOf<FAQUiState>(FAQUiState.InitialLoading)
+//        private set
 
     var lostUiState by mutableStateOf<LostUiState>(LostUiState.InitialLoading)
         private set
@@ -152,15 +156,15 @@ class NewsViewModel(
 
     private fun loadAllFAQs(state: FAQUiState = FAQUiState.InitialLoading) {
         viewModelScope.launch {
-            faqUiState = state
+            _faqUiState.value = state
 
             val result = faqRepository.getAllFAQ()
 
             result
                 .onSuccess { faqItems ->
-                    faqUiState = FAQUiState.Success(faqItems.map { it.toUiModel() })
+                    _faqUiState.value = FAQUiState.Success(faqItems.map { it.toUiModel() })
                 }.onFailure {
-                    faqUiState = FAQUiState.Error(it)
+                    _faqUiState.value = FAQUiState.Error(it)
                 }
         }
     }
@@ -178,8 +182,8 @@ class NewsViewModel(
     }
 
     private fun updateFAQUiState(onUpdate: (List<FAQItemUiModel>) -> List<FAQItemUiModel>) {
-        val currentState = faqUiState
-        faqUiState =
+        val currentState = _faqUiState.value
+        _faqUiState.value =
             when (currentState) {
                 is FAQUiState.Success -> currentState.copy(faqs = onUpdate(currentState.faqs))
                 else -> currentState
