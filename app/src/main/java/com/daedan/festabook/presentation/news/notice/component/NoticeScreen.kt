@@ -15,11 +15,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.component.PULL_OFFSET_LIMIT
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
+import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.notice.NoticeUiState
 import com.daedan.festabook.presentation.news.notice.NoticeUiState.Companion.DEFAULT_POSITION
@@ -27,6 +29,23 @@ import com.daedan.festabook.presentation.news.notice.model.NoticeUiModel
 import timber.log.Timber
 
 private const val PADDING: Int = 8
+
+@Composable
+fun NoticeScreenContainer(newsViewModel: NewsViewModel) {
+    val uiState = newsViewModel.noticeUiState.collectAsStateWithLifecycle()
+    val isRefreshing = uiState.value is NoticeUiState.Refreshing
+
+    NoticeScreen(
+        uiState = uiState.value,
+        onNoticeClick = { notice -> newsViewModel.toggleNoticeExpanded(notice) },
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            val oldNotices =
+                (uiState.value as? NoticeUiState.Success)?.notices ?: emptyList()
+            newsViewModel.loadAllNotices(NoticeUiState.Refreshing(oldNotices))
+        },
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

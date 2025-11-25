@@ -14,14 +14,14 @@ import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.main.MainViewModel
 import com.daedan.festabook.presentation.news.NewsViewModel
-import com.daedan.festabook.presentation.news.notice.adapter.NewsClickListener
-import com.daedan.festabook.presentation.news.notice.component.NoticeScreen
+import com.daedan.festabook.presentation.news.notice.component.NoticeScreenContainer
 
 class NoticeFragment : BaseFragment<FragmentNoticeBinding>() {
     override val layoutId: Int = R.layout.fragment_notice
 
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory
         get() = appGraph.metroViewModelFactory
+
     private val newsViewModel: NewsViewModel by viewModels({ requireParentFragment() })
     private val mainViewModel: MainViewModel by viewModels({ requireActivity() })
 
@@ -33,20 +33,7 @@ class NoticeFragment : BaseFragment<FragmentNoticeBinding>() {
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                NoticeScreen(
-                    uiState = newsViewModel.noticeUiState,
-                    onNoticeClick = { notice ->
-                        (requireParentFragment() as NewsClickListener)
-                            .onNoticeClick(notice)
-                    },
-                    isRefreshing = newsViewModel.isNoticeScreenRefreshing,
-                    onRefresh = {
-                        val currentUiState = newsViewModel.noticeUiState
-                        val oldNotices =
-                            if (currentUiState is NoticeUiState.Success) currentUiState.notices else emptyList()
-                        newsViewModel.loadAllNotices(NoticeUiState.Refreshing(oldNotices))
-                    },
-                )
+                NoticeScreenContainer(newsViewModel = newsViewModel)
             }
         }
 
