@@ -13,8 +13,7 @@ import com.daedan.festabook.databinding.FragmentLostItemBinding
 import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.news.NewsViewModel
-import com.daedan.festabook.presentation.news.lost.component.LostItemScreen
-import com.daedan.festabook.presentation.news.notice.adapter.NewsClickListener
+import com.daedan.festabook.presentation.news.lost.component.LostItemScreenContainer
 
 class LostItemFragment : BaseFragment<FragmentLostItemBinding>() {
     override val layoutId: Int = R.layout.fragment_lost_item
@@ -32,18 +31,7 @@ class LostItemFragment : BaseFragment<FragmentLostItemBinding>() {
         ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val newsClickListener = requireParentFragment() as NewsClickListener
-                LostItemScreen(
-                    lostUiState = viewModel.lostUiState,
-                    onLostGuideClick = { newsClickListener.onLostGuideItemClick() },
-                    isRefreshing = viewModel.isLostItemScreenRefreshing,
-                    onRefresh = {
-                        val currentUiState = viewModel.lostUiState
-                        val oldLostItems =
-                            if (currentUiState is LostUiState.Success) currentUiState.lostItems else emptyList()
-                        viewModel.loadAllLostItems(LostUiState.Refreshing(oldLostItems))
-                    },
-                )
+                LostItemScreenContainer(newsViewModel = viewModel)
             }
         }
 

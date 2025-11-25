@@ -1,9 +1,5 @@
 package com.daedan.festabook.presentation.news
 
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
@@ -46,15 +42,9 @@ class NewsViewModel(
         MutableStateFlow(FAQUiState.InitialLoading)
     val faqUiState: StateFlow<FAQUiState> = _faqUiState.asStateFlow()
 
-//    var faqUiState by mutableStateOf<FAQUiState>(FAQUiState.InitialLoading)
-//        private set
-
-    var lostUiState by mutableStateOf<LostUiState>(LostUiState.InitialLoading)
-        private set
-
-    val isLostItemScreenRefreshing by derivedStateOf {
-        lostUiState is LostUiState.Refreshing
-    }
+    private val _lostUiState: MutableStateFlow<LostUiState> =
+        MutableStateFlow(LostUiState.InitialLoading)
+    val lostUiState: StateFlow<LostUiState> = _lostUiState.asStateFlow()
 
     private var noticeIdToExpand: Long? = null
 
@@ -139,7 +129,7 @@ class NewsViewModel(
 
     fun loadAllLostItems(state: LostUiState) {
         viewModelScope.launch {
-            lostUiState = state
+            _lostUiState.value = state
             val result = lostItemRepository.getLost()
 
             val lostUiModels =
@@ -150,7 +140,7 @@ class NewsViewModel(
                         null -> LostUiModel.Guide()
                     }
                 }
-            lostUiState = LostUiState.Success(lostUiModels)
+            _lostUiState.value = LostUiState.Success(lostUiModels)
         }
     }
 
@@ -191,8 +181,8 @@ class NewsViewModel(
     }
 
     private fun updateLostUiState(onUpdate: (List<LostUiModel>) -> List<LostUiModel>) {
-        val currentState = lostUiState
-        lostUiState =
+        val currentState = _lostUiState.value
+        _lostUiState.value =
             when (currentState) {
                 is LostUiState.Success -> currentState.copy(lostItems = onUpdate(currentState.lostItems))
                 else -> currentState
