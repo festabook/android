@@ -13,8 +13,6 @@ import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentNewsBinding
 import com.daedan.festabook.di.fragment.FragmentKey
 import com.daedan.festabook.presentation.common.BaseFragment
-import com.daedan.festabook.presentation.main.MainViewModel
-import com.daedan.festabook.presentation.news.adapter.NewsPagerAdapter
 import com.daedan.festabook.presentation.news.component.NewsScreen
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import dev.zacsweers.metro.AppScope
@@ -34,11 +32,7 @@ class NewsFragment : BaseFragment<FragmentNewsBinding>() {
     @Inject
     override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
 
-    private val newsPagerAdapter by lazy {
-        NewsPagerAdapter(this)
-    }
-    private val newsViewModel: NewsViewModel by viewModels()
-    private val mainViewModel: MainViewModel by viewModels({ requireActivity() })
+    private val newsViewModel: NewsViewModel by viewModels({ requireActivity() })
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,32 +43,8 @@ class NewsFragment : BaseFragment<FragmentNewsBinding>() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 FestabookTheme {
-                    NewsScreen(mainViewModel = mainViewModel, newsViewModel = newsViewModel)
+                    NewsScreen(newsViewModel = newsViewModel)
                 }
             }
         }
-
-//    override fun onViewCreated(
-//        view: View,
-//        savedInstanceState: Bundle?,
-//    ) {
-//        super.onViewCreated(view, savedInstanceState)
-//        binding.lifecycleOwner = viewLifecycleOwner
-//        setupNewsTabLayout()
-//        mainViewModel.noticeIdToExpand.observe(viewLifecycleOwner) {
-//            binding.vpNews.currentItem = NOTICE_TAB_INDEX
-//        }
-//    }
-//
-//    private fun setupNewsTabLayout() {
-//        binding.vpNews.adapter = newsPagerAdapter
-//        TabLayoutMediator(binding.tlNews, binding.vpNews) { tab, position ->
-//            val tabNameRes = NewsTab.entries[position].tabNameRes
-//            tab.text = getString(tabNameRes)
-//        }.attach()
-//    }
-//
-//    companion object {
-//        private const val NOTICE_TAB_INDEX: Int = 0
-//    }
 }
