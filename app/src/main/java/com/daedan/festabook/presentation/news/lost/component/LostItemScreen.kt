@@ -42,15 +42,15 @@ fun LostItemScreenContainer(
     newsViewModel: NewsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val uiState = newsViewModel.lostUiState.collectAsStateWithLifecycle()
-    val isRefreshing = uiState.value is LostUiState.Refreshing
+    val uiState by newsViewModel.lostUiState.collectAsStateWithLifecycle()
+    val isRefreshing = uiState is LostUiState.Refreshing
 
     LostItemScreen(
-        lostUiState = uiState.value,
+        lostUiState = uiState,
         onLostGuideClick = { newsViewModel.toggleLostGuide() },
         isRefreshing = isRefreshing,
         onRefresh = {
-            val oldLostItems = (uiState.value as? LostUiState.Success)?.lostItems ?: emptyList()
+            val oldLostItems = (uiState as? LostUiState.Success)?.lostItems ?: emptyList()
             newsViewModel.loadAllLostItems(LostUiState.Refreshing(oldLostItems))
         },
         modifier = modifier,

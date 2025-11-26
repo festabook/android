@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,10 +27,10 @@ fun FAQScreenContainer(
     newsViewModel: NewsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val uiState = newsViewModel.faqUiState.collectAsStateWithLifecycle()
+    val uiState by newsViewModel.faqUiState.collectAsStateWithLifecycle()
 
     FAQScreen(
-        uiState = uiState.value,
+        uiState = uiState,
         onFaqClick = { faq -> newsViewModel.toggleFAQ(faq) },
         modifier = modifier,
     )

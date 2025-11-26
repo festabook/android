@@ -9,6 +9,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
@@ -35,16 +36,16 @@ fun NoticeScreenContainer(
     newsViewModel: NewsViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val uiState = newsViewModel.noticeUiState.collectAsStateWithLifecycle()
-    val isRefreshing = uiState.value is NoticeUiState.Refreshing
+    val uiState by newsViewModel.noticeUiState.collectAsStateWithLifecycle()
+    val isRefreshing = uiState is NoticeUiState.Refreshing
 
     NoticeScreen(
-        uiState = uiState.value,
+        uiState = uiState,
         onNoticeClick = { notice -> newsViewModel.toggleNotice(notice) },
         isRefreshing = isRefreshing,
         onRefresh = {
             val oldNotices =
-                (uiState.value as? NoticeUiState.Success)?.notices ?: emptyList()
+                (uiState as? NoticeUiState.Success)?.notices ?: emptyList()
             newsViewModel.loadAllNotices(NoticeUiState.Refreshing(oldNotices))
         },
         modifier = modifier,
