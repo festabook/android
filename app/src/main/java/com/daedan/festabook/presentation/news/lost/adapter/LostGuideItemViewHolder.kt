@@ -19,7 +19,6 @@ class LostGuideItemViewHolder private constructor(
     init {
         binding.root.setOnClickListener {
             lostGuideItem?.let {
-                newsClickListener.onLostGuideItemClick()
             }
         }
     }
