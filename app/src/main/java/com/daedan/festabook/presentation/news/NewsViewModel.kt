@@ -50,7 +50,7 @@ class NewsViewModel(
 
     init {
         loadAllNotices(NoticeUiState.InitialLoading)
-        loadAllFAQs()
+        loadAllFAQs(FAQUiState.InitialLoading)
         loadAllLostItems(LostUiState.InitialLoading)
     }
 
@@ -144,7 +144,7 @@ class NewsViewModel(
         }
     }
 
-    private fun loadAllFAQs(state: FAQUiState = FAQUiState.InitialLoading) {
+    private fun loadAllFAQs(state: FAQUiState) {
         viewModelScope.launch {
             _faqUiState.value = state
 
