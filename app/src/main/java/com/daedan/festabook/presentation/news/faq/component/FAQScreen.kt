@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
+import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.faq.FAQUiState
@@ -49,7 +50,7 @@ fun FAQScreen(
             }
         }
 
-        is FAQUiState.InitialLoading -> Unit
+        is FAQUiState.InitialLoading -> LoadingStateScreen()
 
         is FAQUiState.Success -> {
             if (uiState.faqs.isEmpty()) {
