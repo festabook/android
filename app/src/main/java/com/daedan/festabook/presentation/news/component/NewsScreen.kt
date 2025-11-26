@@ -13,18 +13,21 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.Header
-import com.daedan.festabook.presentation.main.MainViewModel
 import com.daedan.festabook.presentation.news.NewsTab
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.faq.component.FAQScreenContainer
 import com.daedan.festabook.presentation.news.lost.component.LostItemScreenContainer
+import com.daedan.festabook.presentation.news.notice.NoticeUiState
 import com.daedan.festabook.presentation.news.notice.component.NoticeScreenContainer
 import com.daedan.festabook.presentation.theme.FestabookColor
 import kotlinx.coroutines.CoroutineScope
@@ -33,11 +36,18 @@ import kotlinx.coroutines.launch
 @Composable
 fun NewsScreen(
     newsViewModel: NewsViewModel,
-    mainViewModel: MainViewModel,
     modifier: Modifier = Modifier,
 ) {
     val pageState = rememberPagerState { NewsTab.entries.size }
     val scope = rememberCoroutineScope()
+
+    val noticeUiState by newsViewModel.noticeUiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(noticeUiState) {
+        if (noticeUiState is NoticeUiState.Success) {
+            pageState.animateScrollToPage(NewsTab.NOTICE.ordinal)
+        }
+    }
 
     Column(modifier = modifier.background(color = MaterialTheme.colorScheme.background)) {
         Header(title = stringResource(R.string.news_title))

@@ -91,8 +91,8 @@ class NewsViewModel(
         }
     }
 
-    fun expandNotice(noticeId: Long) {
-        this.noticeIdToExpand = noticeId
+    fun expandNotice(noticeIdToExpand: Long) {
+        this.noticeIdToExpand = noticeIdToExpand
         val notices =
             when (val currentState = _noticeUiState.value) {
                 is NoticeUiState.Refreshing -> currentState.oldNotices

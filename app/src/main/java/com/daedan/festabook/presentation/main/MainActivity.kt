@@ -33,6 +33,7 @@ import com.daedan.festabook.presentation.common.showToast
 import com.daedan.festabook.presentation.home.HomeFragment
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.news.NewsFragment
+import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.placeMap.PlaceMapFragment
 import com.daedan.festabook.presentation.schedule.ScheduleFragment
 import com.daedan.festabook.presentation.setting.SettingFragment
@@ -44,7 +45,6 @@ import timber.log.Timber
 class MainActivity :
     AppCompatActivity(),
     NotificationPermissionRequester {
-
     @Inject
     override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
 
@@ -59,6 +59,7 @@ class MainActivity :
 
     private val mainViewModel: MainViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
+    private val newsViewModel: NewsViewModel by viewModels()
     private val settingViewModel: SettingViewModel by viewModels()
 
     private val notificationPermissionManager by lazy {
@@ -116,25 +117,24 @@ class MainActivity :
     ) {
         grantResults.forEachIndexed { index, result ->
             val text = permissions[index]
-            when(text) {
+            when (text) {
                 Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION -> {
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                -> {
                     if (!result.isGranted()) {
                         showNotificationDeniedSnackbar(
                             binding.root,
                             this,
-                            getString(R.string.map_request_location_permission_message)
+                            getString(R.string.map_request_location_permission_message),
                         )
                     }
                 }
             }
-
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    override fun shouldShowPermissionRationale(permission: String): Boolean =
-        shouldShowRequestPermissionRationale(permission)
+    override fun shouldShowPermissionRationale(permission: String): Boolean = shouldShowRequestPermissionRationale(permission)
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -145,7 +145,7 @@ class MainActivity :
         val canNavigateToNewsScreen =
             intent.getBooleanExtra(KEY_CAN_NAVIGATE_TO_NEWS, false)
         val noticeIdToExpand = intent.getLongExtra(KEY_NOTICE_ID_TO_EXPAND, INITIALIZED_ID)
-        if (noticeIdToExpand != INITIALIZED_ID) mainViewModel.expandNoticeItem(noticeIdToExpand)
+        if (noticeIdToExpand != INITIALIZED_ID) newsViewModel.expandNotice(noticeIdToExpand)
 
         if (canNavigateToNewsScreen) {
             binding.bnvMenu.selectedItemId = R.id.item_menu_news

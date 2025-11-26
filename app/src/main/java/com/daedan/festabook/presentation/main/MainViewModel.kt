@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
-import com.daedan.festabook.di.viewmodel.ViewModelScope
 import com.daedan.festabook.domain.repository.DeviceRepository
 import com.daedan.festabook.domain.repository.FestivalRepository
 import com.daedan.festabook.presentation.common.Event
@@ -25,13 +24,8 @@ class MainViewModel @Inject constructor(
     private val _backPressEvent: MutableLiveData<Event<Boolean>> = MutableLiveData()
     val backPressEvent: LiveData<Event<Boolean>> get() = _backPressEvent
 
-    private val _noticeIdToExpand: MutableLiveData<Long> = MutableLiveData()
-    val noticeIdToExpand: LiveData<Long> = _noticeIdToExpand
-
     private val _isFirstVisit =
-        MutableLiveData(
-            festivalRepository.getIsFirstVisit().getOrDefault(true),
-        )
+        MutableLiveData(festivalRepository.getIsFirstVisit().getOrDefault(true))
     val isFirstVisit: LiveData<Boolean> get() = _isFirstVisit
 
     private var lastBackPressedTime: Long = 0
@@ -88,10 +82,6 @@ class MainViewModel @Inject constructor(
                     Timber.e(throwable, "MainViewModel: 기기 등록 실패: ${throwable.message}")
                 }
         }
-    }
-
-    fun expandNoticeItem(announcementId: Long) {
-        _noticeIdToExpand.value = announcementId
     }
 
     companion object {
