@@ -38,7 +38,10 @@ private const val SPAN_COUNT: Int = 2
 private const val PADDING: Int = 8
 
 @Composable
-fun LostItemScreenContainer(newsViewModel: NewsViewModel) {
+fun LostItemScreenContainer(
+    newsViewModel: NewsViewModel,
+    modifier: Modifier = Modifier,
+) {
     val uiState = newsViewModel.lostUiState.collectAsStateWithLifecycle()
     val isRefreshing = uiState.value is LostUiState.Refreshing
 
@@ -50,6 +53,7 @@ fun LostItemScreenContainer(newsViewModel: NewsViewModel) {
             val oldLostItems = (uiState.value as? LostUiState.Success)?.lostItems ?: emptyList()
             newsViewModel.loadAllLostItems(LostUiState.Refreshing(oldLostItems))
         },
+        modifier = modifier,
     )
 }
 
@@ -74,7 +78,6 @@ fun LostItemScreen(
     PullToRefreshContainer(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
-        modifier = modifier,
     ) { pullToRefreshState ->
         when (lostUiState) {
             LostUiState.InitialLoading -> LoadingStateScreen()

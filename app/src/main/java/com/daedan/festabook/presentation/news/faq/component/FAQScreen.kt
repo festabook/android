@@ -22,10 +22,17 @@ import timber.log.Timber
 private const val PADDING: Int = 8
 
 @Composable
-fun FAQScreenContainer(newsViewModel: NewsViewModel) {
+fun FAQScreenContainer(
+    newsViewModel: NewsViewModel,
+    modifier: Modifier = Modifier,
+) {
     val uiState = newsViewModel.faqUiState.collectAsStateWithLifecycle()
 
-    FAQScreen(uiState = uiState.value, onFaqClick = { faq -> newsViewModel.toggleFAQ(faq) })
+    FAQScreen(
+        uiState = uiState.value,
+        onFaqClick = { faq -> newsViewModel.toggleFAQ(faq) },
+        modifier = modifier,
+    )
 }
 
 @Composable

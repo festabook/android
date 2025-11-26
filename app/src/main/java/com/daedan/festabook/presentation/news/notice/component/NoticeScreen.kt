@@ -31,7 +31,10 @@ import timber.log.Timber
 private const val PADDING: Int = 8
 
 @Composable
-fun NoticeScreenContainer(newsViewModel: NewsViewModel) {
+fun NoticeScreenContainer(
+    newsViewModel: NewsViewModel,
+    modifier: Modifier = Modifier,
+) {
     val uiState = newsViewModel.noticeUiState.collectAsStateWithLifecycle()
     val isRefreshing = uiState.value is NoticeUiState.Refreshing
 
@@ -44,6 +47,7 @@ fun NoticeScreenContainer(newsViewModel: NewsViewModel) {
                 (uiState.value as? NoticeUiState.Success)?.notices ?: emptyList()
             newsViewModel.loadAllNotices(NoticeUiState.Refreshing(oldNotices))
         },
+        modifier = modifier,
     )
 }
 
