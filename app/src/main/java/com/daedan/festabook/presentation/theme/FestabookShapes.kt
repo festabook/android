@@ -2,7 +2,8 @@ package com.daedan.festabook.presentation.theme
 
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Shapes
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 
 data class FestabookShapes(
@@ -14,13 +15,7 @@ data class FestabookShapes(
     val radiusFull: CornerBasedShape = RoundedCornerShape(999.dp),
 )
 
-val festabookShapes = FestabookShapes()
+val LocalShapes = staticCompositionLocalOf { FestabookShapes() }
 
-val FestabookShapesTheme =
-    Shapes(
-        extraSmall = festabookShapes.radius1,
-        small = festabookShapes.radius2,
-        medium = festabookShapes.radius3,
-        large = festabookShapes.radius4,
-        extraLarge = festabookShapes.radius5,
-    )
+val festabookShapes: FestabookShapes
+    @Composable get() = LocalShapes.current

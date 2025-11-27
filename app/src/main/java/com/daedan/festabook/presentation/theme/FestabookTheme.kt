@@ -13,12 +13,13 @@ private val LightColorScheme =
 @Composable
 fun FestabookTheme(content: @Composable () -> Unit) {
     val spacing = FestabookSpacing()
+    val shapes = FestabookShapes()
     CompositionLocalProvider(
         LocalSpacing provides spacing,
+        LocalShapes provides shapes,
     ) {
         MaterialTheme(
             colorScheme = LightColorScheme,
-            shapes = FestabookShapesTheme,
             typography = FestabookTypography,
             content = content,
         )
