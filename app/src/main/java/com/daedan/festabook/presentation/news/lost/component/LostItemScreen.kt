@@ -37,26 +37,6 @@ import timber.log.Timber
 private const val SPAN_COUNT: Int = 2
 private const val PADDING: Int = 8
 
-@Composable
-fun LostItemScreenContainer(
-    newsViewModel: NewsViewModel,
-    modifier: Modifier = Modifier,
-) {
-    val uiState by newsViewModel.lostUiState.collectAsStateWithLifecycle()
-    val isRefreshing = uiState is LostUiState.Refreshing
-
-    LostItemScreen(
-        lostUiState = uiState,
-        onLostGuideClick = { newsViewModel.toggleLostGuide() },
-        isRefreshing = isRefreshing,
-        onRefresh = {
-            val oldLostItems = (uiState as? LostUiState.Success)?.lostItems ?: emptyList()
-            newsViewModel.loadAllLostItems(LostUiState.Refreshing(oldLostItems))
-        },
-        modifier = modifier,
-    )
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LostItemScreen(
