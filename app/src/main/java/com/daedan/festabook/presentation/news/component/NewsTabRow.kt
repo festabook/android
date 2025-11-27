@@ -1,6 +1,7 @@
 package com.daedan.festabook.presentation.news.component
 
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -8,8 +9,10 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.daedan.festabook.presentation.news.NewsTab
 import com.daedan.festabook.presentation.theme.FestabookColor
 import kotlinx.coroutines.CoroutineScope
@@ -41,4 +44,13 @@ fun NewsTabRow(
             )
         }
     }
+}
+
+@Composable
+@Preview
+private fun NewsTabRowPreview() {
+    NewsTabRow(
+        pageState = rememberPagerState { 3 },
+        scope = rememberCoroutineScope(),
+    )
 }
