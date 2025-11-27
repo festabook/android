@@ -31,7 +31,7 @@ fun NewsScreen(
     val faqUiState by newsViewModel.faqUiState.collectAsStateWithLifecycle()
 
     val isNoticeRefreshing = noticeUiState is NoticeUiState.Refreshing
-    val isLostItemRefreshing = noticeUiState is NoticeUiState.Refreshing
+    val isLostItemRefreshing = lostUiState is LostUiState.Refreshing
 
     LaunchedEffect(noticeUiState) {
         if (noticeUiState is NoticeUiState.Success) {
