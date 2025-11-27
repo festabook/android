@@ -32,10 +32,12 @@ fun NewsTabPage(
     onNoticeClick: (NoticeUiModel) -> Unit,
     onFaqClick: (FAQItemUiModel) -> Unit,
     onLostGuideClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     HorizontalPager(
         state = pageState,
         verticalAlignment = Alignment.Top,
+        modifier = modifier,
     ) { index ->
         val tab = NewsTab.entries[index]
         when (tab) {

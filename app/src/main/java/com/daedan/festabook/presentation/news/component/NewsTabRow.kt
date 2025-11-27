@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 fun NewsTabRow(
     pageState: PagerState,
     scope: CoroutineScope,
+    modifier: Modifier = Modifier,
 ) {
     TabRow(
         selectedTabIndex = pageState.currentPage,
@@ -34,6 +35,7 @@ fun NewsTabRow(
                 modifier = Modifier.tabIndicatorOffset(currentTabPosition = tabPositions[pageState.currentPage]),
             )
         },
+        modifier = modifier,
     ) {
         NewsTab.entries.forEachIndexed { index, title ->
             Tab(
