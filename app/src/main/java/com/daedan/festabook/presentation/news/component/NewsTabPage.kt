@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.daedan.festabook.presentation.news.NewsTab
 import com.daedan.festabook.presentation.news.faq.FAQUiState
 import com.daedan.festabook.presentation.news.faq.component.FAQScreen
@@ -18,6 +17,7 @@ import com.daedan.festabook.presentation.news.lost.component.LostItemScreen
 import com.daedan.festabook.presentation.news.notice.NoticeUiState
 import com.daedan.festabook.presentation.news.notice.component.NoticeScreen
 import com.daedan.festabook.presentation.news.notice.model.NoticeUiModel
+import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
 fun NewsTabPage(
@@ -47,14 +47,14 @@ fun NewsTabPage(
                     onNoticeClick = onNoticeClick,
                     isRefreshing = isNoticeRefreshing,
                     onRefresh = onNoticeRefresh,
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
                 )
 
             NewsTab.FAQ ->
                 FAQScreen(
                     uiState = faqUiState,
                     onFaqClick = onFaqClick,
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
                 )
 
             NewsTab.LOST_ITEM ->
@@ -63,7 +63,7 @@ fun NewsTabPage(
                     onLostGuideClick = onLostGuideClick,
                     isRefreshing = isLostItemRefreshing,
                     onRefresh = onLostItemRefresh,
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
                 )
         }
     }

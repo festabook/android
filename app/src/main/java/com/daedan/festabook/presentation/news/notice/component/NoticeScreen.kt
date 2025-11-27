@@ -27,9 +27,8 @@ import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.notice.NoticeUiState
 import com.daedan.festabook.presentation.news.notice.NoticeUiState.Companion.DEFAULT_POSITION
 import com.daedan.festabook.presentation.news.notice.model.NoticeUiModel
+import com.daedan.festabook.presentation.theme.festabookSpacing
 import timber.log.Timber
-
-private const val PADDING: Int = 8
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,8 +96,12 @@ private fun NoticeContent(
         LazyColumn(
             modifier = modifier,
             state = listState,
-            contentPadding = PaddingValues(top = PADDING.dp, bottom = PADDING.dp),
-            verticalArrangement = Arrangement.spacedBy(PADDING.dp),
+            contentPadding =
+                PaddingValues(
+                    top = festabookSpacing.paddingBody2,
+                    bottom = festabookSpacing.paddingBody2,
+                ),
+            verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
         ) {
             items(
                 items = notices,

@@ -32,10 +32,10 @@ import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.lost.LostUiState
 import com.daedan.festabook.presentation.news.lost.model.LostItemUiStatus
 import com.daedan.festabook.presentation.news.lost.model.LostUiModel
+import com.daedan.festabook.presentation.theme.festabookSpacing
 import timber.log.Timber
 
 private const val SPAN_COUNT: Int = 2
-private const val PADDING: Int = 8
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,9 +116,13 @@ private fun LostItemContent(
     LazyVerticalGrid(
         modifier = modifier,
         columns = GridCells.Fixed(SPAN_COUNT),
-        contentPadding = PaddingValues(top = PADDING.dp, bottom = PADDING.dp),
-        verticalArrangement = Arrangement.spacedBy(PADDING.dp),
-        horizontalArrangement = Arrangement.spacedBy(PADDING.dp),
+        contentPadding =
+            PaddingValues(
+                top = festabookSpacing.paddingBody2,
+                bottom = festabookSpacing.paddingBody2,
+            ),
+        verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
+        horizontalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
     ) {
         item(span = { GridItemSpan(SPAN_COUNT) }) {
             val guide = lostItems.firstOrNull() as? LostUiModel.Guide

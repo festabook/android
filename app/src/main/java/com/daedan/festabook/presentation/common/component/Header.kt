@@ -7,8 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.daedan.festabook.presentation.theme.FestabookTypography
+import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
 fun Header(
@@ -21,8 +21,12 @@ fun Header(
         style = style,
         modifier =
             modifier
-                .padding(top = 40.dp, bottom = 16.dp, start = 16.dp, end = 16.dp)
-                .fillMaxWidth(),
+                .padding(
+                    top = festabookSpacing.paddingTitleHorizontal,
+                    bottom = festabookSpacing.paddingBody4,
+                    start = festabookSpacing.paddingScreenGutter,
+                    end = festabookSpacing.paddingScreenGutter,
+                ).fillMaxWidth(),
     )
 }
 

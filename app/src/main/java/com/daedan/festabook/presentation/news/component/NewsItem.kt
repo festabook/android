@@ -21,11 +21,11 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.cardBackground
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTypography
+import com.daedan.festabook.presentation.theme.festabookSpacing
 
 private const val ICON_ROTATION_EXPANDED: Float = 180F
 private const val ICON_ROTATION_COLLAPSED: Float = 0F
@@ -54,7 +54,7 @@ fun NewsItem(
                     indication = null,
                     interactionSource = null,
                 ) { onclick() }
-                .padding(16.dp),
+                .padding(festabookSpacing.paddingBody4),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -62,14 +62,14 @@ fun NewsItem(
         ) {
             if (icon != null) {
                 icon()
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(festabookSpacing.paddingBody2))
             }
             Text(
                 text = title,
                 style = FestabookTypography.titleSmall,
                 modifier = Modifier.weight(1f),
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(festabookSpacing.paddingBody2))
             if (createdAt != null) {
                 Text(
                     text = createdAt,
@@ -86,7 +86,7 @@ fun NewsItem(
         }
 
         if (isExpanded) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(festabookSpacing.paddingBody2))
             Text(text = description)
         }
     }

@@ -19,9 +19,8 @@ import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.faq.FAQUiState
 import com.daedan.festabook.presentation.news.faq.model.FAQItemUiModel
+import com.daedan.festabook.presentation.theme.festabookSpacing
 import timber.log.Timber
-
-private const val PADDING: Int = 8
 
 @Composable
 fun FAQScreen(
@@ -44,8 +43,12 @@ fun FAQScreen(
             } else {
                 LazyColumn(
                     modifier = modifier,
-                    contentPadding = PaddingValues(top = PADDING.dp, bottom = PADDING.dp),
-                    verticalArrangement = Arrangement.spacedBy(PADDING.dp),
+                    contentPadding =
+                        PaddingValues(
+                            top = festabookSpacing.paddingBody2,
+                            bottom = festabookSpacing.paddingBody2,
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
                 ) {
                     items(
                         items = uiState.faqs,
