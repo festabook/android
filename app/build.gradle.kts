@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.serialization)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktlint)
     id("kotlin-kapt")
     id("kotlin-parcelize")
     id("com.google.gms.google-services")
