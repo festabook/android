@@ -1,0 +1,180 @@
+package com.daedan.festabook.presentation.placeMap.timeTagSpinner.component
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuBoxScope
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.ripple
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
+import com.daedan.festabook.R
+import com.daedan.festabook.domain.model.TimeTag
+import com.daedan.festabook.presentation.theme.FestabookColor
+import com.daedan.festabook.presentation.theme.FestabookTypography
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimeTagMenu(
+    title: String,
+    timeTags: List<TimeTag>,
+    modifier: Modifier = Modifier,
+    onTimeTagClick: (TimeTag) -> Unit = {},
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var dropdownWidth by remember { mutableStateOf(IntSize.Zero) }
+    val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        ExposedDropdownMenuBox(
+            modifier =
+                Modifier
+                    .wrapContentSize()
+                    .background(Color.Transparent),
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+        ) {
+            TimeTagButton(
+                title = title,
+                onSizeDetermined = { dropdownWidth = it },
+            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                offset = DpOffset(x = 0.dp, y = 8.dp),
+                modifier =
+                    Modifier
+                        .width(
+                            with(density) { dropdownWidth.width.toDp() },
+                        ).background(color = FestabookColor.white)
+                        .border(
+                            width = 2.dp,
+                            color = FestabookColor.gray300,
+                            shape = RoundedCornerShape(8.dp),
+                        ),
+                shape = RoundedCornerShape(8.dp),
+            ) {
+                timeTags.forEach { item ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = item.name,
+                                fontStyle = FestabookTypography.bodyLarge.fontStyle,
+                            )
+                        },
+                        onClick = {
+                            scope.launch {
+                                onTimeTagClick(item)
+                                waitForRipple {
+                                    expanded = false
+                                }
+                            }
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun ExposedDropdownMenuBoxScope.TimeTagButton(
+    title: String,
+    onSizeDetermined: (IntSize) -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .width(140.dp)
+                .onGloballyPositioned { coordinates ->
+                    onSizeDetermined(coordinates.size)
+                }.menuAnchor(
+                    type = MenuAnchorType.PrimaryNotEditable,
+                    enabled = true,
+                ).height(TopAppBarDefaults.MediumAppBarCollapsedHeight) // Festabook TopAppbar Size
+                .background(Color.Transparent)
+                .clickable(
+                    onClick = {},
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(),
+                ),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = title,
+            style = FestabookTypography.displaySmall,
+        )
+
+        Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_down),
+            contentDescription = "드롭다운",
+        )
+    }
+}
+
+private suspend inline fun waitForRipple(
+    timeMillis: Long = 100,
+    after: () -> Unit = {},
+) {
+    delay(timeMillis)
+    after()
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun TimeTagMenuPreview() {
+    val timeTags =
+        listOf(
+            TimeTag(1, "1일차 오전"),
+            TimeTag(2, "오후"),
+        )
+    var title by remember { mutableStateOf("1일차 오전") }
+
+    TimeTagMenu(
+        title = title,
+        timeTags = timeTags,
+        modifier =
+            Modifier
+                .background(FestabookColor.white)
+                .padding(horizontal = 16.dp),
+        // Festabook Gutter
+        onTimeTagClick = { title = it.name },
+    )
+}
