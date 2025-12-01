@@ -48,11 +48,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeTagMenu(
-    title: String,
+    initialTitle: String,
     timeTags: List<TimeTag>,
     modifier: Modifier = Modifier,
     onTimeTagClick: (TimeTag) -> Unit = {},
 ) {
+    var title by remember { mutableStateOf(initialTitle) }
     var expanded by remember { mutableStateOf(false) }
     var dropdownWidth by remember { mutableStateOf(IntSize.Zero) }
     val density = LocalDensity.current
@@ -99,6 +100,7 @@ fun TimeTagMenu(
                         },
                         onClick = {
                             scope.launch {
+                                title = item.name
                                 onTimeTagClick(item)
                                 waitForRipple {
                                     expanded = false
@@ -168,13 +170,13 @@ private fun TimeTagMenuPreview() {
     var title by remember { mutableStateOf("1일차 오전") }
 
     TimeTagMenu(
-        title = title,
+        initialTitle = title,
         timeTags = timeTags,
         modifier =
             Modifier
                 .background(FestabookColor.white)
                 .padding(horizontal = 16.dp),
         // Festabook Gutter
-        onTimeTagClick = { title = it.name },
+        onTimeTagClick = { },
     )
 }
