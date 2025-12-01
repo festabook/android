@@ -21,6 +21,9 @@ import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
@@ -38,8 +41,8 @@ class PlaceMapViewModel @Inject constructor(
     val placeGeographies: LiveData<PlaceListUiState<List<PlaceCoordinateUiModel>>>
         get() = _placeGeographies
 
-    private val _timeTags = MutableLiveData<List<TimeTag>>()
-    val timeTags: LiveData<List<TimeTag>> = _timeTags
+    private val _timeTags = MutableStateFlow<List<TimeTag>>(emptyList())
+    val timeTags: StateFlow<List<TimeTag>> = _timeTags.asStateFlow()
 
     private val _selectedTimeTag = MutableLiveData<TimeTag>()
     val selectedTimeTag: LiveData<TimeTag> = _selectedTimeTag

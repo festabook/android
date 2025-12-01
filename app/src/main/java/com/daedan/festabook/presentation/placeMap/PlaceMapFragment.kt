@@ -3,12 +3,21 @@ package com.daedan.festabook.presentation.placeMap
 import android.content.Context
 import android.os.Bundle
 import android.view.View
-import android.widget.AdapterView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceMapBinding
@@ -31,7 +40,8 @@ import com.daedan.festabook.presentation.placeMap.placeCategory.PlaceCategoryFra
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.PlaceDetailPreviewFragment
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.PlaceDetailPreviewSecondaryFragment
 import com.daedan.festabook.presentation.placeMap.placeList.PlaceListFragment
-import com.daedan.festabook.presentation.placeMap.timeTagSpinner.adapter.TimeTagSpinnerAdapter
+import com.daedan.festabook.presentation.placeMap.timeTagSpinner.component.TimeTagMenu
+import com.daedan.festabook.presentation.theme.FestabookColor
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
@@ -88,23 +98,6 @@ class PlaceMapFragment(
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        binding.spinnerSelectTimeTag.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View?,
-                    position: Int,
-                    id: Long,
-                ) {
-                    val item = parent.getItemAtPosition(position) as TimeTag
-
-                    onTimeTagSelected(item)
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>) {
-                    onNothingSelected()
-                }
-            }
         if (savedInstanceState == null) {
             childFragmentManager.commit {
                 addWithSimpleTag(R.id.fcv_map_container, mapFragment)
@@ -170,18 +163,25 @@ class PlaceMapFragment(
     }
 
     private fun setUpObserver() {
-        viewModel.timeTags.observe(viewLifecycleOwner) { timeTags ->
-            // 타임태그가 없는 경우 메뉴 GONE
-            binding.layoutMapMenu.visibility =
-                if (timeTags.isNullOrEmpty()) View.GONE else View.VISIBLE
-
-            if (binding.spinnerSelectTimeTag.adapter == null) {
-                val adapter = TimeTagSpinnerAdapter(requireContext(), timeTags.toMutableList())
-                binding.spinnerSelectTimeTag.adapter = adapter
-            } else {
-                val adapter = binding.spinnerSelectTimeTag.adapter as TimeTagSpinnerAdapter
-                adapter.updateItems(timeTags)
-                adapter.notifyDataSetChanged()
+        binding.cvTimeTag.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        binding.cvTimeTag.setContent {
+            val timeTags by viewModel.timeTags.collectAsStateWithLifecycle(viewLifecycleOwner)
+            if (!timeTags.isEmpty()) {
+                val initialTitle = timeTags.first().name
+                var title by remember { mutableStateOf(initialTitle) }
+                TimeTagMenu(
+                    title = title,
+                    timeTags = timeTags,
+                    onTimeTagClick = { timeTag ->
+                        title = timeTag.name
+                        onTimeTagSelected(timeTag)
+                    },
+                    modifier =
+                        Modifier
+                            .background(
+                                FestabookColor.white,
+                            ).padding(horizontal = 24.dp),
+                )
             }
         }
 
