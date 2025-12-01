@@ -6,11 +6,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
 
             <com.daedan.festabook.presentation.placeMap.MapTouchEventInterceptView
                 android:id="@+id/view_map_touch_event_intercept"
@@ -25,7 +23,7 @@
             </com.daedan.festabook.presentation.placeMap.MapTouchEventInterceptView>
 
             <androidx.compose.ui.platform.ComposeView
-                android:id="@+id/cv_timeTag"
+                android:id="@+id/cv_place_map"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -36,7 +34,7 @@
                 android:id="@+id/fcv_place_category_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/cv_timeTag" />
+                app:layout_constraintTop_toBottomOf="@id/cv_place_map" />
 
             <com.naver.maps.map.widget.LogoView
                 android:layout_width="wrap_content"

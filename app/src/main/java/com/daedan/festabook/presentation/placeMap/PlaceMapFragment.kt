@@ -108,6 +108,7 @@ class PlaceMapFragment(
         }
         lifecycleScope.launch {
             setUpMapManager()
+            setupComposeView()
             setUpObserver()
         }
         binding.logger.log(
@@ -159,27 +160,31 @@ class PlaceMapFragment(
         }
     }
 
-    private fun setUpObserver() {
-        binding.cvTimeTag.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-        binding.cvTimeTag.setContent {
-            val timeTags by viewModel.timeTags.collectAsStateWithLifecycle(viewLifecycleOwner)
-            if (!timeTags.isEmpty()) {
-                val initialTitle = timeTags.first().name
-                TimeTagMenu(
-                    initialTitle = initialTitle,
-                    timeTags = timeTags,
-                    onTimeTagClick = {
-                        onTimeTagSelected(it)
-                    },
-                    modifier =
-                        Modifier
-                            .background(
-                                FestabookColor.white,
-                            ).padding(horizontal = 24.dp),
-                )
+    private fun setupComposeView() {
+        binding.cvPlaceMap.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                val timeTags by viewModel.timeTags.collectAsStateWithLifecycle(viewLifecycleOwner)
+                if (!timeTags.isEmpty()) {
+                    val initialTitle = timeTags.first().name
+                    TimeTagMenu(
+                        initialTitle = initialTitle,
+                        timeTags = timeTags,
+                        onTimeTagClick = {
+                            onTimeTagSelected(it)
+                        },
+                        modifier =
+                            Modifier
+                                .background(
+                                    FestabookColor.white,
+                                ).padding(horizontal = 24.dp),
+                    )
+                }
             }
         }
+    }
 
+    private fun setUpObserver() {
         viewModel.placeGeographies.observe(viewLifecycleOwner) { placeGeographies ->
             when (placeGeographies) {
                 is PlaceListUiState.Loading -> Unit
