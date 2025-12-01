@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.daedan.festabook.presentation.news.NewsTab
 import com.daedan.festabook.presentation.theme.FestabookColor
+import com.daedan.festabook.presentation.theme.FestabookTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -51,8 +52,10 @@ fun NewsTabRow(
 @Composable
 @Preview
 private fun NewsTabRowPreview() {
-    NewsTabRow(
-        pageState = rememberPagerState { 3 },
-        scope = rememberCoroutineScope(),
-    )
+    FestabookTheme {
+        NewsTabRow(
+            pageState = rememberPagerState { 3 },
+            scope = rememberCoroutineScope(),
+        )
+    }
 }
