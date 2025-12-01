@@ -38,8 +38,7 @@ interface FestaBookAppGraph {
 
     // splashActivity
     @Provides
-    fun provideAppUpdateManager(application: Application): AppUpdateManager =
-        AppUpdateManagerFactory.create(application)
+    fun provideAppUpdateManager(application: Application): AppUpdateManager = AppUpdateManagerFactory.create(application)
 
     // logger
     val defaultFirebaseLogger: DefaultFirebaseLogger
