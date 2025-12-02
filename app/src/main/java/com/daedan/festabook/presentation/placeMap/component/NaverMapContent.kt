@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -29,7 +28,7 @@ fun NaverMapContent(
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val mapView by remember { mutableStateOf(MapView(context)) }
+    val mapView = remember { MapView(context) }
     AndroidView(
         factory = {
             mapView.apply {
@@ -50,8 +49,6 @@ private fun Modifier.dragInterceptor(onMapDrag: () -> Unit): Modifier =
             awaitPointerEventScope {
                 while (true) {
                     // 1. 첫 번째 터치(Down)를 기다립니다.
-                    // pass = PointerEventPass.Initial : 자식보다 먼저 이벤트를 봅니다.
-                    // requireUnconsumed = false : 이미 다른 곳에서 처리했더라도 신경 쓰지 않고 받습니다.
                     val downEvent = awaitPointerEvent(pass = PointerEventPass.Initial)
                     val downChange = downEvent.changes.firstOrNull { it.pressed } ?: continue
 
@@ -88,7 +85,7 @@ private fun RegisterMapLifeCycle(mapView: MapView) {
     val previousState = remember { mutableStateOf(Lifecycle.Event.ON_CREATE) }
     val savedInstanceState = rememberSaveable { Bundle() }
 
-    DisposableEffect(context, lifecycle, mapView, savedInstanceState) {
+    DisposableEffect(lifecycle, mapView) {
         val mapLifecycleObserver =
             mapView.lifecycleObserver(
                 savedInstanceState.takeUnless { it.isEmpty },
@@ -134,7 +131,7 @@ private fun RegisterMapLifeCycle(mapView: MapView) {
                     mapView.onDestroy()
                 }
 
-                else -> {}
+                else -> Unit
             }
         }
     }
