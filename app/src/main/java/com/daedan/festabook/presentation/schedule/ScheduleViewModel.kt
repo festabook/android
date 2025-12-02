@@ -1,7 +1,5 @@
 package com.daedan.festabook.presentation.schedule
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -13,6 +11,9 @@ import com.daedan.festabook.presentation.schedule.model.toUiModel
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -25,13 +26,14 @@ class ScheduleViewModel @AssistedInject constructor(
         fun create(dateId: Long): ScheduleViewModel
     }
 
-    private val _scheduleEventsUiState: MutableLiveData<ScheduleEventsUiState> =
-        MutableLiveData<ScheduleEventsUiState>()
-    val scheduleEventsUiState: LiveData<ScheduleEventsUiState> get() = _scheduleEventsUiState
+    private val _scheduleEventsUiState: MutableStateFlow<ScheduleEventsUiState> =
+        MutableStateFlow(ScheduleEventsUiState.Loading)
+    val scheduleEventsUiState: StateFlow<ScheduleEventsUiState> =
+        _scheduleEventsUiState.asStateFlow()
 
-    private val _scheduleDatesUiState: MutableLiveData<ScheduleDatesUiState> =
-        MutableLiveData<ScheduleDatesUiState>()
-    val scheduleDatesUiState: LiveData<ScheduleDatesUiState> get() = _scheduleDatesUiState
+    private val _scheduleDatesUiState: MutableStateFlow<ScheduleDatesUiState> =
+        MutableStateFlow(ScheduleDatesUiState.Loading)
+    val scheduleDatesUiState: StateFlow<ScheduleDatesUiState> = _scheduleDatesUiState.asStateFlow()
 
     init {
         loadAllDates()
