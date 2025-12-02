@@ -9,14 +9,18 @@ enum class PlaceCategoryUiModel {
     FOOD_TRUCK,
     BOOTH,
     BAR,
-    TRASH_CAN,
-    TOILET,
-    SMOKING_AREA,
-    PRIMARY,
-    PARKING,
+
     STAGE,
     PHOTO_BOOTH,
+    PRIMARY,
+
     EXTRA,
+    PARKING,
+    TOILET,
+
+    SMOKING_AREA,
+
+    TRASH_CAN,
     ;
 
     companion object {

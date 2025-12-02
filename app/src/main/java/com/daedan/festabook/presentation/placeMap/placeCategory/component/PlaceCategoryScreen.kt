@@ -35,7 +35,7 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 fun PlaceCategoryScreen(
     modifier: Modifier = Modifier,
     onDisplayAllClick: () -> Unit = {},
-    onCategoryClick: (PlaceCategoryUiModel) -> Unit = {},
+    onCategoryClick: (List<PlaceCategoryUiModel>) -> Unit = {},
     categories: List<PlaceCategoryUiModel> = PlaceCategoryUiModel.entries,
 ) {
     val scrollState = rememberScrollState()
@@ -84,7 +84,7 @@ fun PlaceCategoryScreen(
                         } else {
                             selectedCategories + setOf(category)
                         }
-                    onCategoryClick(category)
+                    onCategoryClick(selectedCategories.toList())
                 },
             )
         }

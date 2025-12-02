@@ -1,20 +1,24 @@
 package com.daedan.festabook.presentation.placeMap.placeCategory
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import androidx.core.view.children
+import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceCategoryBinding
+import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.di.fragment.FragmentKey
-import com.daedan.festabook.logging.logger
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.logging.PlaceCategoryClick
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
-import com.google.android.material.chip.Chip
+import com.daedan.festabook.presentation.placeMap.placeCategory.component.PlaceCategoryScreen
+import com.daedan.festabook.presentation.theme.FestabookTheme
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
@@ -30,42 +34,34 @@ class PlaceCategoryFragment : BaseFragment<FragmentPlaceCategoryBinding>() {
     override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: PlaceMapViewModel by viewModels({ requireParentFragment() })
 
-    override fun onViewCreated(
-        view: View,
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ) {
-        super.onViewCreated(view, savedInstanceState)
-        setUpBinding()
-    }
-
-    private fun setUpBinding() {
-        binding.cgCategories.setOnCheckedStateChangeListener { group, checkedIds ->
-            val selectedCategories =
-                checkedIds.mapNotNull {
-                    val category = group.findViewById<Chip>(it).tag
-                    category as? PlaceCategoryUiModel
+    ): View =
+        ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                FestabookTheme {
+                    val categories = PlaceCategoryUiModel.entries
+                    PlaceCategoryScreen(
+                        categories = categories,
+                        onCategoryClick = { categories ->
+                            viewModel.unselectPlace()
+                            viewModel.setSelectedCategories(categories)
+                            appGraph.defaultFirebaseLogger.log(
+                                PlaceCategoryClick(
+                                    baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
+                                    currentCategories = categories.joinToString(",") { it.toString() },
+                                ),
+                            )
+                        },
+                        onDisplayAllClick = {
+                            viewModel.unselectPlace()
+                            viewModel.setSelectedCategories(categories)
+                        },
+                    )
                 }
-
-            viewModel.unselectPlace()
-            viewModel.setSelectedCategories(selectedCategories)
-            binding.chipCategoryAll.isChecked = selectedCategories.isEmpty()
-            binding.logger.log(
-                PlaceCategoryClick(
-                    baseLogData = binding.logger.getBaseLogData(),
-                    currentCategories = selectedCategories.joinToString(",") { it.toString() },
-                ),
-            )
-        }
-
-        setUpChipCategoryAllListener()
-    }
-
-    private fun setUpChipCategoryAllListener() {
-        binding.chipCategoryAll.setOnClickListener {
-            binding.cgCategories.children.forEach {
-                val chip = (it as? Chip) ?: return@forEach
-                chip.isChecked = chip.id == binding.chipCategoryAll.id
             }
         }
-    }
 }
