@@ -4,11 +4,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceCategoryBinding
 import com.daedan.festabook.di.appGraph
@@ -43,22 +49,36 @@ class PlaceCategoryFragment : BaseFragment<FragmentPlaceCategoryBinding>() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 FestabookTheme {
-                    val categories = PlaceCategoryUiModel.entries
+                    val initialCategories = PlaceCategoryUiModel.entries
+                    // StateFlow로 변경 시 asFlow 제거 예정
+                    val timeTagChanged =
+                        viewModel.selectedTimeTag
+                            .asFlow()
+                            .collectAsStateWithLifecycle(viewLifecycleOwner)
+                    var selectedCategoriesState by remember(timeTagChanged.value) {
+                        mutableStateOf(
+                            emptySet<PlaceCategoryUiModel>(),
+                        )
+                    }
+
                     PlaceCategoryScreen(
-                        categories = categories,
-                        onCategoryClick = { categories ->
+                        initialCategories = initialCategories,
+                        selectedCategories = selectedCategoriesState,
+                        onCategoryClick = { selectedCategories ->
+                            selectedCategoriesState = selectedCategories
                             viewModel.unselectPlace()
-                            viewModel.setSelectedCategories(categories)
+                            viewModel.setSelectedCategories(selectedCategories.toList())
                             appGraph.defaultFirebaseLogger.log(
                                 PlaceCategoryClick(
                                     baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
-                                    currentCategories = categories.joinToString(",") { it.toString() },
+                                    currentCategories = selectedCategories.joinToString(",") { it.toString() },
                                 ),
                             )
                         },
-                        onDisplayAllClick = {
+                        onDisplayAllClick = { selectedCategories ->
+                            selectedCategoriesState = selectedCategories
                             viewModel.unselectPlace()
-                            viewModel.setSelectedCategories(categories)
+                            viewModel.setSelectedCategories(initialCategories)
                         },
                     )
                 }

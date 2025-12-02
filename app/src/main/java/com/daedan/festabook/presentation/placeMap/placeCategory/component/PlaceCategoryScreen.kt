@@ -11,10 +11,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -34,14 +30,12 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 @Composable
 fun PlaceCategoryScreen(
     modifier: Modifier = Modifier,
-    onDisplayAllClick: () -> Unit = {},
-    onCategoryClick: (List<PlaceCategoryUiModel>) -> Unit = {},
-    categories: List<PlaceCategoryUiModel> = PlaceCategoryUiModel.entries,
+    selectedCategories: Set<PlaceCategoryUiModel> = emptySet(),
+    onDisplayAllClick: (selectedCategories: Set<PlaceCategoryUiModel>) -> Unit = {},
+    onCategoryClick: (selectedCategories: Set<PlaceCategoryUiModel>) -> Unit = {},
+    initialCategories: List<PlaceCategoryUiModel> = PlaceCategoryUiModel.entries,
 ) {
     val scrollState = rememberScrollState()
-    var selectedCategories by remember {
-        mutableStateOf(emptySet<PlaceCategoryUiModel>())
-    }
 
     Row(
         modifier =
@@ -57,12 +51,11 @@ fun PlaceCategoryScreen(
             text = stringResource(R.string.map_category_all),
             selected = selectedCategories.isEmpty(),
             onClick = {
-                selectedCategories = emptySet()
-                onDisplayAllClick()
+                onDisplayAllClick(emptySet())
             },
         )
 
-        categories.forEach { category ->
+        initialCategories.forEach { category ->
             val text = stringResource(category.getTextId())
             CategoryChip(
                 text = text,
@@ -76,15 +69,13 @@ fun PlaceCategoryScreen(
                     )
                 },
                 onClick = {
-                    selectedCategories =
+                    val newSelectedCategories =
                         if (selectedCategories.contains(category)) {
-                            selectedCategories
-                                .filter { it != category }
-                                .toSet()
+                            selectedCategories.filter { it != category }
                         } else {
                             selectedCategories + setOf(category)
                         }
-                    onCategoryClick(selectedCategories.toList())
+                    onCategoryClick(newSelectedCategories.toSet())
                 },
             )
         }
