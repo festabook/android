@@ -45,7 +45,6 @@ private fun Modifier.dragInterceptor(onMapDrag: () -> Unit): Modifier =
     this.then(
         Modifier.pointerInput(Unit) {
             val touchSlop = viewConfiguration.touchSlop // 시스템이 정의한 드래그 판단 기준 거리
-
             awaitPointerEventScope {
                 while (true) {
                     // 1. 첫 번째 터치(Down)를 기다립니다.
