@@ -3,8 +3,13 @@ package com.daedan.festabook.presentation.placeMap
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commit
@@ -20,7 +25,7 @@ import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.toPx
-import com.daedan.festabook.presentation.placeMap.component.PlaceMapScreen
+import com.daedan.festabook.presentation.placeMap.component.NaverMapContent
 import com.daedan.festabook.presentation.placeMap.logging.CurrentLocationChecked
 import com.daedan.festabook.presentation.placeMap.logging.PlaceFragmentEnter
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMarkerClick
@@ -32,6 +37,8 @@ import com.daedan.festabook.presentation.placeMap.placeCategory.PlaceCategoryFra
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.PlaceDetailPreviewFragment
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.PlaceDetailPreviewSecondaryFragment
 import com.daedan.festabook.presentation.placeMap.placeList.PlaceListFragment
+import com.daedan.festabook.presentation.placeMap.timeTagSpinner.component.TimeTagMenu
+import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
@@ -133,15 +140,34 @@ class PlaceMapFragment(
         binding.cvPlaceMap.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
+                FestabookTheme {
+                    NaverMapContent(
+                        modifier = Modifier.fillMaxSize(),
+                        onMapReady = { setupMap(it) },
+                    ) {}
+                }
+            }
+        }
+        binding.cvTimeTagSpinner.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
                 val timeTags by viewModel.timeTags.collectAsStateWithLifecycle(viewLifecycleOwner)
                 FestabookTheme {
-                    PlaceMapScreen(
-                        onMapReady = { setupMap(it) },
-                        timeTags = timeTags,
-                        onTimeTagSelected = {
-                            onTimeTagSelected(it)
-                        },
-                    )
+                    if (!timeTags.isEmpty()) {
+                        val initialTitle = timeTags.first().name
+                        TimeTagMenu(
+                            initialTitle = initialTitle,
+                            timeTags = timeTags,
+                            onTimeTagClick = {
+                                onTimeTagSelected(it)
+                            },
+                            modifier =
+                                Modifier
+                                    .background(
+                                        FestabookColor.white,
+                                    ).padding(horizontal = 24.dp),
+                        )
+                    }
                 }
             }
         }
