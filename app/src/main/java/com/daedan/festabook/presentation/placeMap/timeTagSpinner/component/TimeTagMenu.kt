@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,7 +40,10 @@ import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.presentation.theme.FestabookColor
+import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.FestabookTypography
+import com.daedan.festabook.presentation.theme.festabookShapes
+import com.daedan.festabook.presentation.theme.festabookSpacing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -77,7 +79,7 @@ fun TimeTagMenu(
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                offset = DpOffset(x = 0.dp, y = 8.dp),
+                offset = DpOffset(x = 0.dp, y = festabookSpacing.paddingBody2),
                 modifier =
                     Modifier
                         .width(
@@ -86,16 +88,16 @@ fun TimeTagMenu(
                         .border(
                             width = 2.dp,
                             color = FestabookColor.gray300,
-                            shape = RoundedCornerShape(8.dp),
+                            shape = festabookShapes.radius2,
                         ),
-                shape = RoundedCornerShape(8.dp),
+                shape = festabookShapes.radius2,
             ) {
                 timeTags.forEach { item ->
                     DropdownMenuItem(
                         text = {
                             Text(
                                 text = item.name,
-                                fontStyle = FestabookTypography.bodyLarge.fontStyle,
+                                style = FestabookTypography.bodyLarge,
                             )
                         },
                         onClick = {
@@ -168,15 +170,16 @@ private fun TimeTagMenuPreview() {
             TimeTag(2, "오후"),
         )
     var title by remember { mutableStateOf("1일차 오전") }
-
-    TimeTagMenu(
-        initialTitle = title,
-        timeTags = timeTags,
-        modifier =
-            Modifier
-                .background(FestabookColor.white)
-                .padding(horizontal = 16.dp),
-        // Festabook Gutter
-        onTimeTagClick = { },
-    )
+    FestabookTheme {
+        TimeTagMenu(
+            initialTitle = title,
+            timeTags = timeTags,
+            modifier =
+                Modifier
+                    .background(FestabookColor.white)
+                    .padding(horizontal = festabookSpacing.paddingScreenGutter),
+            // Festabook Gutter
+            onTimeTagClick = { },
+        )
+    }
 }

@@ -39,6 +39,7 @@ import com.daedan.festabook.presentation.placeMap.placeDetailPreview.PlaceDetail
 import com.daedan.festabook.presentation.placeMap.placeList.PlaceListFragment
 import com.daedan.festabook.presentation.placeMap.timeTagSpinner.component.TimeTagMenu
 import com.daedan.festabook.presentation.theme.FestabookColor
+import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
@@ -164,21 +165,25 @@ class PlaceMapFragment(
         binding.cvPlaceMap.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val timeTags by viewModel.timeTags.collectAsStateWithLifecycle(viewLifecycleOwner)
-                if (!timeTags.isEmpty()) {
-                    val initialTitle = timeTags.first().name
-                    TimeTagMenu(
-                        initialTitle = initialTitle,
-                        timeTags = timeTags,
-                        onTimeTagClick = {
-                            onTimeTagSelected(it)
-                        },
-                        modifier =
-                            Modifier
-                                .background(
-                                    FestabookColor.white,
-                                ).padding(horizontal = 24.dp),
+                FestabookTheme {
+                    val timeTags by viewModel.timeTags.collectAsStateWithLifecycle(
+                        viewLifecycleOwner,
                     )
+                    if (!timeTags.isEmpty()) {
+                        val initialTitle = timeTags.first().name
+                        TimeTagMenu(
+                            initialTitle = initialTitle,
+                            timeTags = timeTags,
+                            onTimeTagClick = {
+                                onTimeTagSelected(it)
+                            },
+                            modifier =
+                                Modifier
+                                    .background(
+                                        FestabookColor.white,
+                                    ).padding(horizontal = 24.dp),
+                        )
+                    }
                 }
             }
         }
