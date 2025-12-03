@@ -3,7 +3,7 @@ package com.daedan.festabook.presentation.schedule
 import com.daedan.festabook.presentation.schedule.model.ScheduleDateUiModel
 
 sealed interface ScheduleDatesUiState {
-    data object Loading : ScheduleDatesUiState
+    data object InitialLoading : ScheduleDatesUiState
 
     data class Success(
         val dates: List<ScheduleDateUiModel>,
