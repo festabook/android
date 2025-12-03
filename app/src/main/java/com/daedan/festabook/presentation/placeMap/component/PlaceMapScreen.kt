@@ -15,9 +15,10 @@ import com.naver.maps.map.NaverMap
 
 @Composable
 fun PlaceMapScreen(
-    onMapReady: (NaverMap) -> Unit,
     timeTags: List<TimeTag>,
-    onTimeTagSelected: (TimeTag) -> Unit,
+    title: String,
+    onMapReady: (NaverMap) -> Unit,
+    onTimeTagClick: (TimeTag) -> Unit,
 ) {
     NaverMapContent(
         modifier = Modifier.fillMaxSize(),
@@ -26,13 +27,12 @@ fun PlaceMapScreen(
         Column(
             modifier = Modifier.wrapContentSize(),
         ) {
-            if (!timeTags.isEmpty()) {
-                val initialTitle = timeTags.first().name
+            if (timeTags.isNotEmpty()) {
                 TimeTagMenu(
-                    initialTitle = initialTitle,
+                    title = title,
                     timeTags = timeTags,
-                    onTimeTagClick = {
-                        onTimeTagSelected(it)
+                    onTimeTagClick = { timeTag ->
+                        onTimeTagClick(timeTag)
                     },
                     modifier =
                         Modifier

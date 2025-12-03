@@ -19,25 +19,19 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <com.daedan.festabook.presentation.placeMap.MapTouchEventInterceptView
-                android:id="@+id/view_map_touch_event_intercept"
+
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/cv_place_map"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fcv_map_container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <androidx.compose.ui.platform.ComposeView
-                    android:id="@+id/cv_place_map"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/fcv_map_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-            </com.daedan.festabook.presentation.placeMap.MapTouchEventInterceptView>
+                android:layout_height="match_parent" />
 
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/fcv_place_category_container"
@@ -49,8 +43,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                app:layout_constraintTop_toBottomOf="@id/fcv_place_category_container"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/fcv_place_category_container" />
 
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/fcv_place_list_container"

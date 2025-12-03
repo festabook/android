@@ -123,19 +123,6 @@ class PlaceMapFragment(
         mapManager?.moveToPosition()
     }
 
-    override fun onTimeTagSelected(item: TimeTag) {
-        viewModel.unselectPlace()
-        viewModel.onDaySelected(item)
-        binding.logger.log(
-            PlaceTimeTagSelected(
-                baseLogData = binding.logger.getBaseLogData(),
-                timeTagName = item.name,
-            ),
-        )
-    }
-
-    override fun onNothingSelected() = Unit
-
     private fun setupComposeView() {
         binding.cvPlaceMap.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -143,23 +130,32 @@ class PlaceMapFragment(
                 FestabookTheme {
                     NaverMapContent(
                         modifier = Modifier.fillMaxSize(),
+                        onMapDrag = { viewModel.onMapViewClick() },
                         onMapReady = { setupMap(it) },
-                    ) {}
+                    ) {
+                        // TODO 흩어져있는 ComposeView 통합, 추후 PlaceMapScreen 사용
+                    }
                 }
             }
         }
         binding.cvTimeTagSpinner.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val timeTags by viewModel.timeTags.collectAsStateWithLifecycle(viewLifecycleOwner)
+                val timeTags by viewModel.timeTags.collectAsStateWithLifecycle()
+                val title by viewModel.selectedTimeTagFlow.collectAsStateWithLifecycle()
                 FestabookTheme {
-                    if (!timeTags.isEmpty()) {
-                        val initialTitle = timeTags.first().name
+                    if (timeTags.isNotEmpty()) {
                         TimeTagMenu(
-                            initialTitle = initialTitle,
+                            title = title.name,
                             timeTags = timeTags,
-                            onTimeTagClick = {
-                                onTimeTagSelected(it)
+                            onTimeTagClick = { timeTag ->
+                                viewModel.onDaySelected(timeTag)
+                                binding.logger.log(
+                                    PlaceTimeTagSelected(
+                                        baseLogData = binding.logger.getBaseLogData(),
+                                        timeTagName = timeTag.name,
+                                    ),
+                                )
                             },
                             modifier =
                                 Modifier
@@ -184,9 +180,6 @@ class PlaceMapFragment(
         }
         (placeListFragment as? OnMapReadyCallback)?.onMapReady(naverMap)
         naverMap.locationSource = locationSource
-        binding.viewMapTouchEventIntercept.setOnMapDragListener {
-            viewModel.onMapViewClick()
-        }
         setUpObserver()
     }
 
