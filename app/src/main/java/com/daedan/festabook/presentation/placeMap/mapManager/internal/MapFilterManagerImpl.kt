@@ -20,25 +20,32 @@ class MapFilterManagerImpl(
 ) : MapFilterManager {
     private var selectedMarker: Marker? = null
 
-    private var selectedTimeTagId: Long? = null
+    private var selectedTimeTagId: Long = TimeTag.EMTPY_TIME_TAG_ID
 
     override fun filterMarkersByCategories(categories: List<PlaceCategoryUiModel>) {
         markers.forEach { marker ->
             val place = marker.tag as? PlaceCoordinateUiModel ?: return@forEach
             val isSelectedMarker = marker == selectedMarker
 
-            // 필터링된 마커이거나 선택된 마커인 경우에만 보이게 처리
-            marker.isVisible =
-                place.category in categories &&
-                place.timeTagIds.contains(selectedTimeTagId) ||
-                isSelectedMarker
+            // 필터링된 마커이거나 선택된 마커인 경우에만 보이게 처리,
+            // 타임태그가 없다면, 타임태그 검사 생략
+            if (selectedTimeTagId == TimeTag.EMTPY_TIME_TAG_ID) {
+                marker.isVisible =
+                    place.category in categories ||
+                    isSelectedMarker
+            } else {
+                marker.isVisible =
+                    place.category in categories &&
+                    place.timeTagIds.contains(selectedTimeTagId) ||
+                    isSelectedMarker
+            }
 
             // 선택된 마커는 크기를 유지하고, 필터링되지 않은 마커는 원래 크기로 되돌림
             markerManager.setMarkerIcon(marker, isSelectedMarker)
         }
     }
 
-    override fun filterMarkersByTimeTag(selectedTimeTagId: Long?) {
+    override fun filterMarkersByTimeTag(selectedTimeTagId: Long) {
         if (selectedTimeTagId == TimeTag.EMTPY_TIME_TAG_ID) {
             markers.forEach { it.isVisible = true }
             return

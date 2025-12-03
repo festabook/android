@@ -20,7 +20,7 @@ interface MapFilterManager {
      *
      * @param selectedTimeTagId 필터링에 사용할 시간 태그의 ID입니다. null 또는 특정 ID가 될 수 있습니다.
      */
-    fun filterMarkersByTimeTag(selectedTimeTagId: Long?)
+    fun filterMarkersByTimeTag(selectedTimeTagId: Long)
 
     /**
      * 모든 필터링 조건을 해제하고 마커를 초기 상태로 복원합니다.
