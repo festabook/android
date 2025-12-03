@@ -1,7 +1,6 @@
 package com.daedan.festabook.presentation.placeMap.timeTagSpinner.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuBoxScope
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -33,15 +33,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.domain.model.TimeTag
+import com.daedan.festabook.presentation.common.component.cardBackground
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
-import com.daedan.festabook.presentation.theme.FestabookTypography
 import com.daedan.festabook.presentation.theme.festabookShapes
 import com.daedan.festabook.presentation.theme.festabookSpacing
 import kotlinx.coroutines.delay
@@ -83,10 +84,10 @@ fun TimeTagMenu(
                     Modifier
                         .width(
                             with(density) { dropdownWidth.width.toDp() },
-                        ).background(color = FestabookColor.white)
-                        .border(
-                            width = 2.dp,
-                            color = FestabookColor.gray300,
+                        ).cardBackground(
+                            backgroundColor = FestabookColor.white,
+                            borderStroke = 2.dp,
+                            borderColor = FestabookColor.gray300,
                             shape = festabookShapes.radius2,
                         ),
                 shape = festabookShapes.radius2,
@@ -96,7 +97,7 @@ fun TimeTagMenu(
                         text = {
                             Text(
                                 text = item.name,
-                                style = FestabookTypography.bodyLarge,
+                                style = MaterialTheme.typography.bodyLarge,
                             )
                         },
                         onClick = {
@@ -141,12 +142,12 @@ private fun ExposedDropdownMenuBoxScope.TimeTagButton(
     ) {
         Text(
             text = title,
-            style = FestabookTypography.displaySmall,
+            style = MaterialTheme.typography.displaySmall,
         )
 
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_down),
-            contentDescription = "드롭다운",
+            contentDescription = stringResource(R.string.chevron_down),
         )
     }
 }
