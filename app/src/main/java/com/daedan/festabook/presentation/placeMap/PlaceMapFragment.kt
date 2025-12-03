@@ -20,7 +20,6 @@ import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceMapBinding
 import com.daedan.festabook.di.fragment.FragmentKey
 import com.daedan.festabook.di.mapManager.MapManagerGraph
-import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.logger
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
@@ -65,8 +64,7 @@ class PlaceMapFragment(
     placeDetailPreviewSecondaryFragment: PlaceDetailPreviewSecondaryFragment,
     mapFragment: MapFragment,
 ) : BaseFragment<FragmentPlaceMapBinding>(),
-    OnMenuItemReClickListener,
-    OnTimeTagSelectedListener {
+    OnMenuItemReClickListener {
     override val layoutId: Int = R.layout.fragment_place_map
 
     @Inject
@@ -132,19 +130,6 @@ class PlaceMapFragment(
         mapManager?.moveToPosition()
     }
 
-    override fun onTimeTagSelected(item: TimeTag) {
-        viewModel.unselectPlace()
-        viewModel.onDaySelected(item)
-        binding.logger.log(
-            PlaceTimeTagSelected(
-                baseLogData = binding.logger.getBaseLogData(),
-                timeTagName = item.name,
-            ),
-        )
-    }
-
-    override fun onNothingSelected() = Unit
-
     private suspend fun setUpMapManager() {
         naverMap = mapFragment.getMap()
         naverMap.addOnLocationChangeListener {
@@ -166,16 +151,20 @@ class PlaceMapFragment(
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 FestabookTheme {
-                    val timeTags by viewModel.timeTags.collectAsStateWithLifecycle(
-                        viewLifecycleOwner,
-                    )
-                    if (!timeTags.isEmpty()) {
-                        val initialTitle = timeTags.first().name
+                    val timeTags by viewModel.timeTags.collectAsStateWithLifecycle()
+                    val title by viewModel.selectedTimeTagFlow.collectAsStateWithLifecycle()
+                    if (timeTags.isNotEmpty()) {
                         TimeTagMenu(
-                            initialTitle = initialTitle,
+                            title = title.name,
                             timeTags = timeTags,
-                            onTimeTagClick = {
-                                onTimeTagSelected(it)
+                            onTimeTagClick = { timeTag ->
+                                viewModel.onDaySelected(timeTag)
+                                binding.logger.log(
+                                    PlaceTimeTagSelected(
+                                        baseLogData = binding.logger.getBaseLogData(),
+                                        timeTagName = timeTag.name,
+                                    ),
+                                )
                             },
                             modifier =
                                 Modifier

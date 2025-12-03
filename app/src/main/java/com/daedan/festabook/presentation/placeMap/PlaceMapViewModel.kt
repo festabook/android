@@ -3,6 +3,7 @@ package com.daedan.festabook.presentation.placeMap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
 import com.daedan.festabook.domain.model.TimeTag
@@ -22,8 +23,10 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
@@ -47,6 +50,13 @@ class PlaceMapViewModel @Inject constructor(
     private val _selectedTimeTag = MutableLiveData<TimeTag>()
     val selectedTimeTag: LiveData<TimeTag> = _selectedTimeTag
 
+    // 임시 StateFlow
+    val selectedTimeTagFlow: StateFlow<TimeTag> =
+        _selectedTimeTag.asFlow().stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = TimeTag.EMPTY,
+        )
     private val _selectedPlace: MutableLiveData<SelectedPlaceUiState> = MutableLiveData()
     val selectedPlace: LiveData<SelectedPlaceUiState> = _selectedPlace
 
@@ -80,16 +90,17 @@ class PlaceMapViewModel @Inject constructor(
                     _timeTags.value = emptyList()
                 }
 
-            //         기본 선택값
-            if (!timeTags.value.isNullOrEmpty()) {
-                _selectedTimeTag.value = _timeTags.value?.first()
+            // 기본 선택값
+            if (!timeTags.value.isEmpty()) {
+                _selectedTimeTag.value = _timeTags.value.first()
             } else {
-                _selectedTimeTag.value = TimeTag.Companion.EMPTY
+                _selectedTimeTag.value = TimeTag.EMPTY
             }
         }
     }
 
     fun onDaySelected(item: TimeTag) {
+        unselectPlace()
         _selectedTimeTag.value = item
     }
 
