@@ -136,6 +136,8 @@ class PlaceListFragment :
                     placeAdapter.submitList(places.value) {
                         if (places.value.isEmpty()) {
                             binding.tvErrorToLoadPlaceInfo.visibility = View.VISIBLE
+                        } else {
+                            binding.tvErrorToLoadPlaceInfo.visibility = View.GONE
                         }
                         binding.rvPlaces.scrollToPosition(0)
                     }
@@ -165,11 +167,7 @@ class PlaceListFragment :
         }
 
         viewModel.selectedCategories.observe(viewLifecycleOwner) { selectedCategories ->
-            if (selectedCategories.isEmpty()) {
-                childViewModel.clearPlacesFilter()
-            } else {
-                childViewModel.updatePlacesByCategories(selectedCategories)
-            }
+            childViewModel.updatePlacesByCategories(selectedCategories)
         }
 
         viewModel.isExceededMaxLength.observe(viewLifecycleOwner) { isExceededMaxLength ->
