@@ -228,7 +228,11 @@ class PlaceMapFragment(
         }
 
         viewModel.selectedCategories.observe(viewLifecycleOwner) { selectedCategories ->
-            mapManager?.filterMarkersByCategories(selectedCategories)
+            if (selectedCategories.isEmpty()) {
+                mapManager?.clearFilter()
+            } else {
+                mapManager?.filterMarkersByCategories(selectedCategories)
+            }
         }
 
         viewModel.selectedPlace.observe(viewLifecycleOwner) { selectedPlace ->

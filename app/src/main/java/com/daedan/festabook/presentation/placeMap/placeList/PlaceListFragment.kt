@@ -167,7 +167,11 @@ class PlaceListFragment :
         }
 
         viewModel.selectedCategories.observe(viewLifecycleOwner) { selectedCategories ->
-            childViewModel.updatePlacesByCategories(selectedCategories)
+            if (selectedCategories.isEmpty()) {
+                childViewModel.clearPlacesFilter()
+            } else {
+                childViewModel.updatePlacesByCategories(selectedCategories)
+            }
         }
 
         viewModel.isExceededMaxLength.observe(viewLifecycleOwner) { isExceededMaxLength ->
