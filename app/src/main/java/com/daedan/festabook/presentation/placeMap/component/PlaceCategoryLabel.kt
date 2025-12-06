@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.getIconId
+import com.daedan.festabook.presentation.placeMap.model.getLabelColor
 import com.daedan.festabook.presentation.placeMap.model.getTextId
 import com.daedan.festabook.presentation.theme.festabookShapes
 import kotlin.math.roundToInt
@@ -25,8 +26,8 @@ import kotlin.math.roundToInt
 @Composable
 fun PlaceCategoryLabel(
     category: PlaceCategoryUiModel,
-    iconColor: Color,
     modifier: Modifier = Modifier,
+    iconColor: Color = category.getLabelColor(),
 ) {
     Card(
         shape = festabookShapes.radius1,
