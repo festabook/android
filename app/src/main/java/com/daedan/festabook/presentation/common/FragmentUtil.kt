@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.os.Bundle
 import android.os.Parcelable
 import android.util.TypedValue
 import android.view.View
@@ -19,17 +18,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import java.io.Serializable
 
-inline fun <reified T : Parcelable> Bundle.getObject(key: String): T? =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-        getParcelable(key, T::class.java)
-    } else {
-        getParcelable(key) as? T
-    }
-
 inline fun <reified T : Serializable> Intent.getSerializableCompat(key: String): T? =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
         getSerializableExtra(key, T::class.java)
     } else {
+        @Suppress("DEPRECATION")
         getSerializableExtra(key) as? T
     }
 
@@ -37,6 +30,7 @@ inline fun <reified T : Parcelable> Intent.getObject(key: String): T? =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
         getParcelableExtra(key, T::class.java)
     } else {
+        @Suppress("DEPRECATION")
         getParcelableExtra(key) as? T
     }
 
@@ -55,6 +49,7 @@ fun View.getSystemBarHeightCompat() =
                 WindowInsetsCompat.Type.systemBars(),
             ).bottom
     } else {
+        @Suppress("DEPRECATION")
         rootWindowInsets.systemWindowInsetBottom
     }
 

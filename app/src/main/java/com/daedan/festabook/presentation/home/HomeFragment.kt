@@ -31,7 +31,8 @@ import timber.log.Timber
 
 @ContributesIntoMap(scope = AppScope::class, binding = binding<Fragment>())
 @FragmentKey(HomeFragment::class)
-class HomeFragment @Inject constructor(
+@Inject
+class HomeFragment(
     private val centerItemMotionEnlarger: RecyclerView.OnScrollListener,
 ) : BaseFragment<FragmentHomeBinding>() {
     override val layoutId: Int = R.layout.fragment_home

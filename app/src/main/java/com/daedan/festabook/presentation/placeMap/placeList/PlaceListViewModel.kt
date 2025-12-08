@@ -19,7 +19,8 @@ import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(PlaceListViewModel::class)
-class PlaceListViewModel @Inject constructor(
+@Inject
+class PlaceListViewModel(
     private val placeListRepository: PlaceListRepository,
 ) : ViewModel() {
     private var cachedPlaces = listOf<PlaceUiModel>()

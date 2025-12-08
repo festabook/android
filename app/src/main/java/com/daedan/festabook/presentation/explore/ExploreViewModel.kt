@@ -21,7 +21,8 @@ import timber.log.Timber
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(ExploreViewModel::class)
-class ExploreViewModel @Inject constructor(
+@Inject
+class ExploreViewModel(
     private val exploreRepository: ExploreRepository,
 ) : ViewModel() {
     private val searchQuery = MutableStateFlow("")

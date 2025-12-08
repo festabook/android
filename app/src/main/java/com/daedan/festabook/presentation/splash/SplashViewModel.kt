@@ -13,7 +13,8 @@ import timber.log.Timber
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(SplashViewModel::class)
-class SplashViewModel @Inject constructor(
+@Inject
+class SplashViewModel(
     private val festivalLocalDataSource: FestivalLocalDataSource,
 ) : ViewModel() {
     private val _navigationState = SingleLiveData<NavigationState>()

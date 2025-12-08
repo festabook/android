@@ -8,7 +8,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class NoticeDataSourceImpl @Inject constructor(
+@Inject
+class NoticeDataSourceImpl(
     private val noticeService: NoticeService,
 ) : NoticeDataSource {
     override suspend fun fetchNotices(): ApiResult<NoticeListResponse> = ApiResult.toApiResult { noticeService.getNotices() }

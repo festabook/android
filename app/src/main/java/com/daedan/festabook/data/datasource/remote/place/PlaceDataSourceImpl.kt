@@ -13,7 +13,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class PlaceDataSourceImpl @Inject constructor(
+@Inject
+class PlaceDataSourceImpl(
     private val placeService: PlaceService,
     private val festivalService: FestivalService,
 ) : PlaceDataSource {

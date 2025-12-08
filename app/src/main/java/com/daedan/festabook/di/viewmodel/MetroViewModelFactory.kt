@@ -10,7 +10,8 @@ import dev.zacsweers.metro.Provider
 import kotlin.reflect.KClass
 
 @ContributesBinding(AppScope::class)
-class MetroViewModelFactory @Inject constructor(
+@Inject
+class MetroViewModelFactory(
     private val creators: Map<KClass<out ViewModel>, Provider<ViewModel>>,
 ) : ViewModelProvider.Factory {
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")

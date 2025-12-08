@@ -15,7 +15,8 @@ import timber.log.Timber
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(SettingViewModel::class)
-class SettingViewModel @Inject constructor(
+@Inject
+class SettingViewModel(
     private val festivalNotificationRepository: FestivalNotificationRepository,
 ) : ViewModel() {
     private val _permissionCheckEvent: SingleLiveData<Unit> = SingleLiveData()

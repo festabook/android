@@ -12,7 +12,8 @@ import dev.zacsweers.metro.Inject
 import timber.log.Timber
 
 @ContributesBinding(AppScope::class)
-class ExploreRepositoryImpl @Inject constructor(
+@Inject
+class ExploreRepositoryImpl(
     private val festivalDataSource: FestivalDataSource,
     private val festivalLocalDataSource: FestivalLocalDataSource,
 ) : ExploreRepository {
