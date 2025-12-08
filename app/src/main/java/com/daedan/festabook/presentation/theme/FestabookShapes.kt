@@ -3,6 +3,7 @@ package com.daedan.festabook.presentation.theme
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 
@@ -18,4 +19,6 @@ data class FestabookShapes(
 val LocalShapes = staticCompositionLocalOf { FestabookShapes() }
 
 val festabookShapes: FestabookShapes
-    @Composable get() = LocalShapes.current
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalShapes.current
