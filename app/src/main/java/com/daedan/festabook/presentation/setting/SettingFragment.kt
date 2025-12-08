@@ -90,8 +90,7 @@ class SettingFragment(
         binding.tvSettingAppVersionName.text = versionName
     }
 
-    override fun shouldShowPermissionRationale(permission: String): Boolean =
-        shouldShowRequestPermissionRationale(permission)
+    override fun shouldShowPermissionRationale(permission: String): Boolean = shouldShowRequestPermissionRationale(permission)
 
     private fun setupObservers() {
         settingViewModel.permissionCheckEvent.observe(viewLifecycleOwner) {

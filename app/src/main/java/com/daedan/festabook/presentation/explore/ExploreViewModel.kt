@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
-import com.daedan.festabook.di.viewmodel.ViewModelScope
 import com.daedan.festabook.domain.repository.ExploreRepository
 import com.daedan.festabook.presentation.common.SingleLiveData
 import com.daedan.festabook.presentation.explore.model.SearchResultUiModel

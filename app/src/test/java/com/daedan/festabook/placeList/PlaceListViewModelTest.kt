@@ -31,7 +31,7 @@ class PlaceListViewModelTest {
     val instantTaskExecutorRule = InstantTaskExecutorRule()
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var placeListRepository: PlaceListRepository
-    private lateinit var PlaceListViewModel: PlaceListViewModel
+    private lateinit var placeListViewModel: PlaceListViewModel
 
     @Before
     fun setup() {
@@ -46,7 +46,7 @@ class PlaceListViewModelTest {
             Result.success(
                 FAKE_ORGANIZATION_GEOGRAPHY,
             )
-        PlaceListViewModel =
+        placeListViewModel =
             PlaceListViewModel(
                 placeListRepository,
             )
@@ -64,12 +64,12 @@ class PlaceListViewModelTest {
             coEvery { placeListRepository.getPlaces() } returns Result.success(FAKE_PLACES)
 
             // when
-            PlaceListViewModel = PlaceListViewModel(placeListRepository)
+            placeListViewModel = PlaceListViewModel(placeListRepository)
             advanceUntilIdle()
 
             // then
             val expected = FAKE_PLACES.map { it.toUiModel() }
-            val actual = PlaceListViewModel.places.getOrAwaitValue()
+            val actual = placeListViewModel.places.getOrAwaitValue()
             coVerify { placeListRepository.getPlaces() }
             assertThat(actual).isEqualTo(PlaceListUiState.PlaceLoaded(expected))
         }
@@ -80,17 +80,17 @@ class PlaceListViewModelTest {
             // given
             val targetCategories =
                 listOf(PlaceCategoryUiModel.FOOD_TRUCK, PlaceCategoryUiModel.BOOTH)
-            PlaceListViewModel.updatePlacesByTimeTag(TimeTag.EMPTY.timeTagId)
+            placeListViewModel.updatePlacesByTimeTag(TimeTag.EMPTY.timeTagId)
 
             // when
-            PlaceListViewModel.updatePlacesByCategories(targetCategories)
+            placeListViewModel.updatePlacesByCategories(targetCategories)
 
             // then
             val expected =
                 FAKE_PLACES
                     .filter { it.category.toUiModel() in targetCategories }
                     .map { it.toUiModel() }
-            val actual = PlaceListViewModel.places.getOrAwaitValue()
+            val actual = placeListViewModel.places.getOrAwaitValue()
             assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
         }
 
@@ -100,14 +100,14 @@ class PlaceListViewModelTest {
             // given
             val targetCategories =
                 listOf(PlaceCategoryUiModel.SMOKING_AREA, PlaceCategoryUiModel.TOILET)
-            PlaceListViewModel.updatePlacesByTimeTag(TimeTag.EMPTY.timeTagId)
+            placeListViewModel.updatePlacesByTimeTag(TimeTag.EMPTY.timeTagId)
 
             // when
-            PlaceListViewModel.updatePlacesByCategories(targetCategories)
+            placeListViewModel.updatePlacesByCategories(targetCategories)
 
             // then
             val expected = FAKE_PLACES.map { it.toUiModel() }
-            val actual = PlaceListViewModel.places.getOrAwaitValue()
+            val actual = placeListViewModel.places.getOrAwaitValue()
             assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
         }
 
@@ -117,15 +117,15 @@ class PlaceListViewModelTest {
             // given
             val targetCategories =
                 listOf(PlaceCategoryUiModel.FOOD_TRUCK, PlaceCategoryUiModel.BOOTH)
-            PlaceListViewModel.updatePlacesByTimeTag(TimeTag.EMPTY.timeTagId)
-            PlaceListViewModel.updatePlacesByCategories(targetCategories)
+            placeListViewModel.updatePlacesByTimeTag(TimeTag.EMPTY.timeTagId)
+            placeListViewModel.updatePlacesByCategories(targetCategories)
 
             // when
-            PlaceListViewModel.clearPlacesFilter()
+            placeListViewModel.clearPlacesFilter()
 
             // then
             val expected = FAKE_PLACES.map { it.toUiModel() }
-            val actual = PlaceListViewModel.places.getOrAwaitValue()
+            val actual = placeListViewModel.places.getOrAwaitValue()
             assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
         }
 
@@ -139,10 +139,10 @@ class PlaceListViewModelTest {
                 )
 
             // when
-            PlaceListViewModel.updatePlacesByTimeTag(1)
+            placeListViewModel.updatePlacesByTimeTag(1)
 
             // then
-            val actual = PlaceListViewModel.places.getOrAwaitValue()
+            val actual = placeListViewModel.places.getOrAwaitValue()
             assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
         }
 
@@ -154,10 +154,10 @@ class PlaceListViewModelTest {
             val emptyTimeTag = TimeTag.EMPTY
 
             // when
-            PlaceListViewModel.updatePlacesByTimeTag(emptyTimeTag.timeTagId)
+            placeListViewModel.updatePlacesByTimeTag(emptyTimeTag.timeTagId)
 
             // then
-            val actual = PlaceListViewModel.places.getOrAwaitValue()
+            val actual = placeListViewModel.places.getOrAwaitValue()
             assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
         }
 
@@ -168,10 +168,10 @@ class PlaceListViewModelTest {
             val expected = PlaceListUiState.Complete<List<PlaceUiModel>>()
 
             // when
-            PlaceListViewModel.setPlacesStateComplete()
+            placeListViewModel.setPlacesStateComplete()
 
             // then
-            val actual = PlaceListViewModel.places.getOrAwaitValue()
+            val actual = placeListViewModel.places.getOrAwaitValue()
             assertThat(actual).isInstanceOf(expected::class.java)
         }
 }
