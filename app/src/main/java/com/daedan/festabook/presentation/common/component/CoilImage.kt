@@ -40,7 +40,7 @@ fun CoilImage(
 
 @Composable
 @Preview
-fun CoilImagePreview() {
+private fun CoilImagePreview() {
     CoilImage(
         url = "",
         contentDescription = "",

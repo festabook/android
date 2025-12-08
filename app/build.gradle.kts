@@ -148,6 +148,7 @@ android {
 }
 
 dependencies {
+    ktlintRuleset(libs.ktlint)
     implementation(libs.map.sdk)
     implementation(libs.play.services.location)
     implementation(libs.androidx.core.ktx)
