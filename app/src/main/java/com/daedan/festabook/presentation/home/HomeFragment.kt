@@ -34,11 +34,10 @@ import timber.log.Timber
 @Inject
 class HomeFragment(
     private val centerItemMotionEnlarger: RecyclerView.OnScrollListener,
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
 ) : BaseFragment<FragmentHomeBinding>() {
     override val layoutId: Int = R.layout.fragment_home
 
-    @Inject
-    override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: HomeViewModel by viewModels({ requireActivity() })
 
     private val posterAdapter: PosterAdapter by lazy {

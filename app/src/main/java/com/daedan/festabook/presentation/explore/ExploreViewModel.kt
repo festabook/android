@@ -12,6 +12,7 @@ import com.daedan.festabook.presentation.explore.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+@OptIn(FlowPreview::class)
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(ExploreViewModel::class)
 @Inject

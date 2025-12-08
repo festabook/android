@@ -30,13 +30,12 @@ import timber.log.Timber
 )
 @FragmentKey(ScheduleFragment::class)
 @Inject
-class ScheduleFragment :
-    BaseFragment<FragmentScheduleBinding>(),
+class ScheduleFragment(
+    private val viewModelFactory: ScheduleViewModel.Factory,
+) : BaseFragment<FragmentScheduleBinding>(),
     OnMenuItemReClickListener {
     override val layoutId: Int = R.layout.fragment_schedule
 
-    @Inject
-    private lateinit var viewModelFactory: ScheduleViewModel.Factory
     private val adapter: SchedulePagerAdapter by lazy {
         SchedulePagerAdapter(this)
     }

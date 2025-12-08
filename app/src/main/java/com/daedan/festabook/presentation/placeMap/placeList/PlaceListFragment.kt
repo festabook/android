@@ -54,15 +54,13 @@ import timber.log.Timber
 @ContributesIntoMap(scope = AppScope::class, binding = binding<Fragment>())
 @FragmentKey(PlaceListFragment::class)
 @Inject
-class PlaceListFragment :
-    BaseFragment<FragmentPlaceListBinding>(),
+class PlaceListFragment(
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
+) : BaseFragment<FragmentPlaceListBinding>(),
     OnPlaceClickListener,
     OnMenuItemReClickListener,
     OnMapReadyCallback {
     override val layoutId: Int = R.layout.fragment_place_list
-
-    @Inject
-    override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: PlaceMapViewModel by viewModels({ requireParentFragment() })
     private val childViewModel: PlaceListViewModel by viewModels()
 
