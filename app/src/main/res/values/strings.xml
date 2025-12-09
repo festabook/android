@@ -4,6 +4,7 @@
 
     <!--공통-->
     <string name="empty_state_message">현재 표시할 항목이 없습니다.</string>
+    <string name="format_date">%1$s ~ %2$s</string>
 
     <!--바텀 네비게이션 바-->
     <string name="menu_home_title">홈</string>
