@@ -13,7 +13,6 @@ import com.daedan.festabook.logging.model.schedule.ScheduleEventClickLogData
 import com.daedan.festabook.presentation.common.toPx
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiModel
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiStatus
-import com.daedan.festabook.presentation.schedule.model.toKoreanString
 
 class ScheduleItemViewHolder(
     private val binding: ItemScheduleTabPageBinding,
@@ -135,7 +134,6 @@ class ScheduleItemViewHolder(
         backgroundResId: Int?,
     ) = with(binding.tvScheduleEventStatus) {
         val gray050 = ContextCompat.getColor(context, R.color.gray050)
-        text = status.toKoreanString(context)
         setTextColor(textColor)
         gravity = if (status == ScheduleEventUiStatus.COMPLETED) Gravity.END else Gravity.CENTER
         backgroundResId?.let { setBackgroundResource(it) } ?: setBackgroundColor(gray050)
