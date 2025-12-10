@@ -22,6 +22,7 @@ import com.daedan.festabook.presentation.common.component.cardBackground
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiModel
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiStatus
 import com.daedan.festabook.presentation.theme.FestabookColor
+import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.festabookShapes
 import com.daedan.festabook.presentation.theme.festabookSpacing
 
@@ -73,6 +74,7 @@ fun ScheduleEventCard(
         modifier =
             modifier
                 .cardBackground(
+                    backgroundColor = MaterialTheme.colorScheme.background,
                     borderColor = scheduleEventCardProps.cardBorderColor,
                     shape = festabookShapes.radius2,
                 ).padding(festabookSpacing.paddingBody4),
@@ -151,49 +153,55 @@ private fun ScheduleEventLabel(scheduleEventCardProps: ScheduleEventCardProps) {
 @Composable
 @Preview(showBackground = true)
 private fun OnGoingScheduleEventCardPreview() {
-    ScheduleEventCard(
-        scheduleEvent =
-            ScheduleEventUiModel(
-                id = 1,
-                status = ScheduleEventUiStatus.ONGOING,
-                startTime = "09:00",
-                endTime = "18:00",
-                title = "동아리 버스킹 공연",
-                location = "운동장",
-            ),
-    )
+    FestabookTheme {
+        ScheduleEventCard(
+            scheduleEvent =
+                ScheduleEventUiModel(
+                    id = 1,
+                    status = ScheduleEventUiStatus.ONGOING,
+                    startTime = "09:00",
+                    endTime = "18:00",
+                    title = "동아리 버스킹 공연",
+                    location = "운동장",
+                ),
+        )
+    }
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun UpComingScheduleEventCardPreview() {
-    ScheduleEventCard(
-        scheduleEvent =
-            ScheduleEventUiModel(
-                id = 1,
-                status = ScheduleEventUiStatus.UPCOMING,
-                startTime = "09:00",
-                endTime = "18:00",
-                title = "동아리 버스킹 공연",
-                location = "운동장",
-            ),
-    )
+    FestabookTheme {
+        ScheduleEventCard(
+            scheduleEvent =
+                ScheduleEventUiModel(
+                    id = 1,
+                    status = ScheduleEventUiStatus.UPCOMING,
+                    startTime = "09:00",
+                    endTime = "18:00",
+                    title = "동아리 버스킹 공연",
+                    location = "운동장",
+                ),
+        )
+    }
 }
 
 @Composable
 @Preview(showBackground = true)
 private fun CompleteScheduleEventCardONGOINGPreview() {
-    ScheduleEventCard(
-        scheduleEvent =
-            ScheduleEventUiModel(
-                id = 1,
-                status = ScheduleEventUiStatus.COMPLETED,
-                startTime = "09:00",
-                endTime = "18:00",
-                title = "동아리 버스킹 공연",
-                location = "운동장",
-            ),
-    )
+    FestabookTheme {
+        ScheduleEventCard(
+            scheduleEvent =
+                ScheduleEventUiModel(
+                    id = 1,
+                    status = ScheduleEventUiStatus.COMPLETED,
+                    startTime = "09:00",
+                    endTime = "18:00",
+                    title = "동아리 버스킹 공연",
+                    location = "운동장",
+                ),
+        )
+    }
 }
 
 data class ScheduleEventCardProps(

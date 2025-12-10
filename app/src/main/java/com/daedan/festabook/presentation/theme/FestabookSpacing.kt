@@ -12,6 +12,7 @@ data class FestabookSpacing(
     val paddingBody2: Dp = 8.dp,
     val paddingBody3: Dp = 12.dp,
     val paddingBody4: Dp = 16.dp,
+    val paddingBody5: Dp = 20.dp,
 )
 
 val LocalSpacing = staticCompositionLocalOf { FestabookSpacing() }
