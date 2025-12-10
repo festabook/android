@@ -11,10 +11,8 @@ import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.logging.logger
 import com.daedan.festabook.logging.model.schedule.ScheduleSwipeRefreshLogData
 import com.daedan.festabook.presentation.common.BaseFragment
-import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.schedule.ScheduleViewModel.Companion.INVALID_ID
 import com.daedan.festabook.presentation.schedule.adapter.ScheduleAdapter
-import timber.log.Timber
 
 class ScheduleTabPageFragment : BaseFragment<FragmentScheduleTabPageBinding>() {
     override val layoutId: Int = R.layout.fragment_schedule_tab_page
@@ -42,44 +40,44 @@ class ScheduleTabPageFragment : BaseFragment<FragmentScheduleTabPageBinding>() {
         binding.rvScheduleEvent.adapter = adapter
         (binding.rvScheduleEvent.itemAnimator as DefaultItemAnimator).supportsChangeAnimations =
             false
-        viewModel.loadScheduleByDate()
+//        viewModel.loadScheduleByDate()
     }
 
     private fun onSwipeRefreshScheduleByDateListener() {
         binding.srlScheduleEvent.setOnRefreshListener {
             binding.logger.log(ScheduleSwipeRefreshLogData(binding.logger.getBaseLogData()))
-            viewModel.loadScheduleByDate()
+//            viewModel.loadScheduleByDate()
         }
     }
 
     private fun setupObservers() {
-        viewModel.scheduleEventsUiState.observe(viewLifecycleOwner) { schedule ->
-            when (schedule) {
-                is ScheduleEventsUiState.Loading,
-                -> {
-                    showLoadingView(isLoading = true)
-                    showEmptyStateMessage()
-                }
-
-                is ScheduleEventsUiState.Success -> {
-                    showLoadingView(isLoading = false)
-                    adapter.submitList(schedule.events) {
-                        showEmptyStateMessage()
-                        scrollToCenterOfCurrentEvent(schedule.currentEventPosition)
-                    }
-                }
-
-                is ScheduleEventsUiState.Error -> {
-                    Timber.w(
-                        schedule.throwable,
-                        "ScheduleTabPageFragment: ${schedule.throwable.message}",
-                    )
-                    showErrorSnackBar(schedule.throwable)
-                    showLoadingView(isLoading = false)
-                    showEmptyStateMessage()
-                }
-            }
-        }
+//        viewModel.scheduleEventsUiState.observe(viewLifecycleOwner) { schedule ->
+//            when (schedule) {
+//                is ScheduleEventsUiState.Loading,
+//                -> {
+//                    showLoadingView(isLoading = true)
+//                    showEmptyStateMessage()
+//                }
+//
+//                is ScheduleEventsUiState.Success -> {
+//                    showLoadingView(isLoading = false)
+//                    adapter.submitList(schedule.events) {
+//                        showEmptyStateMessage()
+//                        scrollToCenterOfCurrentEvent(schedule.currentEventPosition)
+//                    }
+//                }
+//
+//                is ScheduleEventsUiState.Error -> {
+//                    Timber.w(
+//                        schedule.throwable,
+//                        "ScheduleTabPageFragment: ${schedule.throwable.message}",
+//                    )
+//                    showErrorSnackBar(schedule.throwable)
+//                    showLoadingView(isLoading = false)
+//                    showEmptyStateMessage()
+//                }
+//            }
+//        }
     }
 
     private fun showLoadingView(isLoading: Boolean) {

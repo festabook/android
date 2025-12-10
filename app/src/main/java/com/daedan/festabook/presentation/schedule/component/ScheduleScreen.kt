@@ -8,6 +8,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -20,7 +21,6 @@ import com.daedan.festabook.presentation.schedule.ScheduleDatesUiState
 import com.daedan.festabook.presentation.schedule.ScheduleViewModel
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.festabookSpacing
-import timber.log.Timber
 
 @Composable
 fun ScheduleScreen(
@@ -28,6 +28,8 @@ fun ScheduleScreen(
     modifier: Modifier = Modifier,
 ) {
     val scheduleDatesUiState by scheduleViewModel.scheduleDatesUiState.collectAsStateWithLifecycle()
+    val selectedDateId by scheduleViewModel.selectedDateId.collectAsStateWithLifecycle()
+    val eventStates by scheduleViewModel.scheduleEventsByDate.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { FestabookTopAppBar(title = stringResource(R.string.schedule_title)) },
@@ -42,15 +44,17 @@ fun ScheduleScreen(
             }
 
             is ScheduleDatesUiState.Success -> {
-                Timber.d("Success호출")
                 val scheduleDates = (scheduleDatesUiState as ScheduleDatesUiState.Success).dates
                 val pageState = rememberPagerState { scheduleDates.size }
                 val scope = rememberCoroutineScope()
 
+                LaunchedEffect(pageState.currentPage) {
+                    val selectedDateId = scheduleDates[pageState.currentPage].id
+                    scheduleViewModel.onDateSelected(selectedDateId)
+                }
+
                 Column(
-                    modifier =
-                        Modifier
-                            .padding(innerPadding),
+                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
                 ) {
                     ScheduleTabRow(
                         pageState = pageState,
@@ -62,6 +66,12 @@ fun ScheduleScreen(
                         thickness = 1.dp,
                         color = FestabookColor.gray300,
                         modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
+                    )
+                    ScheduleTabPage(
+                        pagerState = pageState,
+                        selectedDatedId = selectedDateId,
+                        eventStates = eventStates,
+                        onRefresh = { },
                     )
                 }
             }
