@@ -1,87 +1,99 @@
 package com.daedan.festabook.presentation.schedule
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
+import com.daedan.festabook.di.viewmodel.ViewModelKey
 import com.daedan.festabook.domain.repository.ScheduleRepository
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiStatus
 import com.daedan.festabook.presentation.schedule.model.toUiModel
-import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
-import dev.zacsweers.metro.AssistedInject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-class ScheduleViewModel @AssistedInject constructor(
+@ContributesIntoMap(AppScope::class)
+@ViewModelKey(ScheduleViewModel::class)
+@Inject
+class ScheduleViewModel(
     private val scheduleRepository: ScheduleRepository,
-    @Assisted private val dateId: Long,
 ) : ViewModel() {
-    @AssistedFactory
-    interface Factory {
-        fun create(dateId: Long): ScheduleViewModel
-    }
-
-    private val _scheduleEventsUiState: MutableStateFlow<ScheduleEventsUiState> =
-        MutableStateFlow(ScheduleEventsUiState.Loading)
-    val scheduleEventsUiState: StateFlow<ScheduleEventsUiState> =
-        _scheduleEventsUiState.asStateFlow()
-
     private val _scheduleDatesUiState: MutableStateFlow<ScheduleDatesUiState> =
-        MutableStateFlow(ScheduleDatesUiState.Loading)
+        MutableStateFlow(ScheduleDatesUiState.InitialLoading)
     val scheduleDatesUiState: StateFlow<ScheduleDatesUiState> = _scheduleDatesUiState.asStateFlow()
+
+    private val _scheduleEventsByDate: MutableStateFlow<Map<Long, ScheduleEventsUiState>> =
+        MutableStateFlow(emptyMap())
+    val scheduleEventsByDate = _scheduleEventsByDate.asStateFlow()
+
+    private val _selectedDateId: MutableStateFlow<Long?> = MutableStateFlow(null)
+    val selectedDateId = _selectedDateId.asStateFlow()
 
     init {
         loadAllDates()
-        if (dateId != INVALID_ID) loadScheduleByDate()
     }
 
-    fun loadScheduleByDate() {
-        if (dateId == INVALID_ID) return
-        if (_scheduleEventsUiState.value == ScheduleEventsUiState.Loading) return
+    fun onDateSelected(dateId: Long) {
+        _selectedDateId.value = dateId
+
+        if (_scheduleEventsByDate.value.containsKey(dateId)) return
+
+        loadScheduleByDate(dateId)
+    }
+
+    fun loadScheduleByDate(dateId: Long) {
         viewModelScope.launch {
-            _scheduleEventsUiState.value = ScheduleEventsUiState.Loading
+            _scheduleEventsByDate.value[dateId]?.let { return@launch }
 
             val result = scheduleRepository.fetchScheduleEventsById(dateId)
-            result
-                .onSuccess { scheduleEvents ->
-                    val scheduleEventUiModels = scheduleEvents.map { it.toUiModel() }
-                    val currentEventPosition =
-                        scheduleEventUiModels
-                            .indexOfFirst { scheduleEvent -> scheduleEvent.status == ScheduleEventUiStatus.ONGOING }
-                            .coerceAtLeast(FIRST_INDEX)
+            val uiState =
+                result.fold(
+                    onSuccess = { scheduleEvents ->
+                        val scheduleEventUiModels = scheduleEvents.map { it.toUiModel() }
+                        val currentEventPosition =
+                            scheduleEventUiModels
+                                .indexOfFirst {
+                                    it.status == ScheduleEventUiStatus.ONGOING
+                                }.coerceAtLeast(FIRST_INDEX)
 
-                    _scheduleEventsUiState.value =
-                        ScheduleEventsUiState.Success(scheduleEventUiModels, currentEventPosition)
-                }.onFailure {
-                    _scheduleEventsUiState.value =
-                        ScheduleEventsUiState.Error(it)
-                }
+                        ScheduleEventsUiState.Success(
+                            scheduleEventUiModels,
+                            currentEventPosition,
+                        )
+                    },
+                    onFailure = { ScheduleEventsUiState.Error(it) },
+                )
+
+            _scheduleEventsByDate.update { old ->
+                old + (dateId to uiState)
+            }
         }
     }
 
     fun loadAllDates() {
-        if (_scheduleDatesUiState.value == ScheduleDatesUiState.Loading) return
         viewModelScope.launch {
-            _scheduleDatesUiState.value = ScheduleDatesUiState.Loading
+            _scheduleDatesUiState.value = ScheduleDatesUiState.InitialLoading
 
             val result = scheduleRepository.fetchAllScheduleDates()
+
             result
                 .onSuccess { scheduleDates ->
                     val scheduleDateUiModels = scheduleDates.map { it.toUiModel() }
                     val today = LocalDate.now()
 
-                    val currentDatePosition =
+                    val initialDateId =
                         scheduleDates
-                            .indexOfFirst { !it.date.isBefore(today) }
-                            .let { currentIndex -> if (currentIndex == INVALID_INDEX) FIRST_INDEX else currentIndex }
+                            .find { !it.date.isBefore(today) }
+                            ?.id ?: scheduleDates.firstOrNull()?.id
+
+                    _selectedDateId.value = initialDateId
 
                     _scheduleDatesUiState.value =
-                        ScheduleDatesUiState.Success(scheduleDateUiModels, currentDatePosition)
+                        ScheduleDatesUiState.Success(scheduleDateUiModels, initialDateId)
                 }.onFailure {
                     _scheduleDatesUiState.value = ScheduleDatesUiState.Error(it)
                 }
@@ -91,16 +103,5 @@ class ScheduleViewModel @AssistedInject constructor(
     companion object {
         const val INVALID_ID: Long = -1L
         private const val FIRST_INDEX: Int = 0
-        private const val INVALID_INDEX: Int = -1
-
-        fun factory(
-            factory: Factory,
-            dateId: Long = INVALID_ID,
-        ): ViewModelProvider.Factory =
-            viewModelFactory {
-                initializer {
-                    factory.create(dateId)
-                }
-            }
     }
 }
