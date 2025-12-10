@@ -42,7 +42,9 @@ fun NewsScreen(
         topBar = { FestabookTopAppBar(title = stringResource(R.string.news_title)) },
         modifier = modifier,
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(paddingValues = innerPadding)) {
+        Column(
+            modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
+        ) {
             NewsTabRow(pageState, scope)
             NewsTabPage(
                 pageState = pageState,
