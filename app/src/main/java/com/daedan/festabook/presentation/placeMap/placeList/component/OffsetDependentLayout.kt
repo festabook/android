@@ -1,23 +1,18 @@
 package com.daedan.festabook.presentation.placeMap.placeList.component
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import kotlin.math.roundToInt
 
 @Composable
-fun OffsetDependentBox(
+fun OffsetDependentLayout(
     offset: Float,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     Layout(
-        content = {
-            Box(modifier = modifier) {
-                content()
-            }
-        },
+        content = content,
         modifier = modifier,
     ) { measurables, constraints ->
         val placeable = measurables.first().measure(constraints)

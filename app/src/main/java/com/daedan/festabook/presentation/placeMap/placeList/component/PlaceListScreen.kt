@@ -1,7 +1,6 @@
 package com.daedan.festabook.presentation.placeMap.placeList.component
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,37 +53,38 @@ fun PlaceListScreen(
     modifier: Modifier = Modifier,
     map: NaverMap? = null,
     isExceedMaxLength: Boolean = false,
-    bottomSheetState: AnchoredDraggableState<PlaceListBottomSheetState> =
-        rememberAnchoredState(
-            PlaceListBottomSheetState.HALF_EXPANDED,
+    bottomSheetState: PlaceListBottomSheetState =
+        rememberPlaceListBottomSheetState(
+            PlaceListBottomSheetValue.HALF_EXPANDED,
         ),
     onPlaceClick: (place: PlaceUiModel) -> Unit = {},
     onPlaceLoadFinish: (places: List<PlaceUiModel>) -> Unit = {},
     onPlaceLoad: @Composable () -> Unit = {},
-    onBackToInitialPositionClicked: () -> Unit = {},
+    onBackToInitialPositionClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var offset by remember { mutableFloatStateOf(0f) }
 
     Box(modifier = modifier.fillMaxSize()) {
-        OffsetDependentBox(
+        OffsetDependentLayout(
             modifier = Modifier.padding(horizontal = festabookSpacing.paddingBody1),
             offset = offset,
         ) {
-            CurrentLocationButton(
-                map = map,
-            )
-
-            if (isExceedMaxLength) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    BackToPositionButton(
-                        text = stringResource(R.string.map_back_to_initial_position),
-                        onClick = onBackToInitialPositionClicked,
-                    )
+            Box {
+                CurrentLocationButton(
+                    map = map,
+                )
+                if (isExceedMaxLength) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        BackToPositionButton(
+                            text = stringResource(R.string.map_back_to_initial_position),
+                            onClick = onBackToInitialPositionClick,
+                        )
+                    }
                 }
             }
         }
@@ -98,7 +98,7 @@ fun PlaceListScreen(
                 }
             },
             onScroll = { offset = it },
-            anchoredState = bottomSheetState,
+            bottomSheetState = bottomSheetState,
             dragHandle = {
                 Text(
                     text = stringResource(R.string.place_list_title),
@@ -146,15 +146,17 @@ private fun PlaceListContent(
     listState: LazyListState = rememberLazyListState(),
     onPlaceClick: (PlaceUiModel) -> Unit = {},
 ) {
-    if (places.isEmpty()) {
-        EmptyStateScreen(
-            modifier = modifier.offset(y = HALF_EXPANDED_OFFSET),
-        )
-    }
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxHeight(),
     ) {
+        item {
+            if (places.isEmpty()) {
+                EmptyStateScreen(
+                    modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
+                )
+            }
+        }
         items(
             items = places,
             key = { place -> place.id },
@@ -264,7 +266,7 @@ private fun PlaceListItemContent(
 
 @Preview
 @Composable
-fun PlaceListScreenPreview() {
+private fun PlaceListScreenPreview() {
     FestabookTheme {
         PlaceListScreen(
             placesUiState =

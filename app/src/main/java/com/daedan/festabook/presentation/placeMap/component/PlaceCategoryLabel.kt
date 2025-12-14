@@ -38,9 +38,10 @@ fun PlaceCategoryLabel(
                 disabledContainerColor = getBackgroundColor(iconColor),
                 disabledContentColor = Color.Unspecified,
             ),
+        modifier = modifier,
     ) {
         Row(
-            modifier = modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(

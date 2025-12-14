@@ -43,7 +43,7 @@ fun BackToPositionButton(
 
 @Preview(showBackground = true)
 @Composable
-fun BackToPositionButtonPreview() {
+private fun BackToPositionButtonPreview() {
     FestabookTheme {
         BackToPositionButton(
             text = "학교로 돌아가기",

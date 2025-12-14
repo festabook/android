@@ -74,7 +74,7 @@ private fun PlaceMapContent(
 
 @Preview(showBackground = true)
 @Composable
-fun PlaceMapScreenPreview() {
+private fun PlaceMapScreenPreview() {
     FestabookTheme {
         PlaceMapScreen(
             timeTagTitle = "테스트",

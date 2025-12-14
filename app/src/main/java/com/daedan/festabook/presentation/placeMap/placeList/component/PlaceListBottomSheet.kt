@@ -1,15 +1,9 @@
 package com.daedan.festabook.presentation.placeMap.placeList.component
 
-import android.annotation.SuppressLint
-import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
-import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,8 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,19 +36,18 @@ import com.daedan.festabook.presentation.theme.FestabookColor
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun PlaceListBottomSheet(
     peekHeight: Dp,
     halfExpandedRatio: Float,
     modifier: Modifier = Modifier,
-    anchoredState: AnchoredDraggableState<PlaceListBottomSheetState> =
-        rememberAnchoredState(
-            PlaceListBottomSheetState.HALF_EXPANDED,
+    bottomSheetState: PlaceListBottomSheetState =
+        rememberPlaceListBottomSheetState(
+            PlaceListBottomSheetValue.HALF_EXPANDED,
         ),
     shape: Shape = PlaceListBottomSheetDefault.bottomSheetBackgroundShape,
     color: Color = PlaceListBottomSheetDefault.bottomSheetBackgroundColor,
-    onStateUpdate: (PlaceListBottomSheetState) -> Unit = {},
+    onStateUpdate: (PlaceListBottomSheetValue) -> Unit = {},
     onScroll: (Float) -> Unit = {},
     dragHandle: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
@@ -61,12 +55,13 @@ fun PlaceListBottomSheet(
     require(halfExpandedRatio in 0.0..1.0) { "halfExpandedRatio는 0과 1 사이여야 합니다." }
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
+    val currentOnStateUpdate by rememberUpdatedState(onStateUpdate)
 
-    LaunchedEffect(anchoredState.settledValue) {
-        onStateUpdate(anchoredState.settledValue)
+    LaunchedEffect(bottomSheetState.settledValue) {
+        currentOnStateUpdate(bottomSheetState.settledValue)
     }
 
-    val nestedScrollConnection = placeListBottomSheetNestedScrollConnection(anchoredState)
+    val nestedScrollConnection = placeListBottomSheetNestedScrollConnection(bottomSheetState)
 
     Column(
         modifier =
@@ -80,18 +75,18 @@ fun PlaceListBottomSheet(
                     val collapsedOffsetPx = with(density) { screenHeightPx - peekHeight.toPx() }
                     val expandedOffsetPx = 0f // 화면 최상단
 
-                    anchoredState.updateAnchors(
+                    bottomSheetState.state.updateAnchors(
                         newAnchors =
                             DraggableAnchors {
-                                PlaceListBottomSheetState.EXPANDED at expandedOffsetPx
-                                PlaceListBottomSheetState.HALF_EXPANDED at halfExpandedOffsetPx
-                                PlaceListBottomSheetState.COLLAPSED at collapsedOffsetPx
+                                PlaceListBottomSheetValue.EXPANDED at expandedOffsetPx
+                                PlaceListBottomSheetValue.HALF_EXPANDED at halfExpandedOffsetPx
+                                PlaceListBottomSheetValue.COLLAPSED at collapsedOffsetPx
                             },
-                        newTarget = anchoredState.currentValue,
+                        newTarget = bottomSheetState.currentValue,
                     )
                     // 스크롤 되었을 때 호출하는 콜백
                     scope.launch {
-                        snapshotFlow { anchoredState.requireOffset() }
+                        snapshotFlow { bottomSheetState.state.requireOffset() }
                             .collect { currentOffset ->
                                 onScroll(currentOffset)
                             }
@@ -104,13 +99,13 @@ fun PlaceListBottomSheet(
                 .offset {
                     IntOffset(
                         0,
-                        if (anchoredState.offset.isNaN()) 0 else anchoredState.offset.roundToInt(),
+                        if (bottomSheetState.offset.isNaN()) 0 else bottomSheetState.offset.roundToInt(),
                     )
                 }.background(
                     color = color,
                     shape = shape,
                 ).anchoredDraggable(
-                    state = anchoredState,
+                    state = bottomSheetState.state,
                     orientation = Orientation.Vertical,
                 ),
     ) {
@@ -131,8 +126,9 @@ object PlaceListBottomSheetDefault {
             topEnd = 30.dp,
         )
 
-    val bottomSheetBackgroundColor: Color =
-        FestabookColor.white
+    val bottomSheetBackgroundColor: Color
+        @Composable
+        get() = FestabookColor.white
 
     private val dragHandleVerticalPadding = 12.dp
     private val dragHandleWidth = 32.dp
@@ -143,8 +139,9 @@ object PlaceListBottomSheetDefault {
             percent = 50,
         )
 
-    private val dragHandleColor =
-        FestabookColor.gray400
+    private val dragHandleColor
+        @Composable
+        get() = FestabookColor.gray400
 
     @Composable
     fun DefaultDragHandle(modifier: Modifier = Modifier) {
@@ -169,16 +166,14 @@ object PlaceListBottomSheetDefault {
 
 /** NestedScroll을 위한 Connection 객체를 반환합니다.
  */
-private fun placeListBottomSheetNestedScrollConnection(
-    anchoredState: AnchoredDraggableState<PlaceListBottomSheetState>,
-): NestedScrollConnection {
+private fun placeListBottomSheetNestedScrollConnection(placeListBottomSheetState: PlaceListBottomSheetState): NestedScrollConnection {
     return object : NestedScrollConnection {
         override fun onPreScroll(
             available: Offset,
             source: NestedScrollSource,
         ): Offset =
             if (available.y < 0 && source == NestedScrollSource.UserInput) {
-                anchoredState.dispatchRawDelta(available.y).toOffset()
+                placeListBottomSheetState.state.dispatchRawDelta(available.y).toOffset()
             } else {
                 Offset.Zero
             }
@@ -189,7 +184,7 @@ private fun placeListBottomSheetNestedScrollConnection(
             source: NestedScrollSource,
         ): Offset =
             if (source == NestedScrollSource.UserInput) {
-                anchoredState.dispatchRawDelta(available.y).toOffset()
+                placeListBottomSheetState.state.dispatchRawDelta(available.y).toOffset()
             } else {
                 Offset.Zero
             }
@@ -198,16 +193,16 @@ private fun placeListBottomSheetNestedScrollConnection(
             consumed: Velocity,
             available: Velocity,
         ): Velocity {
-            anchoredState.settleImmediately(available)
+            placeListBottomSheetState.settleImmediately(available)
             return available
         }
 
         override suspend fun onPreFling(available: Velocity): Velocity {
             val toFling = available.y
-            val currentOffset = anchoredState.requireOffset()
-            val minAnchor = anchoredState.anchors.minPosition()
+            val currentOffset = placeListBottomSheetState.state.requireOffset()
+            val minAnchor = placeListBottomSheetState.anchors.minPosition()
             return if (toFling < 0 && currentOffset > minAnchor) {
-                anchoredState.settleImmediately(available)
+                placeListBottomSheetState.settleImmediately(available)
                 available
             } else {
                 Velocity.Zero
@@ -219,50 +214,5 @@ private fun placeListBottomSheetNestedScrollConnection(
                 x = 0f,
                 y = this,
             )
-
-        /**
-         anchoredState의 기본 settle() 동작은 거리 기반으로 동작합니다.
-         거리 기반 동작을, 상태 기반으로 동작하도록 변경하여, 미세한 드래그에도 바텀시트가 펼쳐지도록 합니다.
-         */
-        private suspend fun AnchoredDraggableState<PlaceListBottomSheetState>.settleImmediately(
-            available: Velocity,
-            animationSpec: AnimationSpec<Float> = spring(stiffness = Spring.StiffnessMediumLow),
-        ) {
-            val targetState =
-                if (available.y < 0) {
-                    when (anchoredState.currentValue) {
-                        PlaceListBottomSheetState.EXPANDED -> anchoredState.currentValue
-                        PlaceListBottomSheetState.HALF_EXPANDED -> PlaceListBottomSheetState.EXPANDED
-                        PlaceListBottomSheetState.COLLAPSED -> PlaceListBottomSheetState.HALF_EXPANDED
-                    }
-                } else if (available.y > 0) {
-                    when (anchoredState.currentValue) {
-                        PlaceListBottomSheetState.EXPANDED -> PlaceListBottomSheetState.HALF_EXPANDED
-                        PlaceListBottomSheetState.HALF_EXPANDED -> PlaceListBottomSheetState.COLLAPSED
-                        PlaceListBottomSheetState.COLLAPSED -> anchoredState.currentValue
-                    }
-                } else {
-                    anchoredState.currentValue
-                }
-
-            animateTo(
-                targetValue = targetState,
-                animationSpec = animationSpec,
-            )
-        }
     }
-}
-
-@Composable
-fun rememberAnchoredState(initialValue: PlaceListBottomSheetState): AnchoredDraggableState<PlaceListBottomSheetState> =
-    remember {
-        AnchoredDraggableState(
-            initialValue = initialValue,
-        )
-    }
-
-enum class PlaceListBottomSheetState {
-    EXPANDED,
-    HALF_EXPANDED,
-    COLLAPSED,
 }

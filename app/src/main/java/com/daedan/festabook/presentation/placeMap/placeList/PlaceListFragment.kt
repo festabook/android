@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
@@ -34,9 +33,9 @@ import com.daedan.festabook.presentation.placeMap.logging.PlaceBackToSchoolClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceItemClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMapButtonReClick
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.placeList.component.PlaceListBottomSheetState
+import com.daedan.festabook.presentation.placeMap.placeList.component.PlaceListBottomSheetValue
 import com.daedan.festabook.presentation.placeMap.placeList.component.PlaceListScreen
-import com.daedan.festabook.presentation.placeMap.placeList.component.rememberAnchoredState
+import com.daedan.festabook.presentation.placeMap.placeList.component.rememberPlaceListBottomSheetState
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
@@ -81,15 +80,12 @@ class PlaceListFragment(
             setContent {
                 val places by childViewModel.placesFlow.collectAsStateWithLifecycle()
                 val isExceedMaxLength by viewModel.isExceededMaxLengthFlow.collectAsStateWithLifecycle()
-                val bottomSheetState =
-                    rememberAnchoredState(PlaceListBottomSheetState.HALF_EXPANDED)
+                val bottomSheetState = rememberPlaceListBottomSheetState()
                 val map by mapFlow.collectAsStateWithLifecycle()
 
                 LaunchedEffect(Unit) {
                     viewModel.onMapViewClickFlow.collect {
-                        bottomSheetState.animateTo(
-                            PlaceListBottomSheetState.COLLAPSED,
-                        )
+                        bottomSheetState.update(PlaceListBottomSheetValue.COLLAPSED)
                     }
                 }
 
@@ -113,7 +109,7 @@ class PlaceListFragment(
                                 }
                             }
                         },
-                        onBackToInitialPositionClicked = {
+                        onBackToInitialPositionClick = {
                             viewModel.onBackToInitialPositionClicked()
                             appGraph.defaultFirebaseLogger.log(
                                 PlaceBackToSchoolClick(
