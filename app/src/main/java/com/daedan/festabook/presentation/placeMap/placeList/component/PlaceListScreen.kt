@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -61,12 +60,11 @@ fun PlaceListScreen(
         ),
     onPlaceClick: (place: PlaceUiModel) -> Unit = {},
     onPlaceLoadFinish: (places: List<PlaceUiModel>) -> Unit = {},
-    onPlaceLoad: () -> Unit = {},
+    onPlaceLoad: @Composable () -> Unit = {},
     onBackToInitialPositionClicked: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
-    var loadedPlace by remember { mutableStateOf(emptyList<PlaceUiModel>()) }
     var offset by remember { mutableFloatStateOf(0f) }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -117,19 +115,18 @@ fun PlaceListScreen(
             when (placesUiState) {
                 is PlaceListUiState.Loading ->
                     LoadingStateScreen(
-                        modifier = Modifier.offset(y = (-220).dp),
+                        modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
                     )
 
                 is PlaceListUiState.Error ->
                     EmptyStateScreen(
-                        modifier = Modifier.offset(y = (-220).dp),
+                        modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
                     )
 
                 is PlaceListUiState.Success -> {
                     onPlaceLoadFinish(placesUiState.value)
-                    loadedPlace = placesUiState.value
                     PlaceListContent(
-                        places = loadedPlace,
+                        places = placesUiState.value,
                         modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
                         listState = listState,
                         onPlaceClick = onPlaceClick,
@@ -149,6 +146,11 @@ private fun PlaceListContent(
     listState: LazyListState = rememberLazyListState(),
     onPlaceClick: (PlaceUiModel) -> Unit = {},
 ) {
+    if (places.isEmpty()) {
+        EmptyStateScreen(
+            modifier = modifier.offset(y = HALF_EXPANDED_OFFSET),
+        )
+    }
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxHeight(),
@@ -208,6 +210,8 @@ private fun PlaceListItem(
         )
     }
 }
+
+private val HALF_EXPANDED_OFFSET = (-200).dp
 
 @Composable
 private fun PlaceListItemContent(

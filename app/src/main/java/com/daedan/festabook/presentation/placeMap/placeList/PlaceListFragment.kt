@@ -80,7 +80,6 @@ class PlaceListFragment(
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 val places by childViewModel.placesFlow.collectAsStateWithLifecycle()
-                val timeTag by viewModel.selectedTimeTagFlow.collectAsStateWithLifecycle()
                 val isExceedMaxLength by viewModel.isExceededMaxLengthFlow.collectAsStateWithLifecycle()
                 val bottomSheetState =
                     rememberAnchoredState(PlaceListBottomSheetState.HALF_EXPANDED)
@@ -108,7 +107,11 @@ class PlaceListFragment(
                             )
                         },
                         onPlaceLoad = {
-                            childViewModel.updatePlacesByTimeTag(timeTag.timeTagId)
+                            LaunchedEffect(Unit) {
+                                viewModel.selectedTimeTagFlow.collect {
+                                    childViewModel.updatePlacesByTimeTag(it.timeTagId)
+                                }
+                            }
                         },
                         onBackToInitialPositionClicked = {
                             viewModel.onBackToInitialPositionClicked()
