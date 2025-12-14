@@ -88,10 +88,6 @@ class PlaceListViewModel(
         _places.value = PlaceListUiState.Success(cachedPlaceByTimeTag)
     }
 
-    fun setPlacesStateComplete() {
-        _places.value = PlaceListUiState.Complete()
-    }
-
     private fun loadAllPlaces() {
         viewModelScope.launch {
             val result = placeListRepository.getPlaces()

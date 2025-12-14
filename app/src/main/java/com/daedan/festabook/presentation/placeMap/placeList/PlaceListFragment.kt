@@ -50,7 +50,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 
@@ -230,9 +229,6 @@ class PlaceListFragment(
                     deferredList.add(deferred)
                 }
             deferredList.awaitAll()
-            withContext(Dispatchers.Main) {
-                childViewModel.setPlacesStateComplete()
-            }
         }
     }
 }

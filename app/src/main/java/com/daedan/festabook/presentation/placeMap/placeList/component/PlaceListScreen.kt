@@ -128,11 +128,6 @@ fun PlaceListScreen(
                 is PlaceListUiState.Success -> {
                     onPlaceLoadFinish(placesUiState.value)
                     loadedPlace = placesUiState.value
-                }
-
-                is PlaceListUiState.PlaceLoaded -> onPlaceLoad()
-
-                is PlaceListUiState.Complete -> {
                     PlaceListContent(
                         places = loadedPlace,
                         modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
@@ -140,6 +135,8 @@ fun PlaceListScreen(
                         onPlaceClick = onPlaceClick,
                     )
                 }
+
+                is PlaceListUiState.PlaceLoaded -> onPlaceLoad()
             }
         }
     }
