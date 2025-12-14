@@ -12,6 +12,7 @@ import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -28,13 +31,14 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.daedan.festabook.presentation.theme.FestabookColor
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -43,47 +47,60 @@ fun PlaceListBottomSheet(
     peekHeight: Dp,
     halfExpandedRatio: Float,
     modifier: Modifier = Modifier,
-    initialState: PlaceListBottomSheetState = PlaceListBottomSheetState.HALF_EXPANDED,
+    anchoredState: AnchoredDraggableState<PlaceListBottomSheetState> =
+        rememberAnchoredState(
+            PlaceListBottomSheetState.HALF_EXPANDED,
+        ),
     shape: Shape = PlaceListBottomSheetDefault.bottomSheetBackgroundShape,
     color: Color = PlaceListBottomSheetDefault.bottomSheetBackgroundColor,
     onStateUpdate: (PlaceListBottomSheetState) -> Unit = {},
+    onScroll: (Float) -> Unit = {},
     dragHandle: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     require(halfExpandedRatio in 0.0..1.0) { "halfExpandedRatio는 0과 1 사이여야 합니다." }
     val density = LocalDensity.current
-    val config = LocalConfiguration.current
-
-    val screenHeightPx = with(density) { config.screenHeightDp.dp.toPx() }
-
-    // 3가지 앵커 높이 정의 (DP)
-    val halfExpandedHeightDp = config.screenHeightDp.dp * halfExpandedRatio
-
-    // 앵커 위치 계산 (픽셀)
-    val halfExpandedOffsetPx = with(density) { screenHeightPx - halfExpandedHeightDp.toPx() }
-    val collapsedOffsetPx = with(density) { screenHeightPx - peekHeight.toPx() }
-    val expandedOffsetPx = 0f // 화면 최상단
-
-    // 앵커 생성
-    val anchors =
-        remember(screenHeightPx) {
-            DraggableAnchors {
-                PlaceListBottomSheetState.EXPANDED at expandedOffsetPx
-                PlaceListBottomSheetState.HALF_EXPANDED at halfExpandedOffsetPx
-                PlaceListBottomSheetState.COLLAPSED at collapsedOffsetPx
-            }
-        }
-    val anchoredState = rememberAnchoredState(initialState, anchors)
-    val nestedScrollConnection = placeListBottomSheetNestedScrollConnection(anchoredState)
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(anchoredState.settledValue) {
         onStateUpdate(anchoredState.settledValue)
     }
 
+    val nestedScrollConnection = placeListBottomSheetNestedScrollConnection(anchoredState)
+
     Column(
         modifier =
             modifier
-                .nestedScroll(nestedScrollConnection)
+                .fillMaxSize()
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    val screenHeightPx = constraints.maxHeight.toFloat()
+                    // 3가지 앵커 높이 정의 (DP)
+                    val halfExpandedOffsetPx = screenHeightPx - screenHeightPx * halfExpandedRatio
+                    val collapsedOffsetPx = with(density) { screenHeightPx - peekHeight.toPx() }
+                    val expandedOffsetPx = 0f // 화면 최상단
+
+                    anchoredState.updateAnchors(
+                        newAnchors =
+                            DraggableAnchors {
+                                PlaceListBottomSheetState.EXPANDED at expandedOffsetPx
+                                PlaceListBottomSheetState.HALF_EXPANDED at halfExpandedOffsetPx
+                                PlaceListBottomSheetState.COLLAPSED at collapsedOffsetPx
+                            },
+                        newTarget = anchoredState.currentValue,
+                    )
+                    // 스크롤 되었을 때 호출하는 콜백
+                    scope.launch {
+                        snapshotFlow { anchoredState.requireOffset() }
+                            .collect { currentOffset ->
+                                onScroll(currentOffset)
+                            }
+                    }
+
+                    layout(placeable.width, placeable.height) {
+                        placeable.place(0, 0)
+                    }
+                }.nestedScroll(nestedScrollConnection)
                 .offset {
                     IntOffset(
                         0,
@@ -237,14 +254,10 @@ private fun placeListBottomSheetNestedScrollConnection(
 }
 
 @Composable
-private fun rememberAnchoredState(
-    initialValue: PlaceListBottomSheetState,
-    anchors: DraggableAnchors<PlaceListBottomSheetState>,
-): AnchoredDraggableState<PlaceListBottomSheetState> =
+fun rememberAnchoredState(initialValue: PlaceListBottomSheetState): AnchoredDraggableState<PlaceListBottomSheetState> =
     remember {
         AnchoredDraggableState(
             initialValue = initialValue,
-            anchors = anchors,
         )
     }
 
