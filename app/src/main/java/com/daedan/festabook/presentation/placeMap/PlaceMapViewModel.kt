@@ -31,7 +31,8 @@ import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(PlaceMapViewModel::class)
-class PlaceMapViewModel @Inject constructor(
+@Inject
+class PlaceMapViewModel(
     private val placeListRepository: PlaceListRepository,
     private val placeDetailRepository: PlaceDetailRepository,
 ) : ViewModel() {

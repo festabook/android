@@ -129,14 +129,14 @@ class HomeViewModelTest {
     @Test
     fun `스케줄 이동 이벤트를 발생시킬 수 있다`() =
         runTest {
-            //given
+            // given
             val expect = Unit
 
-            //when
+            // when
             homeViewModel.navigateToScheduleClick()
             advanceUntilIdle()
 
-            //then
+            // then
             val actual = homeViewModel.navigateToScheduleEvent.value
             assertThat(actual).isEqualTo(expect)
         }

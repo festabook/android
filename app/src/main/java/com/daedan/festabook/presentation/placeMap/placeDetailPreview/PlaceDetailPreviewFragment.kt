@@ -29,13 +29,11 @@ import dev.zacsweers.metro.binding
 @ContributesIntoMap(scope = AppScope::class, binding = binding<Fragment>())
 @FragmentKey(PlaceDetailPreviewFragment::class)
 @Inject
-class PlaceDetailPreviewFragment :
-    BaseFragment<FragmentPlaceDetailPreviewBinding>(),
+class PlaceDetailPreviewFragment(
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
+) : BaseFragment<FragmentPlaceDetailPreviewBinding>(),
     OnMenuItemReClickListener {
     override val layoutId: Int = R.layout.fragment_place_detail_preview
-
-    @Inject
-    override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: PlaceMapViewModel by viewModels({ requireParentFragment() })
     private val backPressedCallback =
         object : OnBackPressedCallback(false) {

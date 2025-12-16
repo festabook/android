@@ -7,7 +7,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class FestivalLocalDataSourceImpl @Inject constructor(
+@Inject
+class FestivalLocalDataSourceImpl(
     private val prefs: SharedPreferences,
 ) : FestivalLocalDataSource {
     override fun saveFestivalId(festivalId: Long) {

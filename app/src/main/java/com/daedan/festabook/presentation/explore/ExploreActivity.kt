@@ -13,7 +13,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProvider
-import com.daedan.festabook.FestaBookApp
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.ActivityExploreBinding
 import com.daedan.festabook.di.appGraph
@@ -26,14 +25,10 @@ import com.daedan.festabook.presentation.explore.adapter.SearchResultAdapter
 import com.daedan.festabook.presentation.explore.model.SearchResultUiModel
 import com.daedan.festabook.presentation.main.MainActivity
 import com.google.android.material.textfield.TextInputLayout
-import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.ContributesTo
-import dev.zacsweers.metro.Inject
 
 class ExploreActivity :
     AppCompatActivity(),
     OnUniversityClickListener {
-
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory
         get() = appGraph.metroViewModelFactory
     private val binding by lazy { ActivityExploreBinding.inflate(layoutInflater) }
