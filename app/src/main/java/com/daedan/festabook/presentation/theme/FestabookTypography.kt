@@ -1,6 +1,9 @@
 package com.daedan.festabook.presentation.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -11,7 +14,7 @@ private val PretendardBold = FontFamily(Font(R.font.pretendard_bold))
 private val PretendardMedium = FontFamily(Font(R.font.pretendard_medium))
 private val PretendardRegular = FontFamily(Font(R.font.pretendard_regular))
 
-val FestabookTypography =
+val FestabookTypographies =
     Typography(
         displayLarge =
             TextStyle(
@@ -74,3 +77,10 @@ val FestabookTypography =
                 fontSize = 10.sp,
             ),
     )
+
+val LocalTypography = staticCompositionLocalOf { FestabookTypographies }
+
+val FestabookTypography: Typography
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalTypography.current

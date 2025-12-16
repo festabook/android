@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
-import com.daedan.festabook.di.viewmodel.ViewModelScope
 import com.daedan.festabook.domain.repository.FestivalRepository
 import com.daedan.festabook.presentation.common.SingleLiveData
 import com.daedan.festabook.presentation.home.adapter.FestivalUiState
@@ -16,7 +15,8 @@ import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(HomeViewModel::class)
-class HomeViewModel @Inject constructor(
+@Inject
+class HomeViewModel(
     private val festivalRepository: FestivalRepository,
 ) : ViewModel() {
     private val _festivalUiState = MutableLiveData<FestivalUiState>()

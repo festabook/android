@@ -10,7 +10,8 @@ import timber.log.Timber
 import java.util.Locale
 
 @ContributesBinding(AppScope::class)
-class FirebaseAnalyticsTree @Inject constructor(
+@Inject
+class FirebaseAnalyticsTree(
     private val analytics: FirebaseAnalytics,
 ) : Timber.Tree() {
     override fun log(

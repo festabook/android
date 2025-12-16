@@ -19,9 +19,10 @@ fun PlaceMapScreen(
     title: String,
     onMapReady: (NaverMap) -> Unit,
     onTimeTagClick: (TimeTag) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     NaverMapContent(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         onMapReady = onMapReady,
     ) {
         Column(

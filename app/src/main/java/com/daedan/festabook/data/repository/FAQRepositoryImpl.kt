@@ -10,7 +10,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class FAQRepositoryImpl @Inject constructor(
+@Inject
+class FAQRepositoryImpl(
     private val faqDataSource: FAQDataSource,
 ) : FAQRepository {
     override suspend fun getAllFAQ(): Result<List<FAQItem>> {

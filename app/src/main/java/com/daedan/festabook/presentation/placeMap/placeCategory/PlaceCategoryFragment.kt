@@ -33,11 +33,11 @@ import dev.zacsweers.metro.binding
 @ContributesIntoMap(scope = AppScope::class, binding = binding<Fragment>())
 @FragmentKey(PlaceCategoryFragment::class)
 @Inject
-class PlaceCategoryFragment : BaseFragment<FragmentPlaceCategoryBinding>() {
+class PlaceCategoryFragment(
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
+) : BaseFragment<FragmentPlaceCategoryBinding>() {
     override val layoutId: Int = R.layout.fragment_place_category
 
-    @Inject
-    override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: PlaceMapViewModel by viewModels({ requireParentFragment() })
 
     override fun onCreateView(

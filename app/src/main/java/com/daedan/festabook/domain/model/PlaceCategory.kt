@@ -11,7 +11,7 @@ enum class PlaceCategory {
     PRIMARY,
     STAGE,
     PHOTO_BOOTH,
-    EXTRA
+    EXTRA,
     ;
 
     companion object {

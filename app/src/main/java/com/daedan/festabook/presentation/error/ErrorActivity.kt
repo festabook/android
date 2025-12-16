@@ -42,7 +42,11 @@ class ErrorActivity : AppCompatActivity() {
 
     companion object {
         private const val KEY_ERROR = "error"
-        fun newIntent(context: Context, error: Throwable): Intent =
+
+        fun newIntent(
+            context: Context,
+            error: Throwable,
+        ): Intent =
             Intent(context, ErrorActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                 putExtra(KEY_ERROR, error)

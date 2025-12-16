@@ -45,13 +45,13 @@ class ScheduleViewModelTest {
         scheduleRepository = mockk()
 
         coEvery { scheduleRepository.fetchAllScheduleDates() } returns
-                Result.success(
-                    FAKE_SCHEDULE_DATES,
-                )
+            Result.success(
+                FAKE_SCHEDULE_DATES,
+            )
         coEvery { scheduleRepository.fetchScheduleEventsById(dateId) } returns
-                Result.success(
-                    FAKE_SCHEDULE_EVENTS,
-                )
+            Result.success(
+                FAKE_SCHEDULE_EVENTS,
+            )
 
         scheduleViewModel = ScheduleViewModel(scheduleRepository, dateId)
     }
@@ -87,9 +87,9 @@ class ScheduleViewModelTest {
         runTest {
             // given
             coEvery { scheduleRepository.fetchScheduleEventsById(dateId) } returns
-                    Result.success(
-                        FAKE_SCHEDULE_EVENTS,
-                    )
+                Result.success(
+                    FAKE_SCHEDULE_EVENTS,
+                )
 
             // when
             scheduleViewModel.loadScheduleByDate()
@@ -109,18 +109,18 @@ class ScheduleViewModelTest {
         runTest {
             // given
             coEvery { scheduleRepository.fetchScheduleEventsById(dateId) } returns
-                    Result.success(
-                        listOf(
-                            ScheduleEvent(
-                                id = 1L,
-                                status = ScheduleEventStatus.UPCOMING,
-                                startTime = "2025-07-26T10:00:00",
-                                endTime = "2025-07-26T11:00:00",
-                                title = "안드로이드 스터디",
-                                location = "서울 강남구 어딘가",
-                            ),
+                Result.success(
+                    listOf(
+                        ScheduleEvent(
+                            id = 1L,
+                            status = ScheduleEventStatus.UPCOMING,
+                            startTime = "2025-07-26T10:00:00",
+                            endTime = "2025-07-26T11:00:00",
+                            title = "안드로이드 스터디",
+                            location = "서울 강남구 어딘가",
                         ),
-                    )
+                    ),
+                )
 
             // when
             scheduleViewModel.loadScheduleByDate()
@@ -150,25 +150,27 @@ class ScheduleViewModelTest {
         }
 
     @Test
-    fun `모든 날짜의 축제 정보를 불러올 수 있다`() = runTest {
-        //given
-        coEvery { scheduleRepository.fetchAllScheduleDates() } returns
+    fun `모든 날짜의 축제 정보를 불러올 수 있다`() =
+        runTest {
+            // given
+            coEvery { scheduleRepository.fetchAllScheduleDates() } returns
                 Result.success(
                     FAKE_SCHEDULE_DATES,
                 )
 
-        val expected = ScheduleDatesUiState.Success(
-            FAKE_SCHEDULE_DATES.map { it.toUiModel() },
-            0
-        )
+            val expected =
+                ScheduleDatesUiState.Success(
+                    FAKE_SCHEDULE_DATES.map { it.toUiModel() },
+                    0,
+                )
 
-        //when
-        scheduleViewModel.loadAllDates()
-        advanceUntilIdle()
+            // when
+            scheduleViewModel.loadAllDates()
+            advanceUntilIdle()
 
-        //then
-        coVerify { scheduleRepository.fetchAllScheduleDates() }
-        val actual = scheduleViewModel.scheduleDatesUiState.getOrAwaitValue()
-        assertThat(actual).isEqualTo(expected)
-    }
+            // then
+            coVerify { scheduleRepository.fetchAllScheduleDates() }
+            val actual = scheduleViewModel.scheduleDatesUiState.getOrAwaitValue()
+            assertThat(actual).isEqualTo(expected)
+        }
 }

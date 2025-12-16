@@ -63,8 +63,8 @@ private fun PullToRefreshIndicator(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     pullOffsetLimit: Float,
-    modifier: Modifier = Modifier,
     threshold: Dp,
+    modifier: Modifier = Modifier,
 ) {
     val indicatorSize = (pullOffsetLimit / 5).dp
     val centerOffset = -(threshold / 2 - indicatorSize / 2)

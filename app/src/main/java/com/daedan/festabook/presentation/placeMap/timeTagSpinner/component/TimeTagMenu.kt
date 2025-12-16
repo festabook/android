@@ -74,7 +74,7 @@ fun TimeTagMenu(
         ) {
             TimeTagButton(
                 title = title,
-                onSizeDetermined = { dropdownWidth = it },
+                onSizeDetermine = { dropdownWidth = it },
             )
             DropdownMenu(
                 expanded = expanded,
@@ -119,14 +119,14 @@ fun TimeTagMenu(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun ExposedDropdownMenuBoxScope.TimeTagButton(
     title: String,
-    onSizeDetermined: (IntSize) -> Unit,
+    onSizeDetermine: (IntSize) -> Unit,
 ) {
     Row(
         modifier =
             Modifier
                 .width(140.dp)
                 .onGloballyPositioned { coordinates ->
-                    onSizeDetermined(coordinates.size)
+                    onSizeDetermine(coordinates.size)
                 }.menuAnchor(
                     type = MenuAnchorType.PrimaryNotEditable,
                     enabled = true,

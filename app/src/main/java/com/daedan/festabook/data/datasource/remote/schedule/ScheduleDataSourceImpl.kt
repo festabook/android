@@ -9,7 +9,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class ScheduleDataSourceImpl @Inject constructor(
+@Inject
+class ScheduleDataSourceImpl(
     private val scheduleService: ScheduleService,
 ) : ScheduleDataSource {
     override suspend fun fetchScheduleEventsById(eventDateId: Long): ApiResult<List<ScheduleEventResponse>> =

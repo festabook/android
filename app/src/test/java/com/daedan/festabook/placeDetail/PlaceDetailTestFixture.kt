@@ -38,12 +38,13 @@ val FAKE_ETC_PLACE_DETAIL =
                 imageUrl = null,
                 description = null,
                 location = null,
-                timeTags = listOf(
-                    TimeTag(
-                        timeTagId = 1,
-                        name = "테스트1"
-                    )
-                )
+                timeTags =
+                    listOf(
+                        TimeTag(
+                            timeTagId = 1,
+                            name = "테스트1",
+                        ),
+                    ),
             ),
         notices = emptyList(),
         host = null,

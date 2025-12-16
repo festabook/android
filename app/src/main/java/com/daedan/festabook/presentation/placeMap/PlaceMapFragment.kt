@@ -61,12 +61,10 @@ class PlaceMapFragment(
     placeDetailPreviewFragment: PlaceDetailPreviewFragment,
     placeCategoryFragment: PlaceCategoryFragment,
     placeDetailPreviewSecondaryFragment: PlaceDetailPreviewSecondaryFragment,
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
 ) : BaseFragment<FragmentPlaceMapBinding>(),
     OnMenuItemReClickListener {
     override val layoutId: Int = R.layout.fragment_place_map
-
-    @Inject
-    override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
 
     private lateinit var naverMap: NaverMap
 
