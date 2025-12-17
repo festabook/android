@@ -1,9 +1,6 @@
 package com.daedan.festabook.presentation.placeMap.placeDetailPreview.component
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -12,11 +9,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -25,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.CoilImage
 import com.daedan.festabook.presentation.common.component.URLText
-import com.daedan.festabook.presentation.common.component.cardBackground
 import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceCategoryLabel
@@ -37,7 +30,6 @@ import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.FestabookTypography
 import com.daedan.festabook.presentation.theme.festabookShapes
 import com.daedan.festabook.presentation.theme.festabookSpacing
-import kotlinx.coroutines.launch
 
 @Composable
 fun PlaceDetailPreviewScreen(
@@ -48,40 +40,12 @@ fun PlaceDetailPreviewScreen(
     onError: (SelectedPlaceUiState.Error) -> Unit = {},
     onEmpty: () -> Unit = {},
 ) {
-    val offsetY = remember { Animatable(120f) }
-    val alpha = remember { Animatable(0.3f) }
-
-    LaunchedEffect(visible) {
-        if (visible) {
-            launch {
-                offsetY.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(300),
-                )
-            }
-            launch {
-                alpha.animateTo(1f, animationSpec = tween(300))
-            }
-        } else {
-            // 나갈 때 애니메이션 (위에서 아래로 + 페이드아웃)
-            launch { offsetY.snapTo(120f) }
-            launch { alpha.snapTo(0.3f) }
-        }
-    }
-
-    Box(
+    PreviewAnimatableBox(
+        visible = visible,
         modifier =
             modifier
                 .wrapContentSize()
-                .clickable { onClick(placeUiState) }
-                .graphicsLayer {
-                    translationY = offsetY.value
-                    this.alpha = alpha.value
-                }.cardBackground(
-                    backgroundColor = FestabookColor.white,
-                    borderColor = FestabookColor.gray200,
-                    shape = festabookShapes.radius5,
-                ),
+                .clickable { onClick(placeUiState) },
     ) {
         when (placeUiState) {
             is SelectedPlaceUiState.Loading -> Unit
