@@ -62,6 +62,15 @@ class PlaceMapViewModel(
     private val _selectedPlace: MutableLiveData<SelectedPlaceUiState> = MutableLiveData()
     val selectedPlace: LiveData<SelectedPlaceUiState> = _selectedPlace
 
+    val selectedPlaceFlow: StateFlow<SelectedPlaceUiState> =
+        _selectedPlace
+            .asFlow()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Lazily,
+                initialValue = SelectedPlaceUiState.Loading,
+            )
+
     private val _navigateToDetail = SingleLiveData<PlaceDetailUiModel>()
     val navigateToDetail: LiveData<PlaceDetailUiModel> = _navigateToDetail
 

@@ -1,9 +1,8 @@
 package com.daedan.festabook.presentation.placeMap.placeDetailPreview.component
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,10 +12,11 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,50 +37,60 @@ import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.FestabookTypography
 import com.daedan.festabook.presentation.theme.festabookShapes
 import com.daedan.festabook.presentation.theme.festabookSpacing
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlaceDetailPreviewScreen(
     placeUiState: SelectedPlaceUiState,
     modifier: Modifier = Modifier,
+    visible: Boolean = false,
     onClick: (SelectedPlaceUiState) -> Unit = {},
-    onError: () -> Unit = {},
+    onError: (SelectedPlaceUiState.Error) -> Unit = {},
     onEmpty: () -> Unit = {},
 ) {
-    val visibleState =
-        remember {
-            MutableTransitionState(false).apply { targetState = true }
-        }
-    val density = LocalDensity.current
+    val offsetY = remember { Animatable(120f) }
+    val alpha = remember { Animatable(0.3f) }
 
-    AnimatedVisibility(
-        visibleState = visibleState,
-        enter =
-            fadeIn(
-                initialAlpha = 0.3f, // 시작 투명도 0.3f
-            ) +
-                slideInVertically(
-                    initialOffsetY = { with(density) { 120.dp.roundToPx() } }, // 120dp 아래에서 시작
-                ),
-        modifier = modifier,
-    ) {
-        Box(
-            modifier =
-                Modifier
-                    .cardBackground(
-                        backgroundColor = FestabookColor.white,
-                        borderColor = FestabookColor.gray200,
-                        shape = festabookShapes.radius5,
-                    ),
-        ) {
-            when (placeUiState) {
-                is SelectedPlaceUiState.Loading -> Unit
-                is SelectedPlaceUiState.Success -> {
-                    PlaceDetailPreviewContent(placeDetail = placeUiState.value)
-                }
-
-                is SelectedPlaceUiState.Error -> onError()
-                is SelectedPlaceUiState.Empty -> onEmpty()
+    LaunchedEffect(visible) {
+        if (visible) {
+            launch {
+                offsetY.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(300),
+                )
             }
+            launch {
+                alpha.animateTo(1f, animationSpec = tween(300))
+            }
+        } else {
+            // 나갈 때 애니메이션 (위에서 아래로 + 페이드아웃)
+            launch { offsetY.snapTo(120f) }
+            launch { alpha.snapTo(0.3f) }
+        }
+    }
+
+    Box(
+        modifier =
+            modifier
+                .wrapContentSize()
+                .clickable { onClick(placeUiState) }
+                .graphicsLayer {
+                    translationY = offsetY.value
+                    this.alpha = alpha.value
+                }.cardBackground(
+                    backgroundColor = FestabookColor.white,
+                    borderColor = FestabookColor.gray200,
+                    shape = festabookShapes.radius5,
+                ),
+    ) {
+        when (placeUiState) {
+            is SelectedPlaceUiState.Loading -> Unit
+            is SelectedPlaceUiState.Success -> {
+                PlaceDetailPreviewContent(placeDetail = placeUiState.value)
+            }
+
+            is SelectedPlaceUiState.Error -> onError(placeUiState)
+            is SelectedPlaceUiState.Empty -> onEmpty()
         }
     }
 }
@@ -185,6 +195,8 @@ private fun PlaceDetailPreviewContent(
                 placeDetail.place.description
                     ?: stringResource(R.string.place_list_default_description),
             style = FestabookTypography.bodySmall,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
