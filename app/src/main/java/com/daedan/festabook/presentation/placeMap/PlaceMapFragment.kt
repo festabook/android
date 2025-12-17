@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -15,7 +16,6 @@ import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceMapBinding
 import com.daedan.festabook.di.fragment.FragmentKey
@@ -25,6 +25,7 @@ import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.toPx
+import com.daedan.festabook.presentation.placeMap.component.NaverMapContent
 import com.daedan.festabook.presentation.placeMap.logging.CurrentLocationChecked
 import com.daedan.festabook.presentation.placeMap.logging.PlaceFragmentEnter
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMarkerClick
@@ -39,7 +40,6 @@ import com.daedan.festabook.presentation.placeMap.placeList.PlaceListFragment
 import com.daedan.festabook.presentation.placeMap.timeTagSpinner.component.TimeTagMenu
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
-import com.naver.maps.map.MapFragment
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.util.FusedLocationSource
@@ -48,7 +48,6 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metro.createGraphFactory
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @ContributesIntoMap(
@@ -62,7 +61,6 @@ class PlaceMapFragment(
     placeDetailPreviewFragment: PlaceDetailPreviewFragment,
     placeCategoryFragment: PlaceCategoryFragment,
     placeDetailPreviewSecondaryFragment: PlaceDetailPreviewSecondaryFragment,
-    mapFragment: MapFragment,
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
 ) : BaseFragment<FragmentPlaceMapBinding>(),
     OnMenuItemReClickListener {
@@ -78,8 +76,6 @@ class PlaceMapFragment(
             placeDetailPreviewSecondaryFragment,
         )
     }
-    private val mapFragment by lazy { getIfExists(mapFragment) }
-
     private val locationSource by lazy {
         FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
     }
@@ -94,7 +90,6 @@ class PlaceMapFragment(
         super.onViewCreated(view, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commit {
-                addWithSimpleTag(R.id.fcv_map_container, mapFragment)
                 addWithSimpleTag(R.id.fcv_place_list_container, placeListFragment)
                 addWithSimpleTag(R.id.fcv_map_container, placeDetailPreviewFragment)
                 addWithSimpleTag(R.id.fcv_place_category_container, placeCategoryFragment)
@@ -103,11 +98,9 @@ class PlaceMapFragment(
                 hide(placeDetailPreviewSecondaryFragment)
             }
         }
-        lifecycleScope.launch {
-            setUpMapManager()
-            setupComposeView()
-            setUpObserver()
-        }
+
+        setupComposeView()
+
         binding.logger.log(
             PlaceFragmentEnter(
                 baseLogData = binding.logger.getBaseLogData(),
@@ -128,29 +121,27 @@ class PlaceMapFragment(
         mapManager?.moveToPosition()
     }
 
-    private suspend fun setUpMapManager() {
-        naverMap = mapFragment.getMap()
-        naverMap.addOnLocationChangeListener {
-            binding.logger.log(
-                CurrentLocationChecked(
-                    baseLogData = binding.logger.getBaseLogData(),
-                ),
-            )
-        }
-        (placeListFragment as? OnMapReadyCallback)?.onMapReady(naverMap)
-        naverMap.locationSource = locationSource
-        binding.viewMapTouchEventIntercept.setOnMapDragListener {
-            viewModel.onMapViewClick()
-        }
-    }
-
     private fun setupComposeView() {
         binding.cvPlaceMap.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 FestabookTheme {
-                    val timeTags by viewModel.timeTags.collectAsStateWithLifecycle()
-                    val title by viewModel.selectedTimeTagFlow.collectAsStateWithLifecycle()
+                    NaverMapContent(
+                        modifier = Modifier.fillMaxSize(),
+                        onMapDrag = { viewModel.onMapViewClick() },
+                        onMapReady = { setupMap(it) },
+                    ) {
+                        // TODO 흩어져있는 ComposeView 통합, 추후 PlaceMapScreen 사용
+                    }
+                }
+            }
+        }
+        binding.cvTimeTagSpinner.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                val timeTags by viewModel.timeTags.collectAsStateWithLifecycle()
+                val title by viewModel.selectedTimeTagFlow.collectAsStateWithLifecycle()
+                FestabookTheme {
                     if (timeTags.isNotEmpty()) {
                         TimeTagMenu(
                             title = title.name,
@@ -174,6 +165,20 @@ class PlaceMapFragment(
                 }
             }
         }
+    }
+
+    private fun setupMap(map: NaverMap) {
+        naverMap = map
+        naverMap.addOnLocationChangeListener {
+            binding.logger.log(
+                CurrentLocationChecked(
+                    baseLogData = binding.logger.getBaseLogData(),
+                ),
+            )
+        }
+        (placeListFragment as? OnMapReadyCallback)?.onMapReady(naverMap)
+        naverMap.locationSource = locationSource
+        setUpObserver()
     }
 
     private fun setUpObserver() {
