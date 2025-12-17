@@ -69,27 +69,32 @@ fun PlaceListBottomSheet(
                 .fillMaxSize()
                 .layout { measurable, constraints ->
                     val placeable = measurable.measure(constraints)
-                    val screenHeightPx = constraints.maxHeight.toFloat()
-                    // 3가지 앵커 높이 정의 (DP)
-                    val halfExpandedOffsetPx = screenHeightPx - screenHeightPx * halfExpandedRatio
-                    val collapsedOffsetPx = with(density) { screenHeightPx - peekHeight.toPx() }
-                    val expandedOffsetPx = 0f // 화면 최상단
 
-                    bottomSheetState.state.updateAnchors(
-                        newAnchors =
-                            DraggableAnchors {
-                                PlaceListBottomSheetValue.EXPANDED at expandedOffsetPx
-                                PlaceListBottomSheetValue.HALF_EXPANDED at halfExpandedOffsetPx
-                                PlaceListBottomSheetValue.COLLAPSED at collapsedOffsetPx
-                            },
-                        newTarget = bottomSheetState.currentValue,
-                    )
-                    // 스크롤 되었을 때 호출하는 콜백
-                    scope.launch {
-                        snapshotFlow { bottomSheetState.state.requireOffset() }
-                            .collect { currentOffset ->
-                                onScroll(currentOffset)
-                            }
+                    // 실제 레이아웃 측정 시에만 앵커 설정
+                    if (!isLookingAhead) {
+                        val screenHeightPx = constraints.maxHeight.toFloat()
+                        // 3가지 앵커 높이 정의 (DP)
+                        val halfExpandedOffsetPx =
+                            screenHeightPx - screenHeightPx * halfExpandedRatio
+                        val collapsedOffsetPx = with(density) { screenHeightPx - peekHeight.toPx() }
+                        val expandedOffsetPx = 0f // 화면 최상단
+
+                        bottomSheetState.state.updateAnchors(
+                            newAnchors =
+                                DraggableAnchors {
+                                    PlaceListBottomSheetValue.EXPANDED at expandedOffsetPx
+                                    PlaceListBottomSheetValue.HALF_EXPANDED at halfExpandedOffsetPx
+                                    PlaceListBottomSheetValue.COLLAPSED at collapsedOffsetPx
+                                },
+                            newTarget = bottomSheetState.currentValue,
+                        )
+                        // 스크롤 되었을 때 호출하는 콜백
+                        scope.launch {
+                            snapshotFlow { bottomSheetState.state.requireOffset() }
+                                .collect { currentOffset ->
+                                    onScroll(currentOffset)
+                                }
+                        }
                     }
 
                     layout(placeable.width, placeable.height) {
