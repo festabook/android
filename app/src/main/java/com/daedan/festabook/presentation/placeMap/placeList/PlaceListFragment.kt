@@ -26,6 +26,7 @@ import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.di.fragment.FragmentKey
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
+import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
@@ -85,6 +86,7 @@ class PlaceListFragment(
 
                 LaunchedEffect(Unit) {
                     viewModel.onMapViewClickFlow.collect {
+                        if (isGone || !isResumed || view == null) return@collect
                         bottomSheetState.update(PlaceListBottomSheetValue.COLLAPSED)
                     }
                 }
@@ -106,6 +108,9 @@ class PlaceListFragment(
                             viewModel.selectedTimeTagFlow.collect {
                                 childViewModel.updatePlacesByTimeTag(it.timeTagId)
                             }
+                        },
+                        onError = {
+                            showErrorSnackBar(it.throwable)
                         },
                         onBackToInitialPositionClick = {
                             viewModel.onBackToInitialPositionClicked()

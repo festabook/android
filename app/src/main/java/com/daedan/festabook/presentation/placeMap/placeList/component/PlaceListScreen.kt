@@ -63,6 +63,7 @@ fun PlaceListScreen(
     onPlaceClick: (place: PlaceUiModel) -> Unit = {},
     onPlaceLoadFinish: (places: List<PlaceUiModel>) -> Unit = {},
     onPlaceLoad: suspend () -> Unit = {},
+    onError: (PlaceListUiState.Error<List<PlaceUiModel>>) -> Unit = {},
     onBackToInitialPositionClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
@@ -122,19 +123,27 @@ fun PlaceListScreen(
                         modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
                     )
 
-                is PlaceListUiState.Error ->
+                is PlaceListUiState.Error -> {
+                    onError(placesUiState)
                     EmptyStateScreen(
                         modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
                     )
+                }
 
                 is PlaceListUiState.Success -> {
                     onPlaceLoadFinish(placesUiState.value)
-                    PlaceListContent(
-                        places = placesUiState.value,
-                        modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
-                        listState = listState,
-                        onPlaceClick = onPlaceClick,
-                    )
+                    if (placesUiState.value.isEmpty()) {
+                        EmptyStateScreen(
+                            modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
+                        )
+                    } else {
+                        PlaceListContent(
+                            places = placesUiState.value,
+                            modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
+                            listState = listState,
+                            onPlaceClick = onPlaceClick,
+                        )
+                    }
                 }
 
                 is PlaceListUiState.PlaceLoaded -> {
@@ -160,13 +169,6 @@ private fun PlaceListContent(
         state = listState,
         modifier = modifier.fillMaxHeight(),
     ) {
-        item {
-            if (places.isEmpty()) {
-                EmptyStateScreen(
-                    modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
-                )
-            }
-        }
         items(
             items = places,
             key = { place -> place.id },
