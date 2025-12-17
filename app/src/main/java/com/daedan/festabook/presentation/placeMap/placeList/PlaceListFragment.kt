@@ -103,10 +103,8 @@ class PlaceListFragment(
                             )
                         },
                         onPlaceLoad = {
-                            LaunchedEffect(Unit) {
-                                viewModel.selectedTimeTagFlow.collect {
-                                    childViewModel.updatePlacesByTimeTag(it.timeTagId)
-                                }
+                            viewModel.selectedTimeTagFlow.collect {
+                                childViewModel.updatePlacesByTimeTag(it.timeTagId)
                             }
                         },
                         onBackToInitialPositionClick = {

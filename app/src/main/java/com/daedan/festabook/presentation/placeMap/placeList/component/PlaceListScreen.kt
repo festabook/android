@@ -20,10 +20,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,12 +62,13 @@ fun PlaceListScreen(
         ),
     onPlaceClick: (place: PlaceUiModel) -> Unit = {},
     onPlaceLoadFinish: (places: List<PlaceUiModel>) -> Unit = {},
-    onPlaceLoad: @Composable () -> Unit = {},
+    onPlaceLoad: suspend () -> Unit = {},
     onBackToInitialPositionClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var offset by remember { mutableFloatStateOf(0f) }
+    val currentOnPlaceLoad by rememberUpdatedState(onPlaceLoad)
 
     Box(modifier = modifier.fillMaxSize()) {
         OffsetDependentLayout(
@@ -134,7 +137,13 @@ fun PlaceListScreen(
                     )
                 }
 
-                is PlaceListUiState.PlaceLoaded -> onPlaceLoad()
+                is PlaceListUiState.PlaceLoaded -> {
+                    LaunchedEffect(Unit) {
+                        scope.launch {
+                            currentOnPlaceLoad()
+                        }
+                    }
+                }
             }
         }
     }
