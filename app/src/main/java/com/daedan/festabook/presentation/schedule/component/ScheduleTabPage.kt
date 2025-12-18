@@ -30,50 +30,50 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 @Composable
 fun ScheduleTabPage(
     pagerState: PagerState,
-    selectedDatedId: Long?,
-    eventStates: Map<Long, ScheduleEventsUiState>,
+    scheduleEventsUiState: ScheduleEventsUiState,
+    isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     HorizontalPager(state = pagerState, modifier = modifier) {
-        val uiState = eventStates[selectedDatedId]
-        val isRefreshing = uiState is ScheduleEventsUiState.Refreshing
-
         PullToRefreshContainer(
             isRefreshing = isRefreshing,
             onRefresh = onRefresh,
         ) { pullToRefreshState ->
+            when (scheduleEventsUiState) {
+                is ScheduleEventsUiState.Error -> {
+                }
 
-            if (uiState == null) {
-                EmptyStateScreen()
-            } else {
-                when (uiState) {
-                    is ScheduleEventsUiState.Error -> {
-                    }
+                ScheduleEventsUiState.InitialLoading -> {
+                    LoadingStateScreen()
+                }
 
-                    ScheduleEventsUiState.InitialLoading -> {
-                        LoadingStateScreen()
-                    }
+                is ScheduleEventsUiState.Refreshing -> {
+                    ScheduleTabContent(
+                        scheduleEvents = scheduleEventsUiState.oldEvents,
+                        modifier =
+                            Modifier
+                                .padding(end = festabookSpacing.paddingScreenGutter)
+                                .graphicsLayer {
+                                    translationY =
+                                        pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
+                                },
+                    )
+                }
 
-                    is ScheduleEventsUiState.Refreshing -> {
-                    }
-
-                    is ScheduleEventsUiState.Success -> {
-                        if (uiState.events.isEmpty()) {
-                            EmptyStateScreen()
-                        } else {
-                            ScheduleTabContent(
-                                scheduleEvents = uiState.events,
-                                modifier =
-                                    Modifier
-                                        .padding(end = festabookSpacing.paddingScreenGutter)
-                                        .graphicsLayer {
-                                            translationY =
-                                                pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
-                                        },
-                            )
-                        }
-                    }
+                is ScheduleEventsUiState.Success -> {
+                    ScheduleTabContent(
+                        scheduleEvents =
+                            scheduleEventsUiState.eventsByDate[pagerState.currentPage]
+                                ?: emptyList(),
+                        modifier =
+                            Modifier
+                                .padding(end = festabookSpacing.paddingScreenGutter)
+                                .graphicsLayer {
+                                    translationY =
+                                        pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
+                                },
+                    )
                 }
             }
         }
@@ -85,20 +85,24 @@ private fun ScheduleTabContent(
     scheduleEvents: List<ScheduleEventUiModel>,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier) {
-        VerticalDivider(
-            thickness = 1.dp,
-            color = FestabookColor.gray300,
-            modifier =
-                Modifier
-                    .padding(start = festabookSpacing.paddingScreenGutter + festabookSpacing.paddingBody4),
-        )
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody5),
-            contentPadding = PaddingValues(vertical = festabookSpacing.paddingBody5),
-        ) {
-            items(items = scheduleEvents, key = { scheduleEvent -> scheduleEvent.id }) {
-                ScheduleEventItem(scheduleEvent = it)
+    if (scheduleEvents.isEmpty()) {
+        EmptyStateScreen(modifier = modifier)
+    } else {
+        Box(modifier = modifier) {
+            VerticalDivider(
+                thickness = 1.dp,
+                color = FestabookColor.gray300,
+                modifier =
+                    Modifier
+                        .padding(start = festabookSpacing.paddingScreenGutter + festabookSpacing.paddingBody4),
+            )
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody5),
+                contentPadding = PaddingValues(vertical = festabookSpacing.paddingBody5),
+            ) {
+                items(items = scheduleEvents, key = { scheduleEvent -> scheduleEvent.id }) {
+                    ScheduleEventItem(scheduleEvent = it)
+                }
             }
         }
     }

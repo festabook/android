@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 fun ScheduleTabRow(
     pageState: PagerState,
     scope: CoroutineScope,
-    scheduleDates: List<ScheduleDateUiModel>,
+    dates: List<ScheduleDateUiModel>,
     modifier: Modifier = Modifier,
 ) {
     ScrollableTabRow(
@@ -41,7 +41,7 @@ fun ScheduleTabRow(
         divider = {},
         modifier = modifier,
     ) {
-        scheduleDates.forEachIndexed { index, scheduleDate ->
+        dates.forEachIndexed { index, scheduleDate ->
             Tab(
                 selected = pageState.currentPage == index,
                 unselectedContentColor = FestabookColor.gray500,
@@ -75,7 +75,7 @@ private fun ScheduleTabRowPreview() {
     ScheduleTabRow(
         pageState = rememberPagerState { 5 },
         scope = rememberCoroutineScope(),
-        scheduleDates =
+        dates =
             listOf(
                 ScheduleDateUiModel(1, "11/12"),
                 ScheduleDateUiModel(2, "11/13"),

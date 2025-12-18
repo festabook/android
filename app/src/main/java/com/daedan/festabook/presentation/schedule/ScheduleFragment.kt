@@ -12,8 +12,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentScheduleBinding
 import com.daedan.festabook.di.fragment.FragmentKey
-import com.daedan.festabook.logging.logger
-import com.daedan.festabook.logging.model.schedule.ScheduleMenuItemReClickLogData
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
 import com.daedan.festabook.presentation.schedule.component.ScheduleScreen
@@ -53,83 +51,9 @@ class ScheduleFragment :
             }
         }
 
-//    override fun onViewCreated(
-//        view: View,
-//        savedInstanceState: Bundle?,
-//    ) {
-//        binding.vpSchedule.adapter = adapter
-//        setupObservers()
-//    }
-
     override fun onMenuItemReClick() {
-        viewModel.loadAllDates()
+//        viewModel.loadAllDates(ScheduleUiState.InitialLoading)
 //        viewModel.loadScheduleByDate()
-        binding.logger.log(ScheduleMenuItemReClickLogData(binding.logger.getBaseLogData()))
+//        binding.logger.log(ScheduleMenuItemReClickLogData(binding.logger.getBaseLogData()))
     }
-
-//    @SuppressLint("WrongConstant")
-//    private fun setupScheduleTabLayout(initialCurrentDateIndex: Int) {
-//        binding.vpSchedule.offscreenPageLimit = PRELOAD_PAGE_COUNT
-//
-//        TabLayoutMediator(binding.tlSchedule, binding.vpSchedule) { tab, position ->
-//            setupScheduleTabView(tab, position)
-//            binding.vpSchedule.setCurrentItem(initialCurrentDateIndex, false)
-//        }.attach()
-//    }
-//
-//    private fun setupScheduleTabView(
-//        tab: TabLayout.Tab,
-//        position: Int,
-//    ) {
-//        val itemScheduleTabBinding =
-//            ItemScheduleTabBinding.inflate(
-//                LayoutInflater.from(requireContext()),
-//                binding.tlSchedule,
-//                false,
-//            )
-//        tab.customView = itemScheduleTabBinding.root
-//
-//        itemScheduleTabBinding.tvScheduleTabItem.text =
-//            viewModel.scheduleDatesUiState.value
-//                .let {
-//                    (it as? ScheduleDatesUiState.Success)?.dates?.get(position)?.date
-//                        ?: EMPTY_DATE_TEXT
-//                }
-//    }
-
-    private fun setupObservers() {
-//        viewModel.scheduleDatesUiState.observe(viewLifecycleOwner) { scheduleDatesUiState ->
-//
-//            when (scheduleDatesUiState) {
-//                is ScheduleDatesUiState.Loading -> {
-//                    showLoadingView(isLoading = true)
-//                }
-//
-//                is ScheduleDatesUiState.Success -> {
-//                    showLoadingView(isLoading = false)
-//                    setupScheduleTabLayout(scheduleDatesUiState.initialDatePosition)
-//                    adapter.submitList(scheduleDatesUiState.dates)
-//                }
-//
-//                is ScheduleDatesUiState.Error -> {
-//                    showLoadingView(isLoading = false)
-//                    Timber.w(
-//                        scheduleDatesUiState.throwable,
-//                        "${this::class.simpleName}: ${scheduleDatesUiState.throwable.message}",
-//                    )
-//                    showErrorSnackBar(scheduleDatesUiState.throwable)
-//                }
-//            }
-//        }
-    }
-
-//    private fun showLoadingView(isLoading: Boolean) {
-//        binding.lavScheduleLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
-//        binding.vpSchedule.visibility = if (isLoading) View.INVISIBLE else View.VISIBLE
-//    }
-//
-//    companion object {
-//        private const val PRELOAD_PAGE_COUNT: Int = 2
-//        private const val EMPTY_DATE_TEXT: String = ""
-//    }
 }

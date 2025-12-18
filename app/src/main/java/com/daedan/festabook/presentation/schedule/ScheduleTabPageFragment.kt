@@ -2,24 +2,22 @@ package com.daedan.festabook.presentation.schedule
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentScheduleTabPageBinding
-import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.logging.logger
 import com.daedan.festabook.logging.model.schedule.ScheduleSwipeRefreshLogData
 import com.daedan.festabook.presentation.common.BaseFragment
-import com.daedan.festabook.presentation.schedule.ScheduleViewModel.Companion.INVALID_ID
 import com.daedan.festabook.presentation.schedule.adapter.ScheduleAdapter
 
 class ScheduleTabPageFragment : BaseFragment<FragmentScheduleTabPageBinding>() {
     override val layoutId: Int = R.layout.fragment_schedule_tab_page
-    private val viewModel: ScheduleViewModel by viewModels {
-        val dateId: Long = arguments?.getLong(KEY_DATE_ID, INVALID_ID) ?: INVALID_ID
-        ScheduleViewModel.factory(appGraph.scheduleViewModelFactory, dateId)
-    }
+
+    //    private val viewModel: ScheduleViewModel by viewModels {
+//        val dateId: Long = arguments?.getLong(KEY_DATE_ID, INVALID_ID) ?: INVALID_ID
+//        ScheduleViewModel.factory(appGraph.scheduleViewModelFactory, dateId)
+//    }
     private val adapter: ScheduleAdapter by lazy {
         ScheduleAdapter()
     }

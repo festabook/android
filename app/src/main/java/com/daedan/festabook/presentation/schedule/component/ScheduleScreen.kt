@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.FestabookTopAppBar
+import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.schedule.ScheduleDatesUiState
+import com.daedan.festabook.presentation.schedule.ScheduleEventsUiState
 import com.daedan.festabook.presentation.schedule.ScheduleViewModel
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.festabookSpacing
@@ -27,9 +29,9 @@ fun ScheduleScreen(
     scheduleViewModel: ScheduleViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val scheduleDatesUiState by scheduleViewModel.scheduleDatesUiState.collectAsStateWithLifecycle()
-    val selectedDateId by scheduleViewModel.selectedDateId.collectAsStateWithLifecycle()
-    val eventStates by scheduleViewModel.scheduleEventsByDate.collectAsStateWithLifecycle()
+    val scheduleDatesUiState by scheduleViewModel.scheduleDateUiState.collectAsStateWithLifecycle()
+    val scheduleEventsUiState by scheduleViewModel.scheduleEventUiState.collectAsStateWithLifecycle()
+    val isRefreshing = scheduleEventsUiState is ScheduleEventsUiState.Refreshing
 
     Scaffold(
         topBar = { FestabookTopAppBar(title = stringResource(R.string.schedule_title)) },
@@ -41,16 +43,20 @@ fun ScheduleScreen(
             }
 
             ScheduleDatesUiState.InitialLoading -> {
+                LoadingStateScreen()
             }
 
             is ScheduleDatesUiState.Success -> {
-                val scheduleDates = (scheduleDatesUiState as ScheduleDatesUiState.Success).dates
-                val pageState = rememberPagerState { scheduleDates.size }
+                val scheduleDatesUiStateSuccess =
+                    scheduleDatesUiState as ScheduleDatesUiState.Success
+                val pageState =
+                    rememberPagerState(
+                        initialPage = scheduleDatesUiStateSuccess.currentDatePosition,
+                    ) { scheduleDatesUiStateSuccess.dates.size }
                 val scope = rememberCoroutineScope()
 
                 LaunchedEffect(pageState.currentPage) {
-                    val selectedDateId = scheduleDates[pageState.currentPage].id
-                    scheduleViewModel.onDateSelected(selectedDateId)
+                    scheduleViewModel.onDateSelected(pageState.currentPage)
                 }
 
                 Column(
@@ -59,7 +65,7 @@ fun ScheduleScreen(
                     ScheduleTabRow(
                         pageState = pageState,
                         scope = scope,
-                        scheduleDates = scheduleDates,
+                        dates = scheduleDatesUiStateSuccess.dates,
                     )
                     Spacer(modifier = Modifier.height(festabookSpacing.paddingBody4))
                     HorizontalDivider(
@@ -69,9 +75,17 @@ fun ScheduleScreen(
                     )
                     ScheduleTabPage(
                         pagerState = pageState,
-                        selectedDatedId = selectedDateId,
-                        eventStates = eventStates,
-                        onRefresh = { },
+                        scheduleEventsUiState = scheduleEventsUiState,
+                        isRefreshing = isRefreshing,
+                        onRefresh = {
+                            val oldEvents =
+                                (scheduleEventsUiState as? ScheduleEventsUiState.Refreshing)?.oldEvents
+                                    ?: emptyList()
+                            scheduleViewModel.loadSchedules(
+                                scheduleEventUiState = ScheduleEventsUiState.Refreshing(oldEvents),
+                                selectedDatePosition = pageState.currentPage,
+                            )
+                        },
                     )
                 }
             }
