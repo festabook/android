@@ -33,7 +33,7 @@ class ScheduleViewModel(
     val scheduleEventUiState: StateFlow<ScheduleEventsUiState> = _scheduleEventUiState.asStateFlow()
 
     init {
-        loadSchedules(scheduleEventUiState = ScheduleEventsUiState.InitialLoading)
+        loadSchedules()
     }
 
     fun onDateSelected(selectedPosition: Int) {
@@ -43,15 +43,14 @@ class ScheduleViewModel(
     }
 
     fun loadSchedules(
-        scheduleEventUiState: ScheduleEventsUiState,
+        scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState.InitialLoading,
         selectedDatePosition: Int? = null,
     ) {
         viewModelScope.launch {
-            _scheduleEventUiState.value = scheduleEventUiState
             val datesResult = loadAllDates(selectedDatePosition)
 
             datesResult.onSuccess { scheduleDateUiModels ->
-                loadEvents(scheduleDateUiModels)
+                loadEvents(scheduleEventUiState, scheduleDateUiModels)
             }
         }
     }
@@ -81,28 +80,32 @@ class ScheduleViewModel(
         )
     }
 
-    private suspend fun loadEvents(scheduleDateUiModels: List<ScheduleDateUiModel>) {
+    private fun loadEvents(
+        scheduleEventUiState: ScheduleEventsUiState,
+        scheduleDateUiModels: List<ScheduleDateUiModel>,
+    ) {
         val allEvents = mutableMapOf<Int, List<ScheduleEventUiModel>>()
         scheduleDateUiModels.forEachIndexed { position, scheduleDateUiModel ->
-            val eventsResult =
-                scheduleRepository.fetchScheduleEventsById(scheduleDateUiModel.id)
+            viewModelScope.launch {
+                _scheduleEventUiState.value = scheduleEventUiState
+                val eventsResult =
+                    scheduleRepository.fetchScheduleEventsById(scheduleDateUiModel.id)
 
-            eventsResult
-                .onSuccess { scheduleEvents ->
-                    val scheduleEventUiModels = scheduleEvents.map { it.toUiModel() }
-                    allEvents[position] = scheduleEventUiModels
+                eventsResult
+                    .onSuccess { scheduleEvents ->
+                        val scheduleEventUiModels = scheduleEvents.map { it.toUiModel() }
+                        allEvents[position] = scheduleEventUiModels
+                        val currentEventPosition = getCurrentEventPosition(scheduleEventUiModels)
 
-                    val currentEventPosition =
-                        getCurrentEventPosition(scheduleEventUiModels)
-
-                    _scheduleEventUiState.value =
-                        ScheduleEventsUiState.Success(
-                            eventsByDate = allEvents,
-                            currentEventPosition = currentEventPosition,
-                        )
-                }.onFailure {
-                    _scheduleEventUiState.value = ScheduleEventsUiState.Error(it)
-                }
+                        _scheduleEventUiState.value =
+                            ScheduleEventsUiState.Success(
+                                eventsByDate = allEvents,
+                                currentEventPosition = currentEventPosition,
+                            )
+                    }.onFailure {
+                        _scheduleEventUiState.value = ScheduleEventsUiState.Error(it)
+                    }
+            }
         }
     }
 
