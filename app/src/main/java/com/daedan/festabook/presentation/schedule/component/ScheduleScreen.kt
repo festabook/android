@@ -79,7 +79,7 @@ fun ScheduleScreen(
                         isRefreshing = isRefreshing,
                         onRefresh = {
                             val oldEvents =
-                                (scheduleEventsUiState as? ScheduleEventsUiState.Refreshing)?.oldEvents
+                                (scheduleEventsUiState as? ScheduleEventsUiState.Success)?.eventsByDate[pageState.currentPage]
                                     ?: emptyList()
                             scheduleViewModel.loadSchedules(
                                 scheduleEventUiState = ScheduleEventsUiState.Refreshing(oldEvents),
