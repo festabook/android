@@ -1,6 +1,8 @@
 package com.daedan.festabook.presentation.placeMap.placeDetailPreview.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -22,6 +24,7 @@ import com.daedan.festabook.presentation.placeMap.model.getIconId
 import com.daedan.festabook.presentation.placeMap.model.getTextId
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.FestabookTypography
+import com.daedan.festabook.presentation.theme.festabookShapes
 import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
@@ -30,11 +33,18 @@ fun PlaceDetailPreviewSecondaryScreen(
     modifier: Modifier = Modifier,
     onError: (SelectedPlaceUiState.Error) -> Unit = {},
     onEmpty: () -> Unit = {},
+    onClick: (SelectedPlaceUiState) -> Unit = {},
     visible: Boolean = false,
 ) {
     PreviewAnimatableBox(
         visible = visible,
-        modifier = modifier,
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable {
+                    onClick(placeUiState)
+                },
+        shape = festabookShapes.radius2,
     ) {
         when (placeUiState) {
             is SelectedPlaceUiState.Loading -> Unit
@@ -96,7 +106,7 @@ private val FAKE_PLACE =
         id = 1,
         imageUrl = null,
         category = PlaceCategoryUiModel.TOILET,
-        title = "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
+        title = "테스트테스",
         description = "https://onlyfor-me-blog.tistory.com/1190",
         location = null,
         isBookmarked = false,

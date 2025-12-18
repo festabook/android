@@ -1,26 +1,36 @@
 package com.daedan.festabook.presentation.placeMap.placeDetailPreview
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import coil3.load
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceDetailPreviewSecondaryBinding
+import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.di.fragment.FragmentKey
-import com.daedan.festabook.logging.logger
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
-import com.daedan.festabook.presentation.common.showBottomAnimation
 import com.daedan.festabook.presentation.common.showErrorSnackBar
-import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.logging.PlacePreviewClick
 import com.daedan.festabook.presentation.placeMap.model.SelectedPlaceUiState
-import com.daedan.festabook.presentation.placeMap.model.getIconId
-import com.daedan.festabook.presentation.placeMap.model.getTextId
+import com.daedan.festabook.presentation.placeMap.placeDetailPreview.component.PlaceDetailPreviewSecondaryScreen
+import com.daedan.festabook.presentation.theme.FestabookTheme
+import com.daedan.festabook.presentation.theme.festabookSpacing
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
@@ -43,56 +53,62 @@ class PlaceDetailPreviewSecondaryFragment(
             }
         }
 
-    override fun onViewCreated(
-        view: View,
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ) {
-        super.onViewCreated(view, savedInstanceState)
-        setUpObserver()
-        setUpBackPressedCallback()
-    }
+    ): View {
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                val placeDetailUiState by viewModel.selectedPlaceFlow.collectAsStateWithLifecycle()
+                val visible = placeDetailUiState is SelectedPlaceUiState.Success
 
-    override fun onMenuItemReClick() {
-        viewModel.unselectPlace()
-    }
-
-    private fun setUpBackPressedCallback() {
-        requireActivity().onBackPressedDispatcher.addCallback(
-            viewLifecycleOwner,
-            backPressedCallback,
-        )
-    }
-
-    private fun setUpObserver() {
-        viewModel.selectedPlace.observe(viewLifecycleOwner) { selectedPlace ->
-            backPressedCallback.isEnabled = true
-            when (selectedPlace) {
-                is SelectedPlaceUiState.Success -> {
-                    binding.layoutSelectedPlace.visibility = View.VISIBLE
-                    binding.layoutSelectedPlace.showBottomAnimation()
-                    updateSelectedPlaceUi(selectedPlace.value)
-                    binding.logger.log(
-                        PlacePreviewClick(
-                            baseLogData = binding.logger.getBaseLogData(),
-                            placeName = selectedPlace.value.place.title ?: "undefined",
-                            timeTag = viewModel.selectedTimeTag.value?.name ?: "undefined",
-                            category = selectedPlace.value.place.category.name,
-                        ),
-                    )
+                LaunchedEffect(placeDetailUiState) {
+                    backPressedCallback.isEnabled = true
                 }
 
-                is SelectedPlaceUiState.Error -> showErrorSnackBar(selectedPlace.throwable)
-                is SelectedPlaceUiState.Loading -> Unit
-                is SelectedPlaceUiState.Empty -> backPressedCallback.isEnabled = false
+                FestabookTheme {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        PlaceDetailPreviewSecondaryScreen(
+                            visible = visible,
+                            placeUiState = placeDetailUiState,
+                            modifier =
+                                Modifier
+                                    .padding(
+                                        vertical = festabookSpacing.paddingBody4,
+                                        horizontal = festabookSpacing.paddingScreenGutter,
+                                    ),
+                            onError = {
+                                showErrorSnackBar(it.throwable)
+                            },
+                            onEmpty = {
+                                backPressedCallback.isEnabled = false
+                            },
+                            onClick = {
+                                if (it !is SelectedPlaceUiState.Success) return@PlaceDetailPreviewSecondaryScreen
+                                appGraph.defaultFirebaseLogger.log(
+                                    PlacePreviewClick(
+                                        baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
+                                        placeName = it.value.place.title ?: "undefined",
+                                        timeTag =
+                                            viewModel.selectedTimeTag.value?.name
+                                                ?: "undefined",
+                                        category = it.value.place.category.name,
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                }
             }
         }
     }
 
-    private fun updateSelectedPlaceUi(selectedPlace: PlaceDetailUiModel) {
-        with(binding) {
-            ivSecondaryCategoryItem.load(selectedPlace.place.category.getIconId())
-            tvSelectedPlaceTitle.text =
-                selectedPlace.place.title ?: getString(selectedPlace.place.category.getTextId())
-        }
+    override fun onMenuItemReClick() {
+        viewModel.unselectPlace()
     }
 }
