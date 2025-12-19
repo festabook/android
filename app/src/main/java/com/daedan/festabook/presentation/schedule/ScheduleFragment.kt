@@ -52,8 +52,6 @@ class ScheduleFragment :
         }
 
     override fun onMenuItemReClick() {
-//        viewModel.loadAllDates(ScheduleUiState.InitialLoading)
-//        viewModel.loadScheduleByDate()
-//        binding.logger.log(ScheduleMenuItemReClickLogData(binding.logger.getBaseLogData()))
+        viewModel.loadSchedules()
     }
 }
