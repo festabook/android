@@ -2,15 +2,16 @@ package com.daedan.festabook.presentation.schedule
 
 import com.daedan.festabook.presentation.schedule.model.ScheduleDateUiModel
 
-sealed interface ScheduleDatesUiState {
-    data object InitialLoading : ScheduleDatesUiState
+sealed interface ScheduleUiState {
+    data object InitialLoading : ScheduleUiState
 
     data class Success(
         val dates: List<ScheduleDateUiModel>,
         val currentDatePosition: Int,
-    ) : ScheduleDatesUiState
+        val eventsUiStateByPosition: Map<Int, ScheduleEventsUiState> = emptyMap(),
+    ) : ScheduleUiState
 
     data class Error(
         val throwable: Throwable,
-    ) : ScheduleDatesUiState
+    ) : ScheduleUiState
 }

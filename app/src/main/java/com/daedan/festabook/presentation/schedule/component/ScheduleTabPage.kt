@@ -63,9 +63,7 @@ fun ScheduleTabPage(
 
                 is ScheduleEventsUiState.Success -> {
                     ScheduleTabContent(
-                        scheduleEvents =
-                            scheduleEventsUiState.eventsByDate[pagerState.currentPage]
-                                ?: emptyList(),
+                        scheduleEvents = scheduleEventsUiState.events,
                         modifier =
                             Modifier
                                 .padding(end = festabookSpacing.paddingScreenGutter)

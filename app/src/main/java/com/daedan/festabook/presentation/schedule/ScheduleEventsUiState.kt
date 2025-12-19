@@ -10,7 +10,7 @@ sealed interface ScheduleEventsUiState {
     ) : ScheduleEventsUiState
 
     data class Success(
-        val eventsByDate: Map<Int, List<ScheduleEventUiModel>>,
+        val events: List<ScheduleEventUiModel>,
         val currentEventPosition: Int,
     ) : ScheduleEventsUiState
 

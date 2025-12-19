@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import java.time.LocalDate
 
 @ContributesIntoMap(AppScope::class)
@@ -24,22 +25,12 @@ import java.time.LocalDate
 class ScheduleViewModel(
     private val scheduleRepository: ScheduleRepository,
 ) : ViewModel() {
-    private val _scheduleDateUiState: MutableStateFlow<ScheduleDatesUiState> =
-        MutableStateFlow(ScheduleDatesUiState.InitialLoading)
-    val scheduleDateUiState: StateFlow<ScheduleDatesUiState> = _scheduleDateUiState.asStateFlow()
-
-    private val _scheduleEventUiState: MutableStateFlow<ScheduleEventsUiState> =
-        MutableStateFlow(ScheduleEventsUiState.InitialLoading)
-    val scheduleEventUiState: StateFlow<ScheduleEventsUiState> = _scheduleEventUiState.asStateFlow()
+    private val _scheduleUiState: MutableStateFlow<ScheduleUiState> =
+        MutableStateFlow(ScheduleUiState.InitialLoading)
+    val scheduleUiState: StateFlow<ScheduleUiState> = _scheduleUiState.asStateFlow()
 
     init {
         loadSchedules()
-    }
-
-    fun onDateSelected(selectedPosition: Int) {
-        (_scheduleDateUiState.value as? ScheduleDatesUiState.Success)?.let {
-            _scheduleDateUiState.value = it.copy(currentDatePosition = selectedPosition)
-        }
     }
 
     fun loadSchedules(
@@ -50,13 +41,13 @@ class ScheduleViewModel(
             val datesResult = loadAllDates(selectedDatePosition)
 
             datesResult.onSuccess { scheduleDateUiModels ->
-                loadEvents(scheduleEventUiState, scheduleDateUiModels)
+                loadAllEvents(scheduleEventUiState, scheduleDateUiModels)
             }
         }
     }
 
     private suspend fun loadAllDates(selectedDatePosition: Int?): Result<List<ScheduleDateUiModel>> {
-        _scheduleDateUiState.value = ScheduleDatesUiState.InitialLoading
+        _scheduleUiState.value = ScheduleUiState.InitialLoading
         val result = scheduleRepository.fetchAllScheduleDates()
 
         return result.fold(
@@ -65,8 +56,8 @@ class ScheduleViewModel(
                 val currentDatePosition =
                     selectedDatePosition ?: getCurrentDatePosition(scheduleDates)
 
-                _scheduleDateUiState.value =
-                    ScheduleDatesUiState.Success(
+                _scheduleUiState.value =
+                    ScheduleUiState.Success(
                         dates = scheduleDateUiModels,
                         currentDatePosition = currentDatePosition,
                     )
@@ -74,39 +65,67 @@ class ScheduleViewModel(
                 Result.success(scheduleDateUiModels)
             },
             onFailure = { throwable ->
-                _scheduleDateUiState.value = ScheduleDatesUiState.Error(throwable)
+                _scheduleUiState.value = ScheduleUiState.Error(throwable)
                 Result.failure(throwable)
             },
         )
     }
 
-    private fun loadEvents(
+    private suspend fun loadAllEvents(
         scheduleEventUiState: ScheduleEventsUiState,
         scheduleDateUiModels: List<ScheduleDateUiModel>,
     ) {
-        val allEvents = mutableMapOf<Int, List<ScheduleEventUiModel>>()
-        scheduleDateUiModels.forEachIndexed { position, scheduleDateUiModel ->
-            viewModelScope.launch {
-                _scheduleEventUiState.value = scheduleEventUiState
-                val eventsResult =
-                    scheduleRepository.fetchScheduleEventsById(scheduleDateUiModel.id)
-
-                eventsResult
-                    .onSuccess { scheduleEvents ->
-                        val scheduleEventUiModels = scheduleEvents.map { it.toUiModel() }
-                        allEvents[position] = scheduleEventUiModels
-                        val currentEventPosition = getCurrentEventPosition(scheduleEventUiModels)
-
-                        _scheduleEventUiState.value =
-                            ScheduleEventsUiState.Success(
-                                eventsByDate = allEvents,
-                                currentEventPosition = currentEventPosition,
-                            )
-                    }.onFailure {
-                        _scheduleEventUiState.value = ScheduleEventsUiState.Error(it)
-                    }
+        supervisorScope {
+            scheduleDateUiModels.forEachIndexed { position, scheduleDateUiModel ->
+                launch {
+                    loadEventsByPosition(
+                        position = position,
+                        scheduleDateUiModel = scheduleDateUiModel,
+                        scheduleEventsUiState = scheduleEventUiState,
+                    )
+                }
             }
         }
+    }
+
+    private suspend fun loadEventsByPosition(
+        position: Int,
+        scheduleDateUiModel: ScheduleDateUiModel,
+        scheduleEventsUiState: ScheduleEventsUiState,
+    ) {
+        updateEventUiState(position, scheduleEventsUiState)
+
+        val result =
+            scheduleRepository.fetchScheduleEventsById(scheduleDateUiModel.id)
+
+        result
+            .onSuccess { scheduleEvents ->
+                val uiModels = scheduleEvents.map { it.toUiModel() }
+                updateEventUiState(
+                    position = position,
+                    scheduleEventsUiState =
+                        ScheduleEventsUiState.Success(
+                            events = uiModels,
+                            currentEventPosition = getCurrentEventPosition(uiModels),
+                        ),
+                )
+            }.onFailure {
+                updateEventUiState(position, ScheduleEventsUiState.Error(it))
+            }
+    }
+
+    private fun updateEventUiState(
+        position: Int,
+        scheduleEventsUiState: ScheduleEventsUiState,
+    ) {
+        val currentUiState = _scheduleUiState.value
+        if (currentUiState !is ScheduleUiState.Success) return
+
+        _scheduleUiState.value =
+            currentUiState.copy(
+                eventsUiStateByPosition =
+                    currentUiState.eventsUiStateByPosition + (position to scheduleEventsUiState),
+            )
     }
 
     private fun getCurrentEventPosition(scheduleEventUiModels: List<ScheduleEventUiModel>): Int {

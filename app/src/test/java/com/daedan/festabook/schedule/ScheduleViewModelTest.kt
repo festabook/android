@@ -5,8 +5,8 @@ import com.daedan.festabook.domain.model.ScheduleEvent
 import com.daedan.festabook.domain.model.ScheduleEventStatus
 import com.daedan.festabook.domain.repository.ScheduleRepository
 import com.daedan.festabook.getOrAwaitValue
-import com.daedan.festabook.presentation.schedule.ScheduleDatesUiState
 import com.daedan.festabook.presentation.schedule.ScheduleEventsUiState
+import com.daedan.festabook.presentation.schedule.ScheduleUiState
 import com.daedan.festabook.presentation.schedule.ScheduleViewModel
 import com.daedan.festabook.presentation.schedule.model.toUiModel
 import io.mockk.coEvery
@@ -159,7 +159,7 @@ class ScheduleViewModelTest {
                 )
 
             val expected =
-                ScheduleDatesUiState.Success(
+                ScheduleUiState.Success(
                     FAKE_SCHEDULE_DATES.map { it.toUiModel() },
                     0,
                 )
