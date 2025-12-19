@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,6 +23,7 @@ import com.daedan.festabook.presentation.common.component.PULL_OFFSET_LIMIT
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
 import com.daedan.festabook.presentation.schedule.ScheduleEventsUiState
 import com.daedan.festabook.presentation.schedule.ScheduleUiState
+import com.daedan.festabook.presentation.schedule.ScheduleUiState.Companion.DEFAULT_POSITION
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiModel
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiStatus
 import com.daedan.festabook.presentation.theme.FestabookColor
@@ -75,6 +78,7 @@ fun ScheduleTabPage(
                 is ScheduleEventsUiState.Success -> {
                     ScheduleTabContent(
                         scheduleEvents = scheduleEventsUiState.events,
+                        currentEventPosition = scheduleEventsUiState.currentEventPosition,
                         modifier =
                             Modifier
                                 .padding(end = festabookSpacing.paddingScreenGutter)
@@ -95,7 +99,13 @@ fun ScheduleTabPage(
 private fun ScheduleTabContent(
     scheduleEvents: List<ScheduleEventUiModel>,
     modifier: Modifier = Modifier,
+    currentEventPosition: Int = DEFAULT_POSITION,
 ) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(Unit) {
+        listState.animateScrollToItem(currentEventPosition)
+    }
     if (scheduleEvents.isEmpty()) {
         EmptyStateScreen(modifier = modifier)
     } else {
@@ -110,6 +120,7 @@ private fun ScheduleTabContent(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody5),
                 contentPadding = PaddingValues(vertical = festabookSpacing.paddingBody5),
+                state = listState,
             ) {
                 items(items = scheduleEvents, key = { scheduleEvent -> scheduleEvent.id }) {
                     ScheduleEventItem(scheduleEvent = it)

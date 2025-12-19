@@ -14,4 +14,8 @@ sealed interface ScheduleUiState {
     data class Error(
         val throwable: Throwable,
     ) : ScheduleUiState
+
+    companion object {
+        const val DEFAULT_POSITION: Int = 0
+    }
 }

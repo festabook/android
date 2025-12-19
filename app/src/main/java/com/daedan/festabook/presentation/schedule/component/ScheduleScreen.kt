@@ -44,8 +44,7 @@ fun ScheduleScreen(
             }
 
             is ScheduleUiState.Success -> {
-                val scheduleUiStateSuccess =
-                    scheduleUiState as ScheduleUiState.Success
+                val scheduleUiStateSuccess = scheduleUiState as ScheduleUiState.Success
                 val pageState =
                     rememberPagerState(
                         initialPage = scheduleUiStateSuccess.currentDatePosition,
