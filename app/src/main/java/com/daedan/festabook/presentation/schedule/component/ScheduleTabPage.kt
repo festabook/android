@@ -29,6 +29,7 @@ import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiStatus
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.festabookSpacing
+import timber.log.Timber
 
 private const val PRELOAD_PAGE_COUNT: Int = 2
 
@@ -56,6 +57,7 @@ fun ScheduleTabPage(
         ) { pullToRefreshState ->
             when (scheduleEventsUiState) {
                 is ScheduleEventsUiState.Error -> {
+                    Timber.w(scheduleEventsUiState.throwable.stackTraceToString())
                 }
 
                 ScheduleEventsUiState.InitialLoading -> {
