@@ -136,7 +136,7 @@ class ScheduleViewModel(
         val currentEventPosition =
             scheduleEventUiModels
                 .indexOfFirst {
-                    it.status == ScheduleEventUiStatus.ONGOING
+                    it.status != ScheduleEventUiStatus.COMPLETED
                 }.coerceAtLeast(FIRST_INDEX)
         return currentEventPosition
     }
