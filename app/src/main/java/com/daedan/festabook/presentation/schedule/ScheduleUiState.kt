@@ -5,6 +5,10 @@ import com.daedan.festabook.presentation.schedule.model.ScheduleDateUiModel
 sealed interface ScheduleUiState {
     data object InitialLoading : ScheduleUiState
 
+    data class Refreshing(
+        val lastSuccessState: Success,
+    ) : ScheduleUiState
+
     data class Success(
         val dates: List<ScheduleDateUiModel>,
         val currentDatePosition: Int,

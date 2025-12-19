@@ -34,11 +34,12 @@ class ScheduleViewModel(
     }
 
     fun loadSchedules(
+        scheduleUiState: ScheduleUiState = ScheduleUiState.InitialLoading,
         scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState.InitialLoading,
         selectedDatePosition: Int? = null,
     ) {
         viewModelScope.launch {
-            val datesResult = loadAllDates(selectedDatePosition)
+            val datesResult = loadAllDates(scheduleUiState, selectedDatePosition)
 
             datesResult.onSuccess { scheduleDateUiModels ->
                 loadAllEvents(scheduleEventUiState, scheduleDateUiModels)
@@ -46,8 +47,11 @@ class ScheduleViewModel(
         }
     }
 
-    private suspend fun loadAllDates(selectedDatePosition: Int?): Result<List<ScheduleDateUiModel>> {
-        _scheduleUiState.value = ScheduleUiState.InitialLoading
+    private suspend fun loadAllDates(
+        scheduleUiState: ScheduleUiState,
+        selectedDatePosition: Int?,
+    ): Result<List<ScheduleDateUiModel>> {
+        _scheduleUiState.value = scheduleUiState
         val result = scheduleRepository.fetchAllScheduleDates()
 
         return result.fold(

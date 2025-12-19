@@ -22,6 +22,7 @@ import com.daedan.festabook.presentation.schedule.ScheduleUiState
 import com.daedan.festabook.presentation.schedule.ScheduleViewModel
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.festabookSpacing
+import timber.log.Timber
 
 @Composable
 fun ScheduleScreen(
@@ -29,35 +30,37 @@ fun ScheduleScreen(
     modifier: Modifier = Modifier,
 ) {
     val scheduleUiState by scheduleViewModel.scheduleUiState.collectAsStateWithLifecycle()
+    val currentState =
+        when (scheduleUiState) {
+            is ScheduleUiState.Refreshing -> (scheduleUiState as ScheduleUiState.Refreshing).lastSuccessState
+            is ScheduleUiState.Success -> scheduleUiState
+            else -> scheduleUiState
+        }
 
     Scaffold(
         topBar = { FestabookTopAppBar(title = stringResource(R.string.schedule_title)) },
         modifier = modifier,
     ) { innerPadding ->
-
-        when (scheduleUiState) {
-            is ScheduleUiState.Error -> {
-            }
-
+        when (currentState) {
             ScheduleUiState.InitialLoading -> {
                 LoadingStateScreen()
             }
 
-            is ScheduleUiState.Success -> {
-                val scheduleUiStateSuccess = scheduleUiState as ScheduleUiState.Success
+            is ScheduleUiState.Error -> {
+                Timber.w(currentState.throwable.stackTraceToString())
+            }
+
+            else -> {
+                val currentStateSuccess = currentState as ScheduleUiState.Success
                 val pageState =
-                    rememberPagerState(
-                        initialPage = scheduleUiStateSuccess.currentDatePosition,
-                    ) { scheduleUiStateSuccess.dates.size }
+                    rememberPagerState(initialPage = currentStateSuccess.currentDatePosition) { currentStateSuccess.dates.size }
                 val scope = rememberCoroutineScope()
 
-                Column(
-                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
-                ) {
+                Column(modifier = Modifier.padding(top = innerPadding.calculateTopPadding())) {
                     ScheduleTabRow(
                         pageState = pageState,
                         scope = scope,
-                        dates = scheduleUiStateSuccess.dates,
+                        dates = currentStateSuccess.dates,
                     )
                     Spacer(modifier = Modifier.height(festabookSpacing.paddingBody4))
                     HorizontalDivider(
@@ -67,9 +70,10 @@ fun ScheduleScreen(
                     )
                     ScheduleTabPage(
                         pagerState = pageState,
-                        scheduleUiState = scheduleUiStateSuccess,
+                        scheduleUiState = currentStateSuccess,
                         onRefresh = { oldEvents ->
                             scheduleViewModel.loadSchedules(
+                                scheduleUiState = ScheduleUiState.Refreshing(currentStateSuccess),
                                 scheduleEventUiState = ScheduleEventsUiState.Refreshing(oldEvents),
                                 selectedDatePosition = pageState.currentPage,
                             )
