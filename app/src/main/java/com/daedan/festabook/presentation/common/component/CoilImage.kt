@@ -12,6 +12,7 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.daedan.festabook.R
+import com.daedan.festabook.presentation.common.convertImageUrl
 
 @Composable
 fun CoilImage(
@@ -26,7 +27,7 @@ fun CoilImage(
             ImageRequest
                 .Builder(LocalContext.current)
                 .apply(builder)
-                .data(url)
+                .data(url.convertImageUrl())
                 .crossfade(true)
                 .build(),
         contentDescription = contentDescription,

@@ -39,7 +39,6 @@ import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.CoilImage
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
-import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.placeMap.component.PlaceCategoryLabel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
@@ -200,7 +199,7 @@ private fun PlaceListItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
-                url = place.imageUrl.convertImageUrl() ?: "",
+                url = place.imageUrl ?: "",
                 contentDescription = stringResource(R.string.content_description_booth_image),
                 modifier =
                     Modifier
