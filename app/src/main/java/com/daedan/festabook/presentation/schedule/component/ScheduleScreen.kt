@@ -52,11 +52,6 @@ fun ScheduleScreen(
                     ) { scheduleUiStateSuccess.dates.size }
                 val scope = rememberCoroutineScope()
 
-                val scheduleEventsUiState =
-                    scheduleUiStateSuccess.eventsUiStateByPosition[pageState.currentPage]
-                        ?: ScheduleEventsUiState.Error(IllegalArgumentException())
-                val isRefreshing = scheduleEventsUiState is ScheduleEventsUiState.Refreshing
-
                 Column(
                     modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
                 ) {
@@ -73,12 +68,8 @@ fun ScheduleScreen(
                     )
                     ScheduleTabPage(
                         pagerState = pageState,
-                        scheduleEventsUiState = scheduleEventsUiState,
-                        isRefreshing = isRefreshing,
-                        onRefresh = {
-                            val oldEvents =
-                                (scheduleEventsUiState as? ScheduleEventsUiState.Success)?.events
-                                    ?: emptyList()
+                        scheduleUiState = scheduleUiStateSuccess,
+                        onRefresh = { oldEvents ->
                             scheduleViewModel.loadSchedules(
                                 scheduleEventUiState = ScheduleEventsUiState.Refreshing(oldEvents),
                                 selectedDatePosition = pageState.currentPage,

@@ -20,25 +20,36 @@ import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.component.PULL_OFFSET_LIMIT
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
 import com.daedan.festabook.presentation.schedule.ScheduleEventsUiState
+import com.daedan.festabook.presentation.schedule.ScheduleUiState
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiModel
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiStatus
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.festabookSpacing
 
+private const val PRELOAD_PAGE_COUNT: Int = 2
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleTabPage(
     pagerState: PagerState,
-    scheduleEventsUiState: ScheduleEventsUiState,
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit,
+    scheduleUiState: ScheduleUiState.Success,
+    onRefresh: (List<ScheduleEventUiModel>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    HorizontalPager(state = pagerState, modifier = modifier) {
+    HorizontalPager(
+        state = pagerState,
+        modifier = modifier,
+        beyondViewportPageCount = PRELOAD_PAGE_COUNT,
+    ) { index ->
+        val scheduleEventsUiState = scheduleUiState.eventsUiStateByPosition[index]
+        val isRefreshing = scheduleEventsUiState is ScheduleEventsUiState.Refreshing
+        val oldEvents =
+            (scheduleEventsUiState as? ScheduleEventsUiState.Success)?.events ?: emptyList()
+
         PullToRefreshContainer(
             isRefreshing = isRefreshing,
-            onRefresh = onRefresh,
+            onRefresh = { onRefresh(oldEvents) },
         ) { pullToRefreshState ->
             when (scheduleEventsUiState) {
                 is ScheduleEventsUiState.Error -> {
@@ -73,6 +84,8 @@ fun ScheduleTabPage(
                                 },
                     )
                 }
+
+                null -> {}
             }
         }
     }
