@@ -15,7 +15,12 @@ fun OffsetDependentLayout(
         content = content,
         modifier = modifier,
     ) { measurables, constraints ->
-        val placeable = measurables.first().measure(constraints)
+        val placeable =
+            measurables.firstOrNull()?.measure(constraints) ?: return@Layout layout(
+                width = constraints.minWidth,
+                height = constraints.minHeight,
+                placementBlock = { },
+            )
 
         // 부모의 크기를 결정
         layout(placeable.width, placeable.height + offset.roundToInt()) {
