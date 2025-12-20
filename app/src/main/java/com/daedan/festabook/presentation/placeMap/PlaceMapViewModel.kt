@@ -22,6 +22,7 @@ import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -67,6 +68,15 @@ class PlaceMapViewModel(
     private val _isExceededMaxLength: MutableLiveData<Boolean> = MutableLiveData()
     val isExceededMaxLength: LiveData<Boolean> = _isExceededMaxLength
 
+    val isExceededMaxLengthFlow: StateFlow<Boolean> =
+        _isExceededMaxLength
+            .asFlow()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Lazily,
+                initialValue = false,
+            )
+
     private val _backToInitialPositionClicked: MutableLiveData<Event<Unit>> = MutableLiveData()
     val backToInitialPositionClicked: LiveData<Event<Unit>> = _backToInitialPositionClicked
 
@@ -75,6 +85,10 @@ class PlaceMapViewModel(
 
     private val _onMapViewClick: MutableLiveData<Event<Unit>> = MutableLiveData()
     val onMapViewClick: LiveData<Event<Unit>> = _onMapViewClick
+
+    val onMapViewClickFlow: Flow<Event<Unit>> =
+        _onMapViewClick
+            .asFlow()
 
     init {
         loadOrganizationGeography()

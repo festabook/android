@@ -8,12 +8,10 @@ import android.os.Parcelable
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.daedan.festabook.R
 import com.daedan.festabook.data.util.ApiResultException
-import com.daedan.festabook.presentation.placeMap.placeList.behavior.PlaceListBottomSheetFollowBehavior
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import java.io.Serializable
@@ -127,9 +125,4 @@ fun Activity.showSnackBar(msg: String) {
             snackBar.dismiss()
         }.setActionTextColor(getColor(R.color.blue400))
     snackBar.show()
-}
-
-fun View.placeListBottomSheetFollowBehavior(): PlaceListBottomSheetFollowBehavior? {
-    val params = layoutParams as? CoordinatorLayout.LayoutParams
-    return params?.behavior as? PlaceListBottomSheetFollowBehavior
 }

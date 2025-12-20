@@ -1,5 +1,6 @@
 package com.daedan.festabook.presentation.placeMap.model
 
+import androidx.compose.ui.graphics.Color
 import com.daedan.festabook.R
 import com.daedan.festabook.domain.model.PlaceCategory
 import com.daedan.festabook.presentation.placeMap.mapManager.internal.OverlayImageManager
@@ -64,6 +65,14 @@ val PlaceCategoryUiModel.Companion.iconResources: List<Int>
             R.drawable.ic_photo_booth_selected,
             R.drawable.ic_extra_selected,
         )
+
+fun PlaceCategoryUiModel.getLabelColor() =
+    when (this) {
+        PlaceCategoryUiModel.BOOTH -> Color(0xFF0094FF)
+        PlaceCategoryUiModel.FOOD_TRUCK -> Color(0xFF00AB40)
+        PlaceCategoryUiModel.BAR -> Color(0xFFFF9D00)
+        else -> Color.Unspecified
+    }
 
 fun OverlayImageManager.getNormalIcon(category: PlaceCategoryUiModel): OverlayImage? =
     when (category) {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout>
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -15,7 +16,6 @@
             app:behavior_fitToContents="false"
             app:behavior_halfExpandedRatio="0.4"
             app:behavior_peekHeight="70dp"
-            app:layout_behavior="com.daedan.festabook.presentation.placeMap.placeList.behavior.PlaceListBottomSheetBehavior"
             app:recyclerView="@id/rv_places">
 
             <View
@@ -108,8 +108,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start|bottom"
-            android:layout_marginStart="8dp"
-            app:layout_behavior="com.daedan.festabook.presentation.placeMap.placeList.behavior.PlaceListBottomSheetFollowBehavior" />
+            android:layout_marginStart="8dp" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_back_to_initial_position"
@@ -124,8 +123,6 @@
             app:changeVisibility="false"
             app:chipBackgroundColor="@color/gray050"
             app:chipStrokeColor="@color/gray500"
-            app:chipStrokeWidth="1dp"
-            app:layout_behavior="com.daedan.festabook.presentation.placeMap.placeList.behavior.PlaceListBottomSheetFollowBehavior" />
-
+            app:chipStrokeWidth="1dp" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
