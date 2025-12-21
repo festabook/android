@@ -151,7 +151,6 @@ class ScheduleViewModel(
     }
 
     companion object {
-        const val INVALID_ID: Long = -1L
         private const val FIRST_INDEX: Int = 0
     }
 }
