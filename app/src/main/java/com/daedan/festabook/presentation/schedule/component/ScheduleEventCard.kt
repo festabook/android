@@ -31,53 +31,17 @@ fun ScheduleEventCard(
     scheduleEvent: ScheduleEventUiModel,
     modifier: Modifier = Modifier,
 ) {
-    val scheduleEventCardProps =
-        when (scheduleEvent.status) {
-            ScheduleEventUiStatus.UPCOMING -> {
-                ScheduleEventCardProps(
-                    cardBorderColor = FestabookColor.accentGreen,
-                    titleColor = FestabookColor.black,
-                    contentColor = FestabookColor.gray500,
-                    labelText = stringResource(R.string.schedule_status_upcoming),
-                    labelTextColor = FestabookColor.black,
-                    labelBackgroundColor = FestabookColor.white,
-                    labelBorderColor = FestabookColor.black,
-                )
-            }
-
-            ScheduleEventUiStatus.ONGOING -> {
-                ScheduleEventCardProps(
-                    cardBorderColor = FestabookColor.accentBlue,
-                    titleColor = FestabookColor.black,
-                    contentColor = FestabookColor.gray500,
-                    labelText = stringResource(R.string.schedule_status_ongoing),
-                    labelTextColor = FestabookColor.white,
-                    labelBackgroundColor = FestabookColor.black,
-                    labelBorderColor = FestabookColor.black,
-                )
-            }
-
-            ScheduleEventUiStatus.COMPLETED -> {
-                ScheduleEventCardProps(
-                    cardBorderColor = FestabookColor.gray400,
-                    titleColor = FestabookColor.gray400,
-                    contentColor = FestabookColor.gray400,
-                    labelText = stringResource(R.string.schedule_status_completed),
-                    labelTextColor = FestabookColor.gray400,
-                    labelBackgroundColor = FestabookColor.white,
-                    labelBorderColor = FestabookColor.white,
-                )
-            }
-        }
+    val scheduleEventCardColors = scheduleEventCardColors(scheduleEvent.status)
 
     Column(
         modifier =
             modifier
                 .cardBackground(
                     backgroundColor = MaterialTheme.colorScheme.background,
-                    borderColor = scheduleEventCardProps.cardBorderColor,
+                    borderColor = scheduleEventCardColors.cardBorderColor,
                     shape = festabookShapes.radius2,
-                ).padding(festabookSpacing.paddingBody4),
+                )
+                .padding(festabookSpacing.paddingBody4),
         verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody1),
     ) {
         Row(
@@ -86,10 +50,10 @@ fun ScheduleEventCard(
             Text(
                 text = scheduleEvent.title,
                 style = MaterialTheme.typography.titleLarge,
-                color = scheduleEventCardProps.titleColor,
+                color = scheduleEventCardColors.titleColor,
                 modifier = Modifier.weight(1f),
             )
-            ScheduleEventLabel(scheduleEventCardProps)
+            ScheduleEventLabel(scheduleEvent.status)
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -98,7 +62,7 @@ fun ScheduleEventCard(
             Icon(
                 painter = painterResource(R.drawable.ic_clock),
                 contentDescription = stringResource(R.string.content_description_iv_location),
-                tint = scheduleEventCardProps.contentColor,
+                tint = scheduleEventCardColors.contentColor,
             )
             Text(
                 text =
@@ -108,7 +72,7 @@ fun ScheduleEventCard(
                         scheduleEvent.endTime,
                     ),
                 style = MaterialTheme.typography.bodySmall,
-                color = scheduleEventCardProps.contentColor,
+                color = scheduleEventCardColors.contentColor,
             )
         }
         Row(
@@ -118,19 +82,20 @@ fun ScheduleEventCard(
             Icon(
                 painter = painterResource(R.drawable.ic_location),
                 contentDescription = stringResource(R.string.content_description_iv_location),
-                tint = scheduleEventCardProps.contentColor,
+                tint = scheduleEventCardColors.contentColor,
             )
             Text(
                 text = scheduleEvent.location,
                 style = MaterialTheme.typography.bodySmall,
-                color = scheduleEventCardProps.contentColor,
+                color = scheduleEventCardColors.contentColor,
             )
         }
     }
 }
 
 @Composable
-private fun ScheduleEventLabel(scheduleEventCardProps: ScheduleEventCardProps) {
+private fun ScheduleEventLabel(scheduleEventUiStatus: ScheduleEventUiStatus) {
+    val scheduleEventCardProps = scheduleEventCardColors(scheduleEventUiStatus)
     Box(
         modifier =
             Modifier
@@ -143,12 +108,28 @@ private fun ScheduleEventLabel(scheduleEventCardProps: ScheduleEventCardProps) {
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = scheduleEventCardProps.labelText,
+            text = scheduleLabelText(scheduleEventUiStatus),
             style = MaterialTheme.typography.bodySmall,
             color = scheduleEventCardProps.labelTextColor,
         )
     }
 }
+
+@Composable
+private fun scheduleLabelText(status: ScheduleEventUiStatus): String =
+    when (status) {
+        ScheduleEventUiStatus.UPCOMING -> stringResource(R.string.schedule_status_upcoming)
+        ScheduleEventUiStatus.ONGOING -> stringResource(R.string.schedule_status_ongoing)
+        ScheduleEventUiStatus.COMPLETED -> stringResource(R.string.schedule_status_completed)
+    }
+
+@Composable
+private fun scheduleEventCardColors(status: ScheduleEventUiStatus): ScheduleEventCardProps =
+    when (status) {
+        ScheduleEventUiStatus.UPCOMING -> ScheduleEventCardColors.upcoming
+        ScheduleEventUiStatus.ONGOING -> ScheduleEventCardColors.ongoing
+        ScheduleEventUiStatus.COMPLETED -> ScheduleEventCardColors.completed
+    }
 
 @Composable
 @Preview(showBackground = true)
@@ -204,11 +185,42 @@ private fun CompleteScheduleEventCardONGOINGPreview() {
     }
 }
 
+object ScheduleEventCardColors {
+    val upcoming =
+        ScheduleEventCardProps(
+            cardBorderColor = FestabookColor.accentGreen,
+            titleColor = FestabookColor.black,
+            contentColor = FestabookColor.gray500,
+            labelTextColor = FestabookColor.black,
+            labelBackgroundColor = FestabookColor.white,
+            labelBorderColor = FestabookColor.black,
+        )
+
+    val ongoing =
+        ScheduleEventCardProps(
+            cardBorderColor = FestabookColor.accentBlue,
+            titleColor = FestabookColor.black,
+            contentColor = FestabookColor.gray500,
+            labelTextColor = FestabookColor.white,
+            labelBackgroundColor = FestabookColor.black,
+            labelBorderColor = FestabookColor.black,
+        )
+
+    val completed =
+        ScheduleEventCardProps(
+            cardBorderColor = FestabookColor.gray400,
+            titleColor = FestabookColor.gray400,
+            contentColor = FestabookColor.gray400,
+            labelTextColor = FestabookColor.gray400,
+            labelBackgroundColor = FestabookColor.white,
+            labelBorderColor = FestabookColor.white,
+        )
+}
+
 data class ScheduleEventCardProps(
     val cardBorderColor: Color,
     val titleColor: Color,
     val contentColor: Color,
-    val labelText: String,
     val labelTextColor: Color,
     val labelBackgroundColor: Color,
     val labelBorderColor: Color,
