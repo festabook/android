@@ -1,24 +1,18 @@
 package com.daedan.festabook.presentation.schedule.component
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
+import com.airbnb.lottie.LottieComposition
 import com.airbnb.lottie.LottieProperty
 import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.airbnb.lottie.compose.rememberLottieDynamicProperties
 import com.airbnb.lottie.compose.rememberLottieDynamicProperty
-import com.daedan.festabook.R
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiModel
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiStatus
 import com.daedan.festabook.presentation.theme.FestabookColor
@@ -26,15 +20,11 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
 fun ScheduleEventItem(
+    composition: LottieComposition?,
+    progress: Float,
     scheduleEvent: ScheduleEventUiModel,
     modifier: Modifier = Modifier,
 ) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.pulse_circle))
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-    )
-
     val props =
         when (scheduleEvent.status) {
             ScheduleEventUiStatus.UPCOMING -> {
@@ -101,9 +91,9 @@ fun ScheduleEventItem(
             composition = composition,
             progress = { progress },
             dynamicProperties = dynamicProperties,
-            modifier = Modifier.size(festabookSpacing.paddingBody4 * 4)
+            modifier = Modifier.size(festabookSpacing.paddingBody4 * 4),
         )
-        ScheduleEventCard(scheduleEvent = scheduleEvent )
+        ScheduleEventCard(scheduleEvent = scheduleEvent)
     }
 }
 
@@ -111,6 +101,8 @@ fun ScheduleEventItem(
 @Preview
 private fun ScheduleEventItemPreview() {
     ScheduleEventItem(
+        composition = null,
+        progress = 1f,
         scheduleEvent =
             ScheduleEventUiModel(
                 id = 1,

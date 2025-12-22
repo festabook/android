@@ -13,10 +13,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.airbnb.lottie.LottieComposition
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.component.PULL_OFFSET_LIMIT
@@ -41,6 +48,11 @@ fun ScheduleTabPage(
     onRefresh: (List<ScheduleEventUiModel>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.pulse_circle))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+    )
     HorizontalPager(
         state = pagerState,
         modifier = modifier,
@@ -66,6 +78,8 @@ fun ScheduleTabPage(
 
                 is ScheduleEventsUiState.Refreshing -> {
                     ScheduleTabContent(
+                        composition = composition,
+                        progress = progress,
                         scheduleEvents = scheduleEventsUiState.oldEvents,
                         modifier =
                             Modifier
@@ -79,6 +93,8 @@ fun ScheduleTabPage(
 
                 is ScheduleEventsUiState.Success -> {
                     ScheduleTabContent(
+                        composition = composition,
+                        progress = progress,
                         scheduleEvents = scheduleEventsUiState.events,
                         currentEventPosition = scheduleEventsUiState.currentEventPosition,
                         modifier =
@@ -99,6 +115,8 @@ fun ScheduleTabPage(
 
 @Composable
 private fun ScheduleTabContent(
+    composition: LottieComposition?,
+    progress: Float,
     scheduleEvents: List<ScheduleEventUiModel>,
     modifier: Modifier = Modifier,
     currentEventPosition: Int = DEFAULT_POSITION,
@@ -125,7 +143,11 @@ private fun ScheduleTabContent(
                 state = listState,
             ) {
                 items(items = scheduleEvents, key = { scheduleEvent -> scheduleEvent.id }) {
-                    ScheduleEventItem(scheduleEvent = it)
+                    ScheduleEventItem(
+                        composition = composition,
+                        progress = progress,
+                        scheduleEvent = it,
+                    )
                 }
             }
         }
@@ -137,6 +159,8 @@ private fun ScheduleTabContent(
 private fun ScheduleTabContentPreview() {
     FestabookTheme {
         ScheduleTabContent(
+            composition = null,
+            progress = 1f,
             scheduleEvents =
                 listOf(
                     ScheduleEventUiModel(
