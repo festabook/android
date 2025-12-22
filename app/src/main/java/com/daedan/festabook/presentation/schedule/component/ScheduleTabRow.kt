@@ -46,7 +46,7 @@ fun ScheduleTabRow(
                 selected = pageState.currentPage == index,
                 unselectedContentColor = FestabookColor.gray500,
                 selectedContentColor = MaterialTheme.colorScheme.background,
-                onClick = { scope.launch { pageState.scrollToPage(index) } },
+                onClick = { scope.launch { pageState.animateScrollToPage(index) } },
                 text = { Text(text = scheduleDate.date) },
             )
         }
