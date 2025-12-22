@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.LottieComposition
@@ -26,7 +25,6 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
-import com.daedan.festabook.presentation.common.component.PULL_OFFSET_LIMIT
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
 import com.daedan.festabook.presentation.schedule.ScheduleEventsUiState
 import com.daedan.festabook.presentation.schedule.ScheduleUiState
@@ -66,7 +64,7 @@ fun ScheduleTabPage(
         PullToRefreshContainer(
             isRefreshing = isRefreshing,
             onRefresh = { onRefresh(oldEvents) },
-        ) { pullToRefreshState ->
+        ) { graphicsLayer ->
             when (scheduleEventsUiState) {
                 is ScheduleEventsUiState.Error -> {
                     Timber.w(scheduleEventsUiState.throwable.stackTraceToString())
@@ -84,10 +82,7 @@ fun ScheduleTabPage(
                         modifier =
                             Modifier
                                 .padding(end = festabookSpacing.paddingScreenGutter)
-                                .graphicsLayer {
-                                    translationY =
-                                        pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
-                                },
+                                .then(graphicsLayer),
                     )
                 }
 
@@ -100,10 +95,7 @@ fun ScheduleTabPage(
                         modifier =
                             Modifier
                                 .padding(end = festabookSpacing.paddingScreenGutter)
-                                .graphicsLayer {
-                                    translationY =
-                                        pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
-                                },
+                                .then(graphicsLayer),
                     )
                 }
 

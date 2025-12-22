@@ -16,18 +16,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
-import com.daedan.festabook.presentation.common.component.PULL_OFFSET_LIMIT
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
-import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.lost.LostUiState
 import com.daedan.festabook.presentation.news.lost.model.LostItemUiStatus
@@ -58,9 +53,11 @@ fun LostItemScreen(
     PullToRefreshContainer(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
-    ) { pullToRefreshState ->
+    ) { graphicsLayer ->
         when (lostUiState) {
-            LostUiState.InitialLoading -> LoadingStateScreen()
+            LostUiState.InitialLoading -> {
+                LoadingStateScreen()
+            }
 
             is LostUiState.Error -> {
                 LaunchedEffect(lostUiState) {
@@ -76,10 +73,7 @@ fun LostItemScreen(
                     modifier =
                         modifier
                             .fillMaxSize()
-                            .graphicsLayer {
-                                translationY =
-                                    pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
-                            },
+                            .then(graphicsLayer),
                 )
             }
 
@@ -91,10 +85,7 @@ fun LostItemScreen(
                     modifier =
                         modifier
                             .fillMaxSize()
-                            .graphicsLayer {
-                                translationY =
-                                    pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
-                            },
+                            .then(graphicsLayer),
                 )
             }
         }
