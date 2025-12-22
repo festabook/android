@@ -3,12 +3,15 @@ package com.daedan.festabook.presentation.schedule.component
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -114,12 +117,18 @@ private fun ScheduleTabContent(
     currentEventPosition: Int = DEFAULT_POSITION,
 ) {
     val listState = rememberLazyListState()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         listState.animateScrollToItem(currentEventPosition)
     }
     if (scheduleEvents.isEmpty()) {
-        EmptyStateScreen(modifier = modifier)
+        EmptyStateScreen(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
+        )
     } else {
         Box(modifier = modifier) {
             VerticalDivider(
