@@ -40,8 +40,7 @@ fun ScheduleEventCard(
                     backgroundColor = MaterialTheme.colorScheme.background,
                     borderColor = scheduleEventCardColors.cardBorderColor,
                     shape = festabookShapes.radius2,
-                )
-                .padding(festabookSpacing.paddingBody4),
+                ).padding(festabookSpacing.paddingBody4),
         verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody1),
     ) {
         Row(
@@ -123,7 +122,6 @@ private fun scheduleLabelText(status: ScheduleEventUiStatus): String =
         ScheduleEventUiStatus.COMPLETED -> stringResource(R.string.schedule_status_completed)
     }
 
-@Composable
 private fun scheduleEventCardColors(status: ScheduleEventUiStatus): ScheduleEventCardProps =
     when (status) {
         ScheduleEventUiStatus.UPCOMING -> ScheduleEventCardColors.upcoming
