@@ -1,6 +1,7 @@
 package com.daedan.festabook.presentation.news.component
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
@@ -66,6 +67,7 @@ fun NewsScreen(
                 onNoticeClick = { newsViewModel.toggleNotice(it) },
                 onFaqClick = { newsViewModel.toggleFAQ(it) },
                 onLostGuideClick = { newsViewModel.toggleLostGuide() },
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }
