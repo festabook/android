@@ -72,7 +72,7 @@ fun ScheduleScreen(
                         pagerState = pageState,
                         scheduleUiState = currentStateSuccess,
                         onRefresh = { oldEvents ->
-                            scheduleViewModel.loadSchedules(
+                            scheduleViewModel.loadAllSchedules(
                                 scheduleUiState = ScheduleUiState.Refreshing(currentStateSuccess),
                                 scheduleEventUiState = ScheduleEventsUiState.Refreshing(oldEvents),
                                 selectedDatePosition = pageState.currentPage,

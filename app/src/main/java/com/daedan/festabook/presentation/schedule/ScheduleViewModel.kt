@@ -30,10 +30,10 @@ class ScheduleViewModel(
     val scheduleUiState: StateFlow<ScheduleUiState> = _scheduleUiState.asStateFlow()
 
     init {
-        loadSchedules()
+        loadAllSchedules()
     }
 
-    fun loadSchedules(
+    fun loadAllSchedules(
         scheduleUiState: ScheduleUiState = ScheduleUiState.InitialLoading,
         scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState.InitialLoading,
         selectedDatePosition: Int? = null,
