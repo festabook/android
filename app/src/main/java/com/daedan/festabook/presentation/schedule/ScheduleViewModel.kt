@@ -141,8 +141,10 @@ class ScheduleViewModel(
         return currentEventPosition
     }
 
-    private fun getCurrentDatePosition(scheduleDates: List<ScheduleDate>): Int {
-        val today = LocalDate.now()
+    private fun getCurrentDatePosition(
+        scheduleDates: List<ScheduleDate>,
+        today: LocalDate = LocalDate.now(),
+    ): Int {
         val currentDatePosition =
             scheduleDates
                 .indexOfFirst { !it.date.isBefore(today) }
