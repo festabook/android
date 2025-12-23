@@ -32,14 +32,13 @@ import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
 import com.daedan.festabook.presentation.schedule.ScheduleEventsUiState
 import com.daedan.festabook.presentation.schedule.ScheduleUiState
 import com.daedan.festabook.presentation.schedule.ScheduleUiState.Companion.DEFAULT_POSITION
+import com.daedan.festabook.presentation.schedule.ScheduleViewModel.Companion.PRELOAD_PAGE_COUNT
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiModel
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiStatus
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.festabookSpacing
 import timber.log.Timber
-
-private const val PRELOAD_PAGE_COUNT: Int = 2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

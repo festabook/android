@@ -30,19 +30,22 @@ class ScheduleViewModel(
     val scheduleUiState: StateFlow<ScheduleUiState> = _scheduleUiState.asStateFlow()
 
     init {
-        loadAllSchedules()
+        loadSchedules()
     }
 
-    fun loadAllSchedules(
+    fun loadSchedules(
         scheduleUiState: ScheduleUiState = ScheduleUiState.InitialLoading,
         scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState.InitialLoading,
         selectedDatePosition: Int? = null,
+        preloadCount: Int = PRELOAD_PAGE_COUNT,
     ) {
         viewModelScope.launch {
             val datesResult = loadAllDates(scheduleUiState, selectedDatePosition)
 
-            datesResult.onSuccess { scheduleDateUiModels ->
-                loadAllEvents(scheduleEventUiState, scheduleDateUiModels)
+            if (datesResult.isSuccess) {
+                val currentPosition =
+                    (_scheduleUiState.value as ScheduleUiState.Success).currentDatePosition
+                loadEventsInRange(currentPosition, scheduleEventUiState, preloadCount)
             }
         }
     }
@@ -75,18 +78,32 @@ class ScheduleViewModel(
         )
     }
 
-    private suspend fun loadAllEvents(
-        scheduleEventUiState: ScheduleEventsUiState,
-        scheduleDateUiModels: List<ScheduleDateUiModel>,
+    fun loadEventsInRange(
+        currentPosition: Int,
+        scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState.InitialLoading,
+        preloadCount: Int = PRELOAD_PAGE_COUNT,
     ) {
-        supervisorScope {
-            scheduleDateUiModels.forEachIndexed { position, scheduleDateUiModel ->
-                launch {
-                    loadEventsByPosition(
-                        position = position,
-                        scheduleDateUiModel = scheduleDateUiModel,
-                        scheduleEventsUiState = scheduleEventUiState,
-                    )
+        (_scheduleUiState.value as? ScheduleUiState.Success)?.dates?.let { scheduleDates ->
+            val range =
+                getPreloadRange(
+                    totalPageSize = scheduleDates.size,
+                    currentPosition = currentPosition,
+                    preloadCount = preloadCount,
+                )
+            viewModelScope.launch {
+                supervisorScope {
+                    range.forEach { position ->
+                        if (isEventLoaded(position)) return@forEach
+
+                        val scheduleDateUiModel = scheduleDates[position]
+                        launch {
+                            loadEventsByPosition(
+                                position = position,
+                                scheduleDateUiModel = scheduleDateUiModel,
+                                scheduleEventsUiState = scheduleEventUiState,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -152,7 +169,24 @@ class ScheduleViewModel(
         return currentDatePosition
     }
 
+    private fun getPreloadRange(
+        totalPageSize: Int,
+        preloadCount: Int,
+        currentPosition: Int,
+    ): IntRange {
+        val start = (currentPosition - preloadCount).coerceAtLeast(FIRST_INDEX)
+        val end = (currentPosition + preloadCount).coerceAtMost(totalPageSize - 1)
+        return start..end
+    }
+
+    private fun isEventLoaded(position: Int): Boolean {
+        val currentScheduleUiState = _scheduleUiState.value
+        if (currentScheduleUiState !is ScheduleUiState.Success) return false
+        return currentScheduleUiState.eventsUiStateByPosition[position] is ScheduleEventsUiState.Success
+    }
+
     companion object {
         private const val FIRST_INDEX: Int = 0
+        const val PRELOAD_PAGE_COUNT: Int = 2
     }
 }

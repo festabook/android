@@ -52,6 +52,6 @@ class ScheduleFragment :
         }
 
     override fun onMenuItemReClick() {
-        viewModel.loadAllSchedules()
+        viewModel.loadSchedules()
     }
 }

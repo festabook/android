@@ -8,6 +8,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -55,6 +56,9 @@ fun ScheduleScreen(
                 val pageState =
                     rememberPagerState(initialPage = currentStateSuccess.currentDatePosition) { currentStateSuccess.dates.size }
                 val scope = rememberCoroutineScope()
+                LaunchedEffect(pageState.currentPage) {
+                    scheduleViewModel.loadEventsInRange(currentPosition = pageState.currentPage)
+                }
 
                 Column(modifier = Modifier.padding(top = innerPadding.calculateTopPadding())) {
                     ScheduleTabRow(
@@ -72,10 +76,11 @@ fun ScheduleScreen(
                         pagerState = pageState,
                         scheduleUiState = currentStateSuccess,
                         onRefresh = { oldEvents ->
-                            scheduleViewModel.loadAllSchedules(
+                            scheduleViewModel.loadSchedules(
                                 scheduleUiState = ScheduleUiState.Refreshing(currentStateSuccess),
                                 scheduleEventUiState = ScheduleEventsUiState.Refreshing(oldEvents),
                                 selectedDatePosition = pageState.currentPage,
+                                preloadCount = 0,
                             )
                         },
                     )
