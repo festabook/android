@@ -19,7 +19,10 @@ import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.ActivityMainBinding
 import com.daedan.festabook.di.appGraph
@@ -39,6 +42,8 @@ import com.daedan.festabook.presentation.setting.SettingFragment
 import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class MainActivity :
@@ -158,8 +163,13 @@ class MainActivity :
                 if (isDoublePress) finish() else showToast(getString(R.string.back_press_exit_message))
             }
         }
-        homeViewModel.navigateToScheduleEvent.observe(this) {
-            binding.bnvMenu.selectedItemId = R.id.item_menu_schedule
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                homeViewModel.navigateToScheduleEvent.collectLatest {
+                    binding.bnvMenu.selectedItemId = R.id.item_menu_schedule
+                }
+            }
         }
 
         mainViewModel.isFirstVisit.observe(this) { isFirstVisit ->

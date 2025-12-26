@@ -112,25 +112,25 @@ class SettingFragment(
             binding.btnNoticeAllow.isEnabled = !loading
         }
 
-        homeViewModel.festivalUiState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is FestivalUiState.Error -> {
-                    showErrorSnackBar(state.throwable)
-                    Timber.w(
-                        state.throwable,
-                        "${this::class.simpleName}: ${state.throwable.message}",
-                    )
-                }
-
-                FestivalUiState.Loading -> {
-                    binding.tvSettingCurrentUniversityNotice.text = ""
-                }
-
-                is FestivalUiState.Success -> {
-                    binding.tvSettingCurrentUniversity.text = state.organization.universityName
-                }
-            }
-        }
+//        homeViewModel.festivalUiState.observe(viewLifecycleOwner) { state ->
+//            when (state) {
+//                is FestivalUiState.Error -> {
+//                    showErrorSnackBar(state.throwable)
+//                    Timber.w(
+//                        state.throwable,
+//                        "${this::class.simpleName}: ${state.throwable.message}",
+//                    )
+//                }
+//
+//                FestivalUiState.Loading -> {
+//                    binding.tvSettingCurrentUniversityNotice.text = ""
+//                }
+//
+//                is FestivalUiState.Success -> {
+//                    binding.tvSettingCurrentUniversity.text = state.organization.universityName
+//                }
+//            }
+//        }
     }
 
     private fun setupServicePolicyClickListener() {

@@ -15,8 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTypography
@@ -31,7 +33,7 @@ fun HomeHeader(
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp)
     ) {
         Row(
             modifier = Modifier.clickable { onExpandClick() },
@@ -39,7 +41,10 @@ fun HomeHeader(
         ) {
             Text(
                 text = schoolName,
-                style = FestabookTypography.displayLarge,
+                style = FestabookTypography.displayLarge.copy(
+                    platformStyle = PlatformTextStyle(includeFontPadding = false),
+                    lineHeight = 34.sp
+                ),
                 color = FestabookColor.black,
             )
 
