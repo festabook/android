@@ -88,39 +88,39 @@ private fun rememberScheduleEventDynamicProperties(props: LottieTimeLineCirclePr
         ),
     )
 
+@Composable
 private fun lottieTimeLineCircleProps(status: ScheduleEventUiStatus): LottieTimeLineCircleProps =
     when (status) {
-        ScheduleEventUiStatus.UPCOMING -> LottieTimeLineCircleAnimations.upcoming
-        ScheduleEventUiStatus.ONGOING -> LottieTimeLineCircleAnimations.ongoing
-        ScheduleEventUiStatus.COMPLETED -> LottieTimeLineCircleAnimations.completed
-    }
+        ScheduleEventUiStatus.UPCOMING -> {
+            LottieTimeLineCircleProps(
+                centerColor = FestabookColor.accentGreen,
+                outerOpacity = 0f,
+                innerOpacity = 1f,
+                outerColor = FestabookColor.accentGreen,
+                innerColor = FestabookColor.accentGreen,
+            )
+        }
 
-object LottieTimeLineCircleAnimations {
-    val upcoming =
-        LottieTimeLineCircleProps(
-            centerColor = FestabookColor.accentGreen,
-            outerOpacity = 0f,
-            innerOpacity = 1f,
-            outerColor = FestabookColor.accentGreen,
-            innerColor = FestabookColor.accentGreen,
-        )
-    val ongoing =
-        LottieTimeLineCircleProps(
-            centerColor = FestabookColor.accentBlue,
-            outerOpacity = 1f,
-            innerOpacity = 1f,
-            outerColor = FestabookColor.accentBlue,
-            innerColor = FestabookColor.accentBlue,
-        )
-    val completed =
-        LottieTimeLineCircleProps(
-            centerColor = FestabookColor.gray300,
-            outerOpacity = 0f,
-            innerOpacity = 0f,
-            outerColor = FestabookColor.gray300,
-            innerColor = FestabookColor.gray300,
-        )
-}
+        ScheduleEventUiStatus.ONGOING -> {
+            LottieTimeLineCircleProps(
+                centerColor = FestabookColor.accentBlue,
+                outerOpacity = 1f,
+                innerOpacity = 1f,
+                outerColor = FestabookColor.accentBlue,
+                innerColor = FestabookColor.accentBlue,
+            )
+        }
+
+        ScheduleEventUiStatus.COMPLETED -> {
+            LottieTimeLineCircleProps(
+                centerColor = FestabookColor.gray300,
+                outerOpacity = 0f,
+                innerOpacity = 0f,
+                outerColor = FestabookColor.gray300,
+                innerColor = FestabookColor.gray300,
+            )
+        }
+    }
 
 data class LottieTimeLineCircleProps(
     val centerColor: Color,
