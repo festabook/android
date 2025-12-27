@@ -30,12 +30,12 @@ fun ImageView.loadImage(
     }
 }
 
-fun String?.convertImageUrl() = if (this != null && this.startsWith("/images/")) {
-    BuildConfig.FESTABOOK_URL.removeSuffix("/api/") + this
-} else {
-    this
-}
-
+fun String?.convertImageUrl() =
+    if (this != null && this.startsWith("/images/")) {
+        BuildConfig.FESTABOOK_URL.removeSuffix("/api/") + this
+    } else {
+        this
+    }
 
 fun vectorToBitmap(
     context: Context,

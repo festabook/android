@@ -9,7 +9,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class FestivalNotificationDataSourceImpl @Inject constructor(
+@Inject
+class FestivalNotificationDataSourceImpl(
     private val festivalNotificationService: FestivalNotificationService,
 ) : FestivalNotificationDataSource {
     override suspend fun saveFestivalNotification(

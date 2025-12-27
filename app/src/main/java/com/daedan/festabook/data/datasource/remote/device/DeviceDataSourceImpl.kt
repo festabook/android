@@ -9,7 +9,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class DeviceDataSourceImpl @Inject constructor(
+@Inject
+class DeviceDataSourceImpl(
     private val deviceService: DeviceService,
 ) : DeviceDataSource {
     override suspend fun registerDevice(

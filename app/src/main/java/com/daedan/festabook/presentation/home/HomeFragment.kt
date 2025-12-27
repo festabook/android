@@ -31,13 +31,13 @@ import timber.log.Timber
 
 @ContributesIntoMap(scope = AppScope::class, binding = binding<Fragment>())
 @FragmentKey(HomeFragment::class)
-class HomeFragment @Inject constructor(
+@Inject
+class HomeFragment(
     private val centerItemMotionEnlarger: RecyclerView.OnScrollListener,
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
 ) : BaseFragment<FragmentHomeBinding>() {
     override val layoutId: Int = R.layout.fragment_home
 
-    @Inject
-    override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: HomeViewModel by viewModels({ requireActivity() })
 
     private val posterAdapter: PosterAdapter by lazy {

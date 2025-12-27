@@ -83,11 +83,10 @@ class PlaceDetailViewModel @AssistedInject constructor(
             factory: Factory,
             place: PlaceUiModel?,
             receivedPlaceDetail: PlaceDetailUiModel?,
-        ) =
-            viewModelFactory {
-                initializer {
-                    factory.create(place, receivedPlaceDetail)
-                }
+        ) = viewModelFactory {
+            initializer {
+                factory.create(place, receivedPlaceDetail)
             }
+        }
     }
 }

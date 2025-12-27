@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.daedan.festabook.data.datasource.local.FestivalLocalDataSource
 import com.daedan.festabook.di.viewmodel.ViewModelKey
-import com.daedan.festabook.di.viewmodel.ViewModelScope
 import com.daedan.festabook.presentation.common.SingleLiveData
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
@@ -14,7 +13,8 @@ import timber.log.Timber
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(SplashViewModel::class)
-class SplashViewModel @Inject constructor(
+@Inject
+class SplashViewModel(
     private val festivalLocalDataSource: FestivalLocalDataSource,
 ) : ViewModel() {
     private val _navigationState = SingleLiveData<NavigationState>()

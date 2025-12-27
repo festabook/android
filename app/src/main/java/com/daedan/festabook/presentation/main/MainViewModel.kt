@@ -17,7 +17,8 @@ import timber.log.Timber
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(MainViewModel::class)
-class MainViewModel @Inject constructor(
+@Inject
+class MainViewModel(
     private val deviceRepository: DeviceRepository,
     festivalRepository: FestivalRepository,
 ) : ViewModel() {
