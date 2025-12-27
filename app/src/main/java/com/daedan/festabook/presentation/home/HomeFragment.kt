@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.RecyclerView
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentHomeBinding
 import com.daedan.festabook.di.fragment.FragmentKey
@@ -20,7 +20,7 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 
-@ContributesIntoMap(scope = AppScope::class, binding = binding<androidx.fragment.app.Fragment>())
+@ContributesIntoMap(scope = AppScope::class, binding = binding<Fragment>())
 @FragmentKey(HomeFragment::class)
 class HomeFragment @Inject constructor() : BaseFragment<FragmentHomeBinding>() {
     override val layoutId: Int = R.layout.fragment_home

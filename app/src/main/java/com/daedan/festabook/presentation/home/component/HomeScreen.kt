@@ -24,7 +24,6 @@ import com.daedan.festabook.domain.model.Organization
 import com.daedan.festabook.domain.model.Poster
 import com.daedan.festabook.presentation.home.LineupUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
-import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -47,7 +46,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun FestivalOverview(
+private fun FestivalOverview(
     festivalUiState: FestivalUiState,
     lineupUiState: LineupUiState,
     onNavigateToExplore: () -> Unit,
@@ -56,7 +55,7 @@ fun FestivalOverview(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = Color.White,
+        containerColor = Color.White
     ) {
         LazyColumn(
             modifier =
