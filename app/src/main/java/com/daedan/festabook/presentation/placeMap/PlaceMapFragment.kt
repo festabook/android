@@ -26,18 +26,19 @@ import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.toPx
 import com.daedan.festabook.presentation.placeMap.component.NaverMapContent
+import com.daedan.festabook.presentation.placeMap.component.TimeTagMenu
 import com.daedan.festabook.presentation.placeMap.logging.CurrentLocationChecked
 import com.daedan.festabook.presentation.placeMap.logging.PlaceFragmentEnter
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMarkerClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceTimeTagSelected
 import com.daedan.festabook.presentation.placeMap.mapManager.MapManager
 import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
-import com.daedan.festabook.presentation.placeMap.model.SelectedPlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.isSecondary
 import com.daedan.festabook.presentation.placeMap.placeCategory.PlaceCategoryFragment
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.PlaceDetailPreviewFragment
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.PlaceDetailPreviewSecondaryFragment
 import com.daedan.festabook.presentation.placeMap.placeList.PlaceListFragment
-import com.daedan.festabook.presentation.placeMap.timeTagSpinner.component.TimeTagMenu
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.NaverMap
@@ -238,7 +239,7 @@ class PlaceMapFragment(
                 setReorderingAllowed(true)
 
                 when (selectedPlace) {
-                    is SelectedPlaceUiState.Success -> {
+                    is PlaceUiState.Success -> {
                         mapManager?.selectMarker(selectedPlace.value.place.id)
                         if (selectedPlace.isSecondary) {
                             hide(placeListFragment)
@@ -259,7 +260,7 @@ class PlaceMapFragment(
                         )
                     }
 
-                    is SelectedPlaceUiState.Empty -> {
+                    is PlaceUiState.Empty -> {
                         mapManager?.unselectMarker()
                         hide(placeDetailPreviewFragment)
                         hide(placeDetailPreviewSecondaryFragment)

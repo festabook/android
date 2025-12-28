@@ -27,7 +27,7 @@ import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.logging.PlacePreviewClick
-import com.daedan.festabook.presentation.placeMap.model.SelectedPlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.component.PlaceDetailPreviewSecondaryScreen
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.festabookSpacing
@@ -62,7 +62,7 @@ class PlaceDetailPreviewSecondaryFragment(
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 val placeDetailUiState by viewModel.selectedPlaceFlow.collectAsStateWithLifecycle()
-                val visible = placeDetailUiState is SelectedPlaceUiState.Success
+                val visible = placeDetailUiState is PlaceUiState.Success
 
                 LaunchedEffect(placeDetailUiState) {
                     backPressedCallback.isEnabled = true
@@ -89,7 +89,7 @@ class PlaceDetailPreviewSecondaryFragment(
                                 backPressedCallback.isEnabled = false
                             },
                             onClick = {
-                                if (it !is SelectedPlaceUiState.Success) return@PlaceDetailPreviewSecondaryScreen
+                                if (it !is PlaceUiState.Success) return@PlaceDetailPreviewSecondaryScreen
                                 appGraph.defaultFirebaseLogger.log(
                                     PlacePreviewClick(
                                         baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),

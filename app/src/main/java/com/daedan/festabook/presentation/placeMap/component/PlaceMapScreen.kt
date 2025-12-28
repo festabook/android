@@ -14,7 +14,6 @@ import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.placeCategory.component.PlaceCategoryScreen
-import com.daedan.festabook.presentation.placeMap.timeTagSpinner.component.TimeTagMenu
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.NaverMap
@@ -35,6 +34,7 @@ fun PlaceMapScreen(
         timeTags = timeTags,
         onMapReady = onMapReady,
         onTimeTagClick = onTimeTagClick,
+        modifier = modifier,
     )
 }
 

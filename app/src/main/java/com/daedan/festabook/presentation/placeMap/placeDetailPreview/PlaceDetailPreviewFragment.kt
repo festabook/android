@@ -27,7 +27,7 @@ import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.logging.PlacePreviewClick
-import com.daedan.festabook.presentation.placeMap.model.SelectedPlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.component.PlaceDetailPreviewScreen
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.festabookSpacing
@@ -57,7 +57,7 @@ class PlaceDetailPreviewFragment(
             setContent {
                 FestabookTheme {
                     val placeDetailUiState by viewModel.selectedPlaceFlow.collectAsStateWithLifecycle()
-                    val visible = placeDetailUiState is SelectedPlaceUiState.Success
+                    val visible = placeDetailUiState is PlaceUiState.Success
 
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -73,7 +73,7 @@ class PlaceDetailPreviewFragment(
                                         horizontal = festabookSpacing.paddingScreenGutter,
                                     ),
                             onClick = { selectedPlace ->
-                                if (selectedPlace !is SelectedPlaceUiState.Success) return@PlaceDetailPreviewScreen
+                                if (selectedPlace !is PlaceUiState.Success) return@PlaceDetailPreviewScreen
                                 startPlaceDetailActivity(selectedPlace.value)
                                 binding.logger.log(
                                     PlacePreviewClick(

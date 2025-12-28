@@ -19,7 +19,7 @@ import com.daedan.festabook.R
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.model.SelectedPlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.placeMap.model.getIconId
 import com.daedan.festabook.presentation.placeMap.model.getTextId
 import com.daedan.festabook.presentation.theme.FestabookTheme
@@ -29,11 +29,11 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
 fun PlaceDetailPreviewSecondaryScreen(
-    placeUiState: SelectedPlaceUiState,
+    placeUiState: PlaceUiState<PlaceDetailUiModel>,
     modifier: Modifier = Modifier,
-    onError: (SelectedPlaceUiState.Error) -> Unit = {},
+    onError: (PlaceUiState.Error) -> Unit = {},
     onEmpty: () -> Unit = {},
-    onClick: (SelectedPlaceUiState) -> Unit = {},
+    onClick: (PlaceUiState<PlaceDetailUiModel>) -> Unit = {},
     visible: Boolean = false,
 ) {
     PreviewAnimatableBox(
@@ -47,10 +47,10 @@ fun PlaceDetailPreviewSecondaryScreen(
         shape = festabookShapes.radius2,
     ) {
         when (placeUiState) {
-            is SelectedPlaceUiState.Loading -> Unit
-            is SelectedPlaceUiState.Error -> onError(placeUiState)
-            is SelectedPlaceUiState.Empty -> onEmpty()
-            is SelectedPlaceUiState.Success -> {
+            is PlaceUiState.Loading -> Unit
+            is PlaceUiState.Error -> onError(placeUiState)
+            is PlaceUiState.Empty -> onEmpty()
+            is PlaceUiState.Success -> {
                 Row(
                     modifier =
                         Modifier.padding(
@@ -94,7 +94,7 @@ private fun PlaceDetailPreviewSecondaryScreenPreview() {
             visible = true,
             modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
             placeUiState =
-                SelectedPlaceUiState.Success(
+                PlaceUiState.Success(
                     FAKE_PLACE_DETAIL,
                 ),
         )

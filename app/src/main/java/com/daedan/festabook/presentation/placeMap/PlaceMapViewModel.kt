@@ -17,7 +17,7 @@ import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCoordinateUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
-import com.daedan.festabook.presentation.placeMap.model.SelectedPlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
@@ -59,16 +59,17 @@ class PlaceMapViewModel(
             started = SharingStarted.Lazily,
             initialValue = TimeTag.EMPTY,
         )
-    private val _selectedPlace: MutableLiveData<SelectedPlaceUiState> = MutableLiveData()
-    val selectedPlace: LiveData<SelectedPlaceUiState> = _selectedPlace
+    private val _selectedPlace: MutableLiveData<PlaceUiState<PlaceDetailUiModel>> =
+        MutableLiveData()
+    val selectedPlace: LiveData<PlaceUiState<PlaceDetailUiModel>> = _selectedPlace
 
-    val selectedPlaceFlow: StateFlow<SelectedPlaceUiState> =
+    val selectedPlaceFlow: StateFlow<PlaceUiState<PlaceDetailUiModel>> =
         _selectedPlace
             .asFlow()
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.Lazily,
-                initialValue = SelectedPlaceUiState.Loading,
+                initialValue = PlaceUiState.Loading,
             )
 
     private val _navigateToDetail = SingleLiveData<PlaceDetailUiModel>()
@@ -130,23 +131,23 @@ class PlaceMapViewModel(
 
     fun selectPlace(placeId: Long) {
         viewModelScope.launch {
-            _selectedPlace.value = SelectedPlaceUiState.Loading
+            _selectedPlace.value = PlaceUiState.Loading
             placeDetailRepository
                 .getPlaceDetail(placeId = placeId)
                 .onSuccess {
-                    _selectedPlace.value = SelectedPlaceUiState.Success(it.toUiModel())
+                    _selectedPlace.value = PlaceUiState.Success(it.toUiModel())
                 }.onFailure {
-                    _selectedPlace.value = SelectedPlaceUiState.Error(it)
+                    _selectedPlace.value = PlaceUiState.Error(it)
                 }
         }
     }
 
     fun unselectPlace() {
-        _selectedPlace.value = SelectedPlaceUiState.Empty
+        _selectedPlace.value = PlaceUiState.Empty
     }
 
     fun onExpandedStateReached() {
-        val currentPlace = _selectedPlace.value.let { it as? SelectedPlaceUiState.Success }?.value
+        val currentPlace = _selectedPlace.value.let { it as? PlaceUiState.Success }?.value
         if (currentPlace != null) {
             _navigateToDetail.setValue(currentPlace)
         }

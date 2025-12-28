@@ -25,7 +25,7 @@ import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceCategoryLabel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.model.SelectedPlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.FestabookTypography
@@ -34,11 +34,11 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
 fun PlaceDetailPreviewScreen(
-    placeUiState: SelectedPlaceUiState,
+    placeUiState: PlaceUiState<PlaceDetailUiModel>,
     modifier: Modifier = Modifier,
     visible: Boolean = false,
-    onClick: (SelectedPlaceUiState) -> Unit = {},
-    onError: (SelectedPlaceUiState.Error) -> Unit = {},
+    onClick: (PlaceUiState<PlaceDetailUiModel>) -> Unit = {},
+    onError: (PlaceUiState.Error) -> Unit = {},
     onBackPress: () -> Unit = {},
 ) {
     BackHandler(enabled = visible) {
@@ -52,13 +52,13 @@ fun PlaceDetailPreviewScreen(
                 .clickable { onClick(placeUiState) },
     ) {
         when (placeUiState) {
-            is SelectedPlaceUiState.Loading -> Unit
-            is SelectedPlaceUiState.Success -> {
+            is PlaceUiState.Loading -> Unit
+            is PlaceUiState.Success -> {
                 PlaceDetailPreviewContent(placeDetail = placeUiState.value)
             }
 
-            is SelectedPlaceUiState.Error -> onError(placeUiState)
-            is SelectedPlaceUiState.Empty -> Unit
+            is PlaceUiState.Error -> onError(placeUiState)
+            is PlaceUiState.Empty -> Unit
         }
     }
 }
@@ -189,7 +189,7 @@ private fun PlaceDetailPreviewScreenPreview() {
                 Modifier
                     .padding(festabookSpacing.paddingScreenGutter),
             placeUiState =
-                SelectedPlaceUiState.Success(
+                PlaceUiState.Success(
                     value = FAKE_PLACE_DETAIL,
                 ),
         )
