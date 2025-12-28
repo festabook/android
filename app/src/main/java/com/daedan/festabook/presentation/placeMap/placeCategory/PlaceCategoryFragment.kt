@@ -13,7 +13,6 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceCategoryBinding
@@ -52,9 +51,7 @@ class PlaceCategoryFragment(
                     val initialCategories = PlaceCategoryUiModel.entries
                     // StateFlow로 변경 시 asFlow 제거 예정
                     val timeTagChanged =
-                        viewModel.selectedTimeTag
-                            .asFlow()
-                            .collectAsStateWithLifecycle(viewLifecycleOwner)
+                        viewModel.selectedTimeTag.collectAsStateWithLifecycle(viewLifecycleOwner)
                     var selectedCategoriesState by remember(timeTagChanged.value) {
                         mutableStateOf(
                             emptySet<PlaceCategoryUiModel>(),

@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.presentation.common.component.cardBackground
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.festabookShapes
@@ -51,6 +52,29 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeTagMenu(
+    timeTagsState: PlaceUiState<List<TimeTag>>,
+    selectedTimeTagState: PlaceUiState<TimeTag>,
+    modifier: Modifier = Modifier,
+    onTimeTagClick: (TimeTag) -> Unit = {},
+) {
+    when (timeTagsState) {
+        is PlaceUiState.Success -> {
+            if (selectedTimeTagState !is PlaceUiState.Success) return
+            TimeTagContent(
+                title = selectedTimeTagState.value.name,
+                timeTags = timeTagsState.value,
+                modifier = modifier,
+                onTimeTagClick = onTimeTagClick,
+            )
+        }
+
+        else -> Unit
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimeTagContent(
     title: String,
     timeTags: List<TimeTag>,
     modifier: Modifier = Modifier,
@@ -170,7 +194,7 @@ private fun TimeTagMenuPreview() {
         )
     var title by remember { mutableStateOf("1일차 오전") }
     FestabookTheme {
-        TimeTagMenu(
+        TimeTagContent(
             title = title,
             timeTags = timeTags,
             modifier =

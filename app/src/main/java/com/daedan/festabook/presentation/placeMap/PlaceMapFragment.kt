@@ -14,12 +14,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceMapBinding
 import com.daedan.festabook.di.fragment.FragmentKey
 import com.daedan.festabook.di.mapManager.MapManagerGraph
+import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.logger
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
@@ -49,6 +53,7 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metro.createGraphFactory
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @ContributesIntoMap(
@@ -141,28 +146,26 @@ class PlaceMapFragment(
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 val timeTags by viewModel.timeTags.collectAsStateWithLifecycle()
-                val title by viewModel.selectedTimeTagFlow.collectAsStateWithLifecycle()
+                val selectedTimeTag by viewModel.selectedTimeTag.collectAsStateWithLifecycle()
                 FestabookTheme {
-                    if (timeTags.isNotEmpty()) {
-                        TimeTagMenu(
-                            title = title.name,
-                            timeTags = timeTags,
-                            onTimeTagClick = { timeTag ->
-                                viewModel.onDaySelected(timeTag)
-                                binding.logger.log(
-                                    PlaceTimeTagSelected(
-                                        baseLogData = binding.logger.getBaseLogData(),
-                                        timeTagName = timeTag.name,
-                                    ),
-                                )
-                            },
-                            modifier =
-                                Modifier
-                                    .background(
-                                        FestabookColor.white,
-                                    ).padding(horizontal = 24.dp),
-                        )
-                    }
+                    TimeTagMenu(
+                        timeTagsState = timeTags,
+                        selectedTimeTagState = selectedTimeTag,
+                        modifier =
+                            Modifier
+                                .background(
+                                    FestabookColor.white,
+                                ).padding(horizontal = 24.dp),
+                        onTimeTagClick = { timeTag ->
+                            viewModel.onDaySelected(timeTag)
+                            binding.logger.log(
+                                PlaceTimeTagSelected(
+                                    baseLogData = binding.logger.getBaseLogData(),
+                                    timeTagName = timeTag.name,
+                                ),
+                            )
+                        },
+                    )
                 }
             }
         }
@@ -188,8 +191,22 @@ class PlaceMapFragment(
                 is PlaceListUiState.Loading -> Unit
                 is PlaceListUiState.Success -> {
                     mapManager?.setupMarker(placeGeographies.value)
-                    viewModel.selectedTimeTag.observe(viewLifecycleOwner) { selectedTimeTag ->
-                        mapManager?.filterMarkersByTimeTag(selectedTimeTag.timeTagId)
+                    lifecycleScope.launch {
+                        repeatOnLifecycle(Lifecycle.State.STARTED) {
+                            viewModel.selectedTimeTag.collect { selectedTimeTag ->
+                                when (selectedTimeTag) {
+                                    is PlaceUiState.Success -> {
+                                        mapManager?.filterMarkersByTimeTag(selectedTimeTag.value.timeTagId)
+                                    }
+
+                                    is PlaceUiState.Empty -> {
+                                        mapManager?.filterMarkersByTimeTag(TimeTag.EMTPY_TIME_TAG_ID)
+                                    }
+
+                                    else -> Unit
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -250,11 +267,18 @@ class PlaceMapFragment(
                             hide(placeDetailPreviewSecondaryFragment)
                             show(placeDetailPreviewFragment)
                         }
+                        val currentTimeTag = viewModel.selectedTimeTag.value
+                        val timeTagName =
+                            if (currentTimeTag is PlaceUiState.Success) {
+                                currentTimeTag.value.name
+                            } else {
+                                "undefined"
+                            }
                         binding.logger.log(
                             PlaceMarkerClick(
                                 baseLogData = binding.logger.getBaseLogData(),
                                 placeId = selectedPlace.value.place.id,
-                                timeTagName = viewModel.selectedTimeTag.value?.name ?: "undefined",
+                                timeTagName = timeTagName,
                                 category = selectedPlace.value.place.category.name,
                             ),
                         )

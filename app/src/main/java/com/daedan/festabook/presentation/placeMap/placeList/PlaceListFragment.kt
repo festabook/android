@@ -24,6 +24,7 @@ import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceListBinding
 import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.di.fragment.FragmentKey
+import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
 import com.daedan.festabook.presentation.common.showErrorSnackBar
@@ -34,6 +35,7 @@ import com.daedan.festabook.presentation.placeMap.logging.PlaceBackToSchoolClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceItemClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMapButtonReClick
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.placeMap.placeList.component.PlaceListBottomSheetValue
 import com.daedan.festabook.presentation.placeMap.placeList.component.PlaceListScreen
 import com.daedan.festabook.presentation.placeMap.placeList.component.rememberPlaceListBottomSheetState
@@ -105,8 +107,18 @@ class PlaceListFragment(
                             )
                         },
                         onPlaceLoad = {
-                            viewModel.selectedTimeTagFlow.collect {
-                                childViewModel.updatePlacesByTimeTag(it.timeTagId)
+                            viewModel.selectedTimeTag.collect { selectedTimeTag ->
+                                when (selectedTimeTag) {
+                                    is PlaceUiState.Success -> {
+                                        childViewModel.updatePlacesByTimeTag(selectedTimeTag.value.timeTagId)
+                                    }
+
+                                    is PlaceUiState.Empty -> {
+                                        childViewModel.updatePlacesByTimeTag(TimeTag.EMTPY_TIME_TAG_ID)
+                                    }
+
+                                    else -> Unit
+                                }
                             }
                         },
                         onError = {
@@ -136,11 +148,14 @@ class PlaceListFragment(
     override fun onPlaceClicked(place: PlaceUiModel) {
         Timber.d("onPlaceClicked: $place")
         startPlaceDetailActivity(place)
+        val selectedTimeTag = viewModel.selectedTimeTag.value
+        val timeTagName =
+            if (selectedTimeTag is PlaceUiState.Success) selectedTimeTag.value.name else "undefined"
         appGraph.defaultFirebaseLogger.log(
             PlaceItemClick(
                 baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
                 placeId = place.id,
-                timeTagName = viewModel.selectedTimeTag.value?.name ?: "undefinded",
+                timeTagName = timeTagName,
                 category = place.category.name,
             ),
         )

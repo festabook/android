@@ -46,19 +46,12 @@ class PlaceMapViewModel(
     val placeGeographies: LiveData<PlaceListUiState<List<PlaceCoordinateUiModel>>>
         get() = _placeGeographies
 
-    private val _timeTags = MutableStateFlow<List<TimeTag>>(emptyList())
-    val timeTags: StateFlow<List<TimeTag>> = _timeTags.asStateFlow()
+    private val _timeTags = MutableStateFlow<PlaceUiState<List<TimeTag>>>(PlaceUiState.Empty)
+    val timeTags: StateFlow<PlaceUiState<List<TimeTag>>> = _timeTags.asStateFlow()
 
-    private val _selectedTimeTag = MutableLiveData<TimeTag>()
-    val selectedTimeTag: LiveData<TimeTag> = _selectedTimeTag
+    private val _selectedTimeTag = MutableStateFlow<PlaceUiState<TimeTag>>(PlaceUiState.Empty)
+    val selectedTimeTag: StateFlow<PlaceUiState<TimeTag>> = _selectedTimeTag.asStateFlow()
 
-    // 임시 StateFlow
-    val selectedTimeTagFlow: StateFlow<TimeTag> =
-        _selectedTimeTag.asFlow().stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Lazily,
-            initialValue = TimeTag.EMPTY,
-        )
     private val _selectedPlace: MutableLiveData<PlaceUiState<PlaceDetailUiModel>> =
         MutableLiveData()
     val selectedPlace: LiveData<PlaceUiState<PlaceDetailUiModel>> = _selectedPlace
@@ -110,23 +103,32 @@ class PlaceMapViewModel(
             placeListRepository
                 .getTimeTags()
                 .onSuccess { timeTags ->
-                    _timeTags.value = timeTags
+                    _timeTags.tryEmit(
+                        PlaceUiState.Success(timeTags),
+                    )
                 }.onFailure {
-                    _timeTags.value = emptyList()
+                    _timeTags.tryEmit(PlaceUiState.Empty)
                 }
 
             // 기본 선택값
-            if (!timeTags.value.isEmpty()) {
-                _selectedTimeTag.value = _timeTags.value.first()
+            val timeTags = timeTags.value
+            if (timeTags is PlaceUiState.Success && timeTags.value.isNotEmpty()) {
+                _selectedTimeTag.tryEmit(
+                    PlaceUiState.Success(
+                        timeTags.value.first(),
+                    ),
+                )
             } else {
-                _selectedTimeTag.value = TimeTag.EMPTY
+                _selectedTimeTag.tryEmit(PlaceUiState.Empty)
             }
         }
     }
 
     fun onDaySelected(item: TimeTag) {
         unselectPlace()
-        _selectedTimeTag.value = item
+        _selectedTimeTag.tryEmit(
+            PlaceUiState.Success(item),
+        )
     }
 
     fun selectPlace(placeId: Long) {

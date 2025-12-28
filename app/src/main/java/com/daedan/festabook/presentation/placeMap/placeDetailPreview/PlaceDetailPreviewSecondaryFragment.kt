@@ -88,16 +88,20 @@ class PlaceDetailPreviewSecondaryFragment(
                             onEmpty = {
                                 backPressedCallback.isEnabled = false
                             },
-                            onClick = {
-                                if (it !is PlaceUiState.Success) return@PlaceDetailPreviewSecondaryScreen
+                            onClick = { selectedPlace ->
+                                val selectedTimeTag = viewModel.selectedTimeTag.value
+                                if (selectedPlace !is PlaceUiState.Success ||
+                                    selectedTimeTag !is PlaceUiState.Success
+                                ) {
+                                    return@PlaceDetailPreviewSecondaryScreen
+                                }
                                 appGraph.defaultFirebaseLogger.log(
                                     PlacePreviewClick(
                                         baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
-                                        placeName = it.value.place.title ?: "undefined",
+                                        placeName = selectedPlace.value.place.title ?: "undefined",
                                         timeTag =
-                                            viewModel.selectedTimeTag.value?.name
-                                                ?: "undefined",
-                                        category = it.value.place.category.name,
+                                            selectedTimeTag.value.name,
+                                        category = selectedPlace.value.place.category.name,
                                     ),
                                 )
                             },

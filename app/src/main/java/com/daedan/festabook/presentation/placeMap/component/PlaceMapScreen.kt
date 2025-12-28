@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.placeMap.placeCategory.component.PlaceCategoryScreen
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
@@ -21,8 +22,8 @@ import com.naver.maps.map.NaverMap
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaceMapScreen(
-    timeTagTitle: String,
-    timeTags: List<TimeTag>,
+    timeTagsState: PlaceUiState<List<TimeTag>>,
+    selectedTimeTagState: PlaceUiState<TimeTag>,
     places: List<PlaceUiModel>,
     modifier: Modifier = Modifier,
     onMapReady: (NaverMap) -> Unit = {},
@@ -30,8 +31,8 @@ fun PlaceMapScreen(
     onTimeTagClick: (TimeTag) -> Unit = {},
 ) {
     PlaceMapContent(
-        title = timeTagTitle,
-        timeTags = timeTags,
+        timeTagsState = timeTagsState,
+        selectedTimeTagState = selectedTimeTagState,
         onMapReady = onMapReady,
         onTimeTagClick = onTimeTagClick,
         modifier = modifier,
@@ -40,8 +41,8 @@ fun PlaceMapScreen(
 
 @Composable
 private fun PlaceMapContent(
-    timeTags: List<TimeTag>,
-    title: String,
+    timeTagsState: PlaceUiState<List<TimeTag>>,
+    selectedTimeTagState: PlaceUiState<TimeTag>,
     onMapReady: (NaverMap) -> Unit,
     onTimeTagClick: (TimeTag) -> Unit,
     modifier: Modifier = Modifier,
@@ -53,20 +54,18 @@ private fun PlaceMapContent(
         Column(
             modifier = Modifier.wrapContentSize(),
         ) {
-            if (timeTags.isNotEmpty()) {
-                TimeTagMenu(
-                    title = title,
-                    timeTags = timeTags,
-                    onTimeTagClick = { timeTag ->
-                        onTimeTagClick(timeTag)
-                    },
-                    modifier =
-                        Modifier
-                            .background(
-                                FestabookColor.white,
-                            ).padding(horizontal = 24.dp),
-                )
-            }
+            TimeTagMenu(
+                timeTagsState = timeTagsState,
+                selectedTimeTagState = selectedTimeTagState,
+                onTimeTagClick = { timeTag ->
+                    onTimeTagClick(timeTag)
+                },
+                modifier =
+                    Modifier
+                        .background(
+                            FestabookColor.white,
+                        ).padding(horizontal = 24.dp),
+            )
             PlaceCategoryScreen()
         }
     }
@@ -76,13 +75,20 @@ private fun PlaceMapContent(
 @Composable
 private fun PlaceMapScreenPreview() {
     FestabookTheme {
-        PlaceMapScreen(
-            timeTagTitle = "테스트",
-            timeTags =
+        val timeTagsState =
+            PlaceUiState.Success(
                 listOf(
                     TimeTag(1, "테스트1"),
                     TimeTag(2, "테스트2"),
                 ),
+            )
+        val selectedTimeTagState =
+            PlaceUiState.Success(
+                TimeTag(1, "테스트1"),
+            )
+        PlaceMapScreen(
+            timeTagsState = timeTagsState,
+            selectedTimeTagState = selectedTimeTagState,
             places =
                 (0..100).map {
                     PlaceUiModel(

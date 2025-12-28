@@ -73,7 +73,12 @@ class PlaceDetailPreviewFragment(
                                         horizontal = festabookSpacing.paddingScreenGutter,
                                     ),
                             onClick = { selectedPlace ->
-                                if (selectedPlace !is PlaceUiState.Success) return@PlaceDetailPreviewScreen
+                                val selectedTimeTag = viewModel.selectedTimeTag.value
+                                if (selectedPlace !is PlaceUiState.Success ||
+                                    selectedTimeTag !is PlaceUiState.Success
+                                ) {
+                                    return@PlaceDetailPreviewScreen
+                                }
                                 startPlaceDetailActivity(selectedPlace.value)
                                 binding.logger.log(
                                     PlacePreviewClick(
@@ -81,9 +86,7 @@ class PlaceDetailPreviewFragment(
                                         placeName =
                                             selectedPlace.value.place.title
                                                 ?: "undefined",
-                                        timeTag =
-                                            viewModel.selectedTimeTag.value?.name
-                                                ?: "undefined",
+                                        timeTag = selectedTimeTag.value.name,
                                         category = selectedPlace.value.place.category.name,
                                     ),
                                 )
