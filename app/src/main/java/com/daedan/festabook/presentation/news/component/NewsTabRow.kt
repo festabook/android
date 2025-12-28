@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.daedan.festabook.presentation.news.NewsTab
 import com.daedan.festabook.presentation.theme.FestabookColor
+import com.daedan.festabook.presentation.theme.FestabookTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -27,7 +28,6 @@ fun NewsTabRow(
     TabRow(
         selectedTabIndex = pageState.currentPage,
         containerColor = MaterialTheme.colorScheme.background,
-        contentColor = FestabookColor.black,
         indicator = { tabPositions ->
             TabRowDefaults.PrimaryIndicator(
                 color = FestabookColor.black,
@@ -41,6 +41,7 @@ fun NewsTabRow(
             Tab(
                 selected = pageState.currentPage == index,
                 unselectedContentColor = FestabookColor.gray500,
+                selectedContentColor = FestabookColor.black,
                 onClick = { scope.launch { pageState.animateScrollToPage(index) } },
                 text = { Text(text = stringResource(title.tabNameRes)) },
             )
@@ -51,8 +52,10 @@ fun NewsTabRow(
 @Composable
 @Preview
 private fun NewsTabRowPreview() {
-    NewsTabRow(
-        pageState = rememberPagerState { 3 },
-        scope = rememberCoroutineScope(),
-    )
+    FestabookTheme {
+        NewsTabRow(
+            pageState = rememberPagerState { 3 },
+            scope = rememberCoroutineScope(),
+        )
+    }
 }

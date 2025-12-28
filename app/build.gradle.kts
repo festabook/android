@@ -191,4 +191,13 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.logging.interceptor)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.junit.jupiter.params)
+    testImplementation(libs.junit.platform.launcher)
+    testRuntimeOnly(libs.junit.vintage.engine)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
