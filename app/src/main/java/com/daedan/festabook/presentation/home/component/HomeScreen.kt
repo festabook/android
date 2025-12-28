@@ -1,6 +1,7 @@
 package com.daedan.festabook.presentation.home.component
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -65,7 +66,7 @@ private fun FestivalOverview(
             item {
                 if (festivalUiState is FestivalUiState.Success) {
                     HomeHeader(
-                        schoolName = festivalUiState.organization.universityName,
+                        universityName = festivalUiState.organization.universityName,
                         onExpandClick = onNavigateToExplore,
                         modifier = Modifier.padding(top = 40.dp),
                     )
@@ -144,7 +145,7 @@ private fun FestivalOverview(
 
             // 하단 여백 추가
             item {
-                Box(modifier = Modifier.padding(bottom = 60.dp))
+                Spacer(modifier = Modifier.padding(bottom = 60.dp))
             }
         }
     }

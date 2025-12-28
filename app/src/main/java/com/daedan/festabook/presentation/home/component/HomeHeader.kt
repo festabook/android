@@ -1,13 +1,14 @@
 package com.daedan.festabook.presentation.home.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +25,7 @@ import com.daedan.festabook.presentation.theme.FestabookTypography
 
 @Composable
 fun HomeHeader(
-    schoolName: String,
+    universityName: String,
     onExpandClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -39,7 +40,7 @@ fun HomeHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = schoolName,
+                text = universityName,
                 style = FestabookTypography.displayLarge.copy(
                     platformStyle = PlatformTextStyle(includeFontPadding = false),
                     lineHeight = 34.sp
@@ -49,9 +50,11 @@ fun HomeHeader(
 
             Spacer(modifier = Modifier.width(4.dp))
 
-            Image(
+            Icon(
                 painter = painterResource(id = R.drawable.ic_dropdown),
-                contentDescription = stringResource(id = R.string.home_navigate_to_explore_desc),
+                tint = FestabookColor.black,
+                contentDescription = stringResource(R.string.home_navigate_to_explore_desc),
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -61,7 +64,7 @@ fun HomeHeader(
 @Composable
 private fun HomeHeaderPreview() {
     HomeHeader(
-        schoolName = "가천대학교",
+        universityName = "가천대학교",
         onExpandClick = {},
     )
 }

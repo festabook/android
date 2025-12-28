@@ -45,8 +45,7 @@ fun HomeLineupHeader(
                 Modifier
                     .clickable(
                         onClick = onScheduleClick,
-                    )
-                    .padding(4.dp),
+                    ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(

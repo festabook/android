@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.daedan.festabook.presentation.common.component.CoilImage
+import com.daedan.festabook.presentation.common.component.cardBackground
 import kotlin.math.absoluteValue
 
 @Composable
@@ -87,7 +88,8 @@ fun HomePosterList(
                         scaleY = scale
                         this.alpha = alpha
                     }
-                    .clip(RoundedCornerShape(10.dp)),
+                    .cardBackground(roundedCornerShape = 10.dp)
+                    .clip(RoundedCornerShape(10.dp))
         ) {
             CoilImage(
                 url = imageUrl,
