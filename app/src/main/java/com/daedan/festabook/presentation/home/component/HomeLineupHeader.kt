@@ -49,7 +49,7 @@ fun HomeLineupHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(R.string.home_check_schedule_text),
+                text = stringResource(R.string.home_navigate_to_schedule_text),
                 style = FestabookTypography.bodySmall,
                 color = FestabookColor.gray400,
             )
@@ -58,7 +58,7 @@ fun HomeLineupHeader(
 
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_forward_right),
-                contentDescription = null,
+                contentDescription = stringResource(R.string.home_navigate_to_schedule_desc),
                 tint = FestabookColor.gray400,
                 modifier = Modifier.size(12.dp),
             )

@@ -51,7 +51,7 @@ fun HomeArtistItem(
     }
 }
 
-object HomeArtistItem {
+private object HomeArtistItem {
     val ArtistImage = RoundedCornerShape(
         topStartPercent = 50,
         topEndPercent = 50,
