@@ -4,11 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,12 +45,6 @@ class PlaceDetailPreviewFragment(
     OnMenuItemReClickListener {
     override val layoutId: Int = R.layout.fragment_place_detail_preview
     private val viewModel: PlaceMapViewModel by viewModels({ requireParentFragment() })
-    private val backPressedCallback =
-        object : OnBackPressedCallback(false) {
-            override fun handleOnBackPressed() {
-                viewModel.unselectPlace()
-            }
-        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -66,10 +58,6 @@ class PlaceDetailPreviewFragment(
                 FestabookTheme {
                     val placeDetailUiState by viewModel.selectedPlaceFlow.collectAsStateWithLifecycle()
                     val visible = placeDetailUiState is SelectedPlaceUiState.Success
-
-                    LaunchedEffect(placeDetailUiState) {
-                        backPressedCallback.isEnabled = true
-                    }
 
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -103,8 +91,8 @@ class PlaceDetailPreviewFragment(
                             onError = { selectedPlace ->
                                 showErrorSnackBar(selectedPlace.throwable)
                             },
-                            onEmpty = {
-                                backPressedCallback.isEnabled = false
+                            onBackPress = {
+                                viewModel.unselectPlace()
                             },
                         )
                     }
@@ -113,23 +101,8 @@ class PlaceDetailPreviewFragment(
         }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
-        super.onViewCreated(view, savedInstanceState)
-        setUpBackPressedCallback()
-    }
-
     override fun onMenuItemReClick() {
         viewModel.unselectPlace()
-    }
-
-    private fun setUpBackPressedCallback() {
-        requireActivity().onBackPressedDispatcher.addCallback(
-            viewLifecycleOwner,
-            backPressedCallback,
-        )
     }
 
     private fun startPlaceDetailActivity(placeDetail: PlaceDetailUiModel) {

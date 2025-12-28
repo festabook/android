@@ -1,5 +1,6 @@
 package com.daedan.festabook.presentation.placeMap.placeDetailPreview.component
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,8 +39,11 @@ fun PlaceDetailPreviewScreen(
     visible: Boolean = false,
     onClick: (SelectedPlaceUiState) -> Unit = {},
     onError: (SelectedPlaceUiState.Error) -> Unit = {},
-    onEmpty: () -> Unit = {},
+    onBackPress: () -> Unit = {},
 ) {
+    BackHandler(enabled = visible) {
+        onBackPress()
+    }
     PreviewAnimatableBox(
         visible = visible,
         modifier =
@@ -54,7 +58,7 @@ fun PlaceDetailPreviewScreen(
             }
 
             is SelectedPlaceUiState.Error -> onError(placeUiState)
-            is SelectedPlaceUiState.Empty -> onEmpty()
+            is SelectedPlaceUiState.Empty -> Unit
         }
     }
 }
