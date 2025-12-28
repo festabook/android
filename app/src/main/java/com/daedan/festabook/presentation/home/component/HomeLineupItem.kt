@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,44 +42,47 @@ fun HomeLineupItem(
         modifier = modifier.fillMaxWidth(),
     ) {
         // 날짜 + 배지 영역
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp).width(IntrinsicSize.Max)
         ) {
-            Text(
-                text = "${uiModel.date.monthValue}.${uiModel.date.dayOfMonth}",
-                style = FestabookTypography.titleLarge,
-                color = FestabookColor.black,
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = "${uiModel.date.monthValue}.${uiModel.date.dayOfMonth}",
+                    style = FestabookTypography.titleLarge,
+                    color = FestabookColor.black,
+                )
 
-            if (uiModel.isDDay) {
-                Spacer(modifier = Modifier.width(6.dp))
-                Box(
-                    modifier =
-                        Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(FestabookColor.black)
-                            .padding(horizontal = 6.dp, vertical = 2.dp),
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.home_is_d_day),
-                        style = FestabookTypography.labelSmall,
-                        color = FestabookColor.white,
-                    )
+                if (uiModel.isDDay) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier =
+                            Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(FestabookColor.black)
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.home_is_d_day),
+                            style = FestabookTypography.labelSmall,
+                            color = FestabookColor.white,
+                        )
+                    }
                 }
             }
+            Spacer(modifier = Modifier.height(4.dp))
+
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = FestabookColor.gray700,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
 
-        Box(
-            modifier =
-                Modifier
-                    .padding(horizontal = 16.dp)
-                    .width(75.dp)
-                    .height(1.dp)
-                    .background(FestabookColor.gray700),
-        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
