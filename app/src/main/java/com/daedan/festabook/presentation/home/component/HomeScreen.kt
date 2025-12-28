@@ -128,8 +128,10 @@ private fun FestivalOverview(
             // 라인업 리스트
             when (lineupUiState) {
                 is LineupUiState.Success -> {
-                    val lineups = lineupUiState.lineups.getLineupItems()
-                    items(lineups) { lineupItem ->
+                    items(
+                        items = lineupUiState.lineups,
+                        key = { it.id },
+                    ) { lineupItem ->
                         HomeLineupItem(uiModel = lineupItem)
                     }
                 }
@@ -189,7 +191,7 @@ private fun FestivalOverviewPreview() {
 
     FestivalOverview(
         festivalUiState = FestivalUiState.Success(sampleFestival),
-        lineupUiState = LineupUiState.Success(sampleLineups),
+        lineupUiState = LineupUiState.Success(sampleLineups.getLineupItems()),
         onNavigateToExplore = {},
         onNavigateToSchedule = {},
     )

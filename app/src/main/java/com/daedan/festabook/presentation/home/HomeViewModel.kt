@@ -61,10 +61,8 @@ class HomeViewModel @Inject constructor(
             val result = festivalRepository.getLineUpGroupByDate()
             result
                 .onSuccess { lineups ->
-                    _lineupUiState.value =
-                        LineupUiState.Success(
-                            lineups.toUiModel(),
-                        )
+                    val lineupItems = lineups.toUiModel().getLineupItems()
+                    _lineupUiState.value = LineupUiState.Success(lineupItems)
                 }.onFailure {
                     _lineupUiState.value = LineupUiState.Error(it)
                 }
