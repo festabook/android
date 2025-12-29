@@ -11,56 +11,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import com.daedan.festabook.domain.model.TimeTag
-import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
-import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.LoadState
+import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapAction
+import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.festabookSpacing
-import com.naver.maps.map.NaverMap
 
 @Composable
 fun PlaceMapScreen(
-    places: PlaceListUiState<List<PlaceUiModel>>,
-    initialCategories: List<PlaceCategoryUiModel>,
-    selectedCategoriesState: Set<PlaceCategoryUiModel>,
-    selectedPlaceUiState: PlaceUiState<PlaceDetailUiModel>,
-    timeTagsState: PlaceUiState<List<TimeTag>>,
-    selectedTimeTagState: PlaceUiState<TimeTag>,
-    onMapReady: (NaverMap) -> Unit,
-    onTimeTagClick: (TimeTag) -> Unit,
-    onMapDrag: () -> Unit,
-    onPlaceClick: (PlaceUiModel) -> Unit,
-    onPlacePreviewClick: (PlaceUiState<PlaceDetailUiModel>) -> Unit,
-    onBackPress: () -> Unit,
-    onPlacePreviewError: (PlaceUiState.Error) -> Unit,
-    isExceedMaxLength: Boolean,
-    onPlaceLoadFinish: (List<PlaceUiModel>) -> Unit,
-    onPlaceLoad: suspend () -> Unit,
-    onPlaceListError: (PlaceListUiState.Error<List<PlaceUiModel>>) -> Unit,
-    onBackToInitialPositionClick: () -> Unit,
-    onCategoryClick: (Set<PlaceCategoryUiModel>) -> Unit,
-    onDisplayAllClick: (Set<PlaceCategoryUiModel>) -> Unit,
-    isPlacePreviewVisible: Boolean,
-    isPlaceSecondaryPreviewVisible: Boolean,
+    uiState: PlaceMapUiState,
+    onAction: (PlaceMapAction) -> Unit,
     bottomSheetState: PlaceListBottomSheetState,
+    mapState: MapState,
     modifier: Modifier = Modifier,
 ) {
     NaverMapContent(
         modifier = modifier.fillMaxSize(),
-        onMapReady = onMapReady,
-        onMapDrag = onMapDrag,
+        mapState = mapState,
+        onMapReady = { onAction(PlaceMapAction.OnMapReady) },
+        onMapDrag = { onAction(PlaceMapAction.OnMapDrag) },
     ) { naverMap ->
         Column(
             modifier = Modifier.wrapContentSize(),
         ) {
             TimeTagMenu(
-                timeTagsState = timeTagsState,
-                selectedTimeTagState = selectedTimeTagState,
+                timeTagsState = uiState.timeTags,
+                selectedTimeTagState = uiState.selectedTimeTag,
                 onTimeTagClick = { timeTag ->
-                    onTimeTagClick(timeTag)
+                    onAction(PlaceMapAction.OnTimeTagClick(timeTag))
                 },
                 modifier =
                     Modifier
@@ -69,10 +47,10 @@ fun PlaceMapScreen(
                         ).padding(horizontal = 24.dp),
             )
             PlaceCategoryScreen(
-                initialCategories = initialCategories,
-                selectedCategories = selectedCategoriesState,
-                onCategoryClick = onCategoryClick,
-                onDisplayAllClick = onDisplayAllClick,
+                initialCategories = uiState.initialCategories,
+                selectedCategories = uiState.selectedCategories,
+                onCategoryClick = { onAction(PlaceMapAction.OnCategoryClick(it)) },
+                onDisplayAllClick = { onAction(PlaceMapAction.OnCategoryClick(it)) },
             )
 
             Box(
@@ -88,47 +66,52 @@ fun PlaceMapScreen(
                 PlaceListScreen(
                     modifier =
                         Modifier.alpha(
-                            if (!isPlacePreviewVisible && !isPlaceSecondaryPreviewVisible) 1f else 0f,
+                            if (uiState.selectedPlace is LoadState.Empty) {
+                                1f
+                            } else {
+                                0f
+                            },
                         ),
-                    placesUiState = places,
+                    placesUiState = uiState.places,
                     map = naverMap,
-                    onPlaceClick = onPlaceClick,
+                    onPlaceClick = { onAction(PlaceMapAction.OnPlaceClick(it.id)) },
                     bottomSheetState = bottomSheetState,
-                    isExceedMaxLength = isExceedMaxLength,
-                    onPlaceLoadFinish = onPlaceLoadFinish,
-                    onPlaceLoad = onPlaceLoad,
-                    onError = onPlaceListError,
-                    onBackToInitialPositionClick = onBackToInitialPositionClick,
+                    isExceededMaxLength = uiState.isExceededMaxLength,
+                    onPlaceLoadFinish = { onAction(PlaceMapAction.OnPlaceLoadFinish(it)) },
+                    onPlaceLoad = { onAction(PlaceMapAction.OnPlaceLoad) },
+                    onBackToInitialPositionClick = { onAction(PlaceMapAction.OnBackToInitialPositionClick) },
                 )
 
-                PlaceDetailPreviewScreen(
-                    modifier =
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(
-                                vertical = festabookSpacing.paddingBody4,
-                                horizontal = festabookSpacing.paddingScreenGutter,
-                            ),
-                    placeUiState = selectedPlaceUiState,
-                    visible = isPlacePreviewVisible,
-                    onClick = onPlacePreviewClick,
-                    onBackPress = onBackPress,
-                    onError = onPlacePreviewError,
-                )
+                if (uiState.isPlacePreviewVisible) {
+                    PlaceDetailPreviewScreen(
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(
+                                    vertical = festabookSpacing.paddingBody4,
+                                    horizontal = festabookSpacing.paddingScreenGutter,
+                                ),
+                        selectedPlace = uiState.selectedPlace,
+                        visible = true,
+                        onClick = { onAction(PlaceMapAction.OnPlacePreviewClick(it)) },
+                        onBackPress = { onAction(PlaceMapAction.OnBackPress) },
+                    )
+                }
 
-                PlaceDetailPreviewSecondaryScreen(
-                    modifier =
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(
-                                vertical = festabookSpacing.paddingBody4,
-                                horizontal = festabookSpacing.paddingScreenGutter,
-                            ),
-                    placeUiState = selectedPlaceUiState,
-                    visible = isPlaceSecondaryPreviewVisible,
-                    onBackPress = onBackPress,
-                    onError = onPlacePreviewError,
-                )
+                if (uiState.isPlaceSecondaryPreviewVisible) {
+                    PlaceDetailPreviewSecondaryScreen(
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(
+                                    vertical = festabookSpacing.paddingBody4,
+                                    horizontal = festabookSpacing.paddingScreenGutter,
+                                ),
+                        selectedPlace = uiState.selectedPlace,
+                        visible = true,
+                        onBackPress = { onAction(PlaceMapAction.OnBackPress) },
+                    )
+                }
             }
         }
     }

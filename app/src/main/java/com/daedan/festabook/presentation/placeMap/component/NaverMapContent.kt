@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -22,27 +23,51 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun NaverMapContent(
     modifier: Modifier = Modifier,
+    mapState: MapState = MapState(),
     onMapDrag: () -> Unit = {},
     onMapReady: (NaverMap) -> Unit = {},
     content: @Composable (NaverMap?) -> Unit,
 ) {
     val context = LocalContext.current
     val mapView = remember { MapView(context) }
-    var naverMap by remember { mutableStateOf<NaverMap?>(null) }
     LaunchedEffect(mapView) {
-        naverMap = mapView.getMapAndRunCallback(onMapReady)
+        val naverMap = mapView.getMapAndRunCallback(onMapReady)
+        mapState.initMap(naverMap)
     }
     AndroidView(
         factory = { mapView },
         modifier = modifier.dragInterceptor(onMapDrag),
     )
     RegisterMapLifeCycle(mapView)
-    content(naverMap)
+    content(mapState.value)
+}
+
+class MapState {
+    var value: NaverMap? by mutableStateOf(null)
+        private set
+
+    fun initMap(map: NaverMap) {
+        value = map
+    }
+
+    suspend fun await(timeout: Duration = 3.seconds): NaverMap =
+        withTimeout(timeout) {
+            snapshotFlow { value }
+                .distinctUntilChanged()
+                .filterNotNull()
+                .first()
+        }
 }
 
 private fun Modifier.dragInterceptor(onMapDrag: () -> Unit): Modifier =

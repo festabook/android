@@ -4,10 +4,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.domain.repository.PlaceListRepository
 import com.daedan.festabook.getOrAwaitValue
+import com.daedan.festabook.presentation.placeMap.model.ListLoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
-import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceListViewModel
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -70,7 +69,7 @@ class PlaceListViewModelTest {
             val expected = FAKE_PLACES.map { it.toUiModel() }
             val actual = placeListViewModel.places.getOrAwaitValue()
             coVerify { placeListRepository.getPlaces() }
-            assertThat(actual).isEqualTo(PlaceListUiState.PlaceLoaded(expected))
+            assertThat(actual).isEqualTo(ListLoadState.PlaceLoaded(expected))
         }
 
     @Test
@@ -90,7 +89,7 @@ class PlaceListViewModelTest {
                     .filter { it.category.toUiModel() in targetCategories }
                     .map { it.toUiModel() }
             val actual = placeListViewModel.places.getOrAwaitValue()
-            assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
+            assertThat(actual).isEqualTo(ListLoadState.Success(expected))
         }
 
     @Test
@@ -107,7 +106,7 @@ class PlaceListViewModelTest {
             // then
             val expected = FAKE_PLACES.map { it.toUiModel() }
             val actual = placeListViewModel.places.getOrAwaitValue()
-            assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
+            assertThat(actual).isEqualTo(ListLoadState.Success(expected))
         }
 
     @Test
@@ -125,7 +124,7 @@ class PlaceListViewModelTest {
             // then
             val expected = FAKE_PLACES.map { it.toUiModel() }
             val actual = placeListViewModel.places.getOrAwaitValue()
-            assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
+            assertThat(actual).isEqualTo(ListLoadState.Success(expected))
         }
 
     @Test
@@ -142,7 +141,7 @@ class PlaceListViewModelTest {
 
             // then
             val actual = placeListViewModel.places.getOrAwaitValue()
-            assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
+            assertThat(actual).isEqualTo(ListLoadState.Success(expected))
         }
 
     @Test
@@ -157,6 +156,6 @@ class PlaceListViewModelTest {
 
             // then
             val actual = placeListViewModel.places.getOrAwaitValue()
-            assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
+            assertThat(actual).isEqualTo(ListLoadState.Success(expected))
         }
 }

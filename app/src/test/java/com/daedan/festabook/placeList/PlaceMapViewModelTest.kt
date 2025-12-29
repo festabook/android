@@ -10,10 +10,10 @@ import com.daedan.festabook.placeDetail.FAKE_PLACE_DETAIL
 import com.daedan.festabook.presentation.common.Event
 import com.daedan.festabook.presentation.placeDetail.model.toUiModel
 import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
+import com.daedan.festabook.presentation.placeMap.model.ListLoadState
+import com.daedan.festabook.presentation.placeMap.model.LoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapViewModel
 import io.mockk.coEvery
@@ -124,7 +124,7 @@ class PlaceMapViewModelTest {
             val expected = FAKE_PLACE_GEOGRAPHIES.map { it.toUiModel() }
             val actual = placeMapViewModel.placeGeographies.getOrAwaitValue()
             coVerify { placeListRepository.getPlaceGeographies() }
-            assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
+            assertThat(actual).isEqualTo(ListLoadState.Success(expected))
         }
 
     @Test
@@ -143,7 +143,7 @@ class PlaceMapViewModelTest {
             // then
             val expected = FAKE_ORGANIZATION_GEOGRAPHY.toUiModel()
             val actual = placeMapViewModel.initialMapSetting.getOrAwaitValue()
-            assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
+            assertThat(actual).isEqualTo(ListLoadState.Success(expected))
         }
 
     @Test
@@ -164,10 +164,10 @@ class PlaceMapViewModelTest {
 
             // then
             val expected2 =
-                PlaceListUiState.Success<InitialMapSettingUiModel>(FAKE_ORGANIZATION_GEOGRAPHY.toUiModel())
+                ListLoadState.Success<InitialMapSettingUiModel>(FAKE_ORGANIZATION_GEOGRAPHY.toUiModel())
             val actual2 = placeMapViewModel.initialMapSetting.getOrAwaitValue()
 
-            val expected3 = PlaceListUiState.Error<PlaceUiModel>(exception)
+            val expected3 = ListLoadState.Error<PlaceUiModel>(exception)
             val actual3 = placeMapViewModel.placeGeographies.getOrAwaitValue()
 
             assertThat(actual2).isEqualTo(expected2)
@@ -190,7 +190,7 @@ class PlaceMapViewModelTest {
             // then
             coVerify { placeDetailRepository.getPlaceDetail(1) }
 
-            val expected = PlaceUiState.Success(FAKE_PLACE_DETAIL.toUiModel())
+            val expected = LoadState.Success(FAKE_PLACE_DETAIL.toUiModel())
             val actual = placeMapViewModel.selectedPlace.getOrAwaitValue()
             assertThat(actual).isEqualTo(expected)
         }
@@ -209,7 +209,7 @@ class PlaceMapViewModelTest {
             advanceUntilIdle()
 
             // then
-            val expected = PlaceUiState.Success(FAKE_ETC_PLACE_DETAIL.toUiModel())
+            val expected = LoadState.Success(FAKE_ETC_PLACE_DETAIL.toUiModel())
             val actual = placeMapViewModel.selectedPlace.getOrAwaitValue()
             assertThat(actual).isEqualTo(expected)
         }
@@ -230,7 +230,7 @@ class PlaceMapViewModelTest {
             advanceUntilIdle()
 
             // then
-            val expected = PlaceUiState.Empty
+            val expected = LoadState.Empty
             val actual = placeMapViewModel.selectedPlace.getOrAwaitValue()
             assertThat(actual).isEqualTo(expected)
         }

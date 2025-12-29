@@ -1,6 +1,7 @@
 package com.daedan.festabook.presentation.placeMap.listener
 
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
+import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapAction
 import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapViewModel
 import timber.log.Timber
 
@@ -12,12 +13,14 @@ class MapClickListenerImpl(
         category: PlaceCategoryUiModel,
     ): Boolean {
         Timber.d("Marker CLick : placeID: $placeId categoty: $category")
-        viewModel.selectPlace(placeId)
+        viewModel.onPlaceMapAction(
+            PlaceMapAction.OnPlaceClick(placeId),
+        )
         return true
     }
 
     override fun onMapClickListener() {
         Timber.d("Map CLick")
-        viewModel.unselectPlace()
+        viewModel.onPlaceMapAction(PlaceMapAction.UnSelectPlace)
     }
 }

@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.presentation.common.component.cardBackground
-import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.LoadState
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.festabookShapes
@@ -52,14 +52,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeTagMenu(
-    timeTagsState: PlaceUiState<List<TimeTag>>,
-    selectedTimeTagState: PlaceUiState<TimeTag>,
+    timeTagsState: LoadState<List<TimeTag>>,
+    selectedTimeTagState: LoadState<TimeTag>,
     modifier: Modifier = Modifier,
     onTimeTagClick: (TimeTag) -> Unit = {},
 ) {
     when (timeTagsState) {
-        is PlaceUiState.Success -> {
-            if (selectedTimeTagState !is PlaceUiState.Success) return
+        is LoadState.Success -> {
+            if (selectedTimeTagState !is LoadState.Success) return
             TimeTagContent(
                 title = selectedTimeTagState.value.name,
                 timeTags = timeTagsState.value,

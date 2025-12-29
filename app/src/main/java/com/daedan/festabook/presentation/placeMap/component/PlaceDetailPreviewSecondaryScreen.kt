@@ -18,9 +18,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
+import com.daedan.festabook.presentation.placeMap.model.LoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.placeMap.model.getIconId
 import com.daedan.festabook.presentation.placeMap.model.getTextId
 import com.daedan.festabook.presentation.theme.FestabookTheme
@@ -30,11 +30,11 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
 fun PlaceDetailPreviewSecondaryScreen(
-    placeUiState: PlaceUiState<PlaceDetailUiModel>,
+    selectedPlace: LoadState<PlaceDetailUiModel>,
     modifier: Modifier = Modifier,
-    onError: (PlaceUiState.Error) -> Unit = {},
+    onError: (LoadState.Error) -> Unit = {},
     onEmpty: () -> Unit = {},
-    onClick: (PlaceUiState<PlaceDetailUiModel>) -> Unit = {},
+    onClick: (LoadState<PlaceDetailUiModel>) -> Unit = {},
     onBackPress: () -> Unit = {},
     visible: Boolean = false,
 ) {
@@ -47,15 +47,15 @@ fun PlaceDetailPreviewSecondaryScreen(
             modifier
                 .fillMaxWidth()
                 .clickable {
-                    onClick(placeUiState)
+                    onClick(selectedPlace)
                 },
         shape = festabookShapes.radius2,
     ) {
-        when (placeUiState) {
-            is PlaceUiState.Loading -> Unit
-            is PlaceUiState.Error -> onError(placeUiState)
-            is PlaceUiState.Empty -> onEmpty()
-            is PlaceUiState.Success -> {
+        when (selectedPlace) {
+            is LoadState.Loading -> Unit
+            is LoadState.Error -> onError(selectedPlace)
+            is LoadState.Empty -> onEmpty()
+            is LoadState.Success -> {
                 Row(
                     modifier =
                         Modifier.padding(
@@ -68,7 +68,7 @@ fun PlaceDetailPreviewSecondaryScreen(
                         modifier = Modifier.size(24.dp),
                         painter =
                             painterResource(
-                                placeUiState.value.place.category
+                                selectedPlace.value.place.category
                                     .getIconId(),
                             ),
                         tint = Color.Unspecified,
@@ -78,9 +78,9 @@ fun PlaceDetailPreviewSecondaryScreen(
                     Text(
                         modifier = Modifier.padding(start = festabookSpacing.paddingBody2),
                         text =
-                            placeUiState.value.place.title
+                            selectedPlace.value.place.title
                                 ?: stringResource(
-                                    placeUiState.value.place.category
+                                    selectedPlace.value.place.category
                                         .getTextId(),
                                 ),
                         style = FestabookTypography.displaySmall,
@@ -98,8 +98,8 @@ private fun PlaceDetailPreviewSecondaryScreenPreview() {
         PlaceDetailPreviewSecondaryScreen(
             visible = true,
             modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
-            placeUiState =
-                PlaceUiState.Success(
+            selectedPlace =
+                LoadState.Success(
                     FAKE_PLACE_DETAIL,
                 ),
         )

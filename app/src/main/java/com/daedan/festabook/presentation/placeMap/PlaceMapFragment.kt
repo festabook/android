@@ -5,12 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -32,30 +29,25 @@ import com.daedan.festabook.di.mapManager.MapManagerGraph
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.logger
 import com.daedan.festabook.presentation.common.BaseFragment
+import com.daedan.festabook.presentation.common.ObserveAsEvents
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.toPx
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
+import com.daedan.festabook.presentation.placeMap.component.MapState
 import com.daedan.festabook.presentation.placeMap.component.PlaceListBottomSheetValue
 import com.daedan.festabook.presentation.placeMap.component.PlaceMapScreen
 import com.daedan.festabook.presentation.placeMap.component.rememberPlaceListBottomSheetState
 import com.daedan.festabook.presentation.placeMap.logging.CurrentLocationChecked
-import com.daedan.festabook.presentation.placeMap.logging.PlaceBackToSchoolClick
-import com.daedan.festabook.presentation.placeMap.logging.PlaceCategoryClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceFragmentEnter
-import com.daedan.festabook.presentation.placeMap.logging.PlaceItemClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMapButtonReClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMarkerClick
-import com.daedan.festabook.presentation.placeMap.logging.PlacePreviewClick
-import com.daedan.festabook.presentation.placeMap.logging.PlaceTimeTagSelected
 import com.daedan.festabook.presentation.placeMap.mapManager.MapManager
-import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
+import com.daedan.festabook.presentation.placeMap.model.LoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
-import com.daedan.festabook.presentation.placeMap.model.isSecondary
-import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceListViewModel
+import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapAction
+import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapEvent
 import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapViewModel
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.util.FusedLocationSource
@@ -68,8 +60,6 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import timber.log.Timber
@@ -91,8 +81,6 @@ class PlaceMapFragment(
     }
     private val placeMapViewModel: PlaceMapViewModel by viewModels()
 
-    private val placeListViewModel: PlaceListViewModel by viewModels()
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -107,316 +95,155 @@ class PlaceMapFragment(
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val places by placeListViewModel.places.collectAsStateWithLifecycle()
-                val selectedPlace by placeMapViewModel.selectedPlace.collectAsStateWithLifecycle()
-                val timeTags by placeMapViewModel.timeTags.collectAsStateWithLifecycle()
-                val selectedTimeTag by placeMapViewModel.selectedTimeTag.collectAsStateWithLifecycle()
-                val initialCategories = PlaceCategoryUiModel.entries
-                val isExceedMaxLength by placeMapViewModel.isExceededMaxLength.collectAsStateWithLifecycle()
-                val timeTagChanged =
-                    placeMapViewModel.selectedTimeTag.collectAsStateWithLifecycle(viewLifecycleOwner)
-                var selectedCategoriesState by remember(timeTagChanged.value) {
-                    mutableStateOf(
-                        emptySet<PlaceCategoryUiModel>(),
-                    )
-                }
-
-                val isPlacePreviewVisible by remember {
-                    derivedStateOf {
-                        selectedPlace is PlaceUiState.Success &&
-                            !(selectedPlace as PlaceUiState.Success<PlaceDetailUiModel>).isSecondary
-                    }
-                }
-
-                val isPlaceSecondaryPreviewVisible by remember {
-                    derivedStateOf {
-                        selectedPlace is PlaceUiState.Success &&
-                            (selectedPlace as PlaceUiState.Success<PlaceDetailUiModel>).isSecondary
-                    }
-                }
-
-                val scope = rememberCoroutineScope()
-                val bottomSheetState = rememberPlaceListBottomSheetState()
-
+                val uiState by placeMapViewModel.uiState.collectAsStateWithLifecycle()
                 var mapManager by remember { mutableStateOf<MapManager?>(null) }
+                val bottomSheetState = rememberPlaceListBottomSheetState()
+                val mapState = remember { MapState() }
 
-                LaunchedEffect(Unit) {
-                    placeMapViewModel.placeGeographies.collect { placeGeographies ->
-                        when (placeGeographies) {
-                            is PlaceUiState.Loading -> Unit
-                            is PlaceUiState.Success -> {
-                                mapManager?.setupMarker(placeGeographies.value)
-                                placeMapViewModel.selectedTimeTag.collect { selectedTimeTag ->
-                                    when (selectedTimeTag) {
-                                        is PlaceUiState.Success -> {
-                                            mapManager?.filterMarkersByTimeTag(
-                                                selectedTimeTag.value.timeTagId,
-                                            )
-                                        }
-
-                                        is PlaceUiState.Empty -> {
-                                            mapManager?.filterMarkersByTimeTag(TimeTag.EMTPY_TIME_TAG_ID)
-                                        }
-
-                                        else -> Unit
-                                    }
-                                }
-                            }
-
-                            is PlaceUiState.Error -> {
-                                Timber.w(
-                                    placeGeographies.throwable,
-                                    "PlaceListFragment: ${placeGeographies.throwable.message}",
+                ObserveAsEvents(flow = placeMapViewModel.uiEvent) { event ->
+                    when (event) {
+                        is PlaceMapEvent.InitMap -> {
+                            val naverMap = mapState.await()
+                            naverMap.addOnLocationChangeListener {
+                                binding.logger.log(
+                                    CurrentLocationChecked(
+                                        baseLogData = binding.logger.getBaseLogData(),
+                                    ),
                                 )
-                                showErrorSnackBar(placeGeographies.throwable)
                             }
-
-                            else -> Unit
+                            naverMap.locationSource = locationSource
                         }
-                    }
-                }
 
-                LaunchedEffect(Unit) {
-                    placeMapViewModel.backToInitialPositionClicked.collect {
-                        mapManager?.moveToPosition()
-                    }
-                }
-
-                LaunchedEffect(Unit) {
-                    placeMapViewModel.selectedCategories.collect { selectedCategories ->
-                        if (selectedCategories.isEmpty()) {
-                            mapManager?.clearFilter()
-                        } else {
-                            mapManager?.filterMarkersByCategories(selectedCategories)
-                        }
-                    }
-                }
-
-                LaunchedEffect(Unit) {
-                    placeMapViewModel.navigateToDetail.collect { selectedPlace ->
-                        startPlaceDetailActivity(selectedPlace)
-                    }
-                }
-
-                LaunchedEffect(Unit) {
-                    placeListViewModel.places.first {
-                        it is PlaceListUiState.Success || it is PlaceListUiState.Error
-                    }
-                    placeMapViewModel.selectedCategories.collect { selectedCategories ->
-                        if (selectedCategories.isEmpty()) {
-                            placeListViewModel.clearPlacesFilter()
-                        } else {
-                            placeListViewModel.updatePlacesByCategories(selectedCategories)
-                        }
-                    }
-                }
-
-                LaunchedEffect(Unit) {
-                    placeMapViewModel.onMenuItemReClick.collect {
-                        mapManager?.moveToPosition()
-                        if (!isPlacePreviewVisible && !isPlaceSecondaryPreviewVisible) return@collect
-                        placeMapViewModel.onMapViewClick()
-                        appGraph.defaultFirebaseLogger.log(
-                            PlaceMapButtonReClick(
-                                baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
-                            ),
-                        )
-                    }
-                }
-
-                LaunchedEffect(Unit) {
-                    placeMapViewModel.onMapViewClick
-                        .filter { !isPlacePreviewVisible && !isPlaceSecondaryPreviewVisible }
-                        .collect {
-                            bottomSheetState.update(PlaceListBottomSheetValue.COLLAPSED)
-                        }
-                }
-
-                LaunchedEffect(selectedPlace) {
-                    // 스마트 캐스팅을 위해 로컬 변수에 할당
-                    when (val place = selectedPlace) {
-                        is PlaceUiState.Success -> {
-                            mapManager?.selectMarker(place.value.place.id)
-
-                            val currentTimeTag = placeMapViewModel.selectedTimeTag.value
-                            val timeTagName =
-                                if (currentTimeTag is PlaceUiState.Success) {
-                                    currentTimeTag.value.name
-                                } else {
-                                    "undefined"
+                        is PlaceMapEvent.InitMapManager -> {
+                            val naverMap = mapState.await()
+                            if (mapManager == null) {
+                                val graph =
+                                    createGraphFactory<MapManagerGraph.Factory>().create(
+                                        naverMap,
+                                        event.initialMapSetting,
+                                        placeMapViewModel,
+                                        getInitialPadding(requireContext()),
+                                    )
+                                mapManager = graph.mapManager
+                                mapManager?.setupBackToInitialPosition { isExceededMaxLength ->
+                                    placeMapViewModel.onPlaceMapAction(
+                                        PlaceMapAction.ExceededMaxLength(isExceededMaxLength),
+                                    )
                                 }
-                            binding.logger.log(
-                                PlaceMarkerClick(
-                                    baseLogData = binding.logger.getBaseLogData(),
-                                    placeId = place.value.place.id,
-                                    timeTagName = timeTagName,
-                                    category = place.value.place.category.name,
+                            }
+                        }
+
+                        is PlaceMapEvent.PreloadImages -> {
+                            preloadImages(
+                                requireContext(),
+                                event.places,
+                            )
+                        }
+
+                        is PlaceMapEvent.BackToInitialPosition -> {
+                            mapManager?.moveToPosition()
+                        }
+
+                        is PlaceMapEvent.MenuItemReClicked -> {
+                            mapManager?.moveToPosition()
+                            if (!event.isPreviewVisible) return@ObserveAsEvents
+                            placeMapViewModel.onPlaceMapAction(PlaceMapAction.UnSelectPlace)
+                            appGraph.defaultFirebaseLogger.log(
+                                PlaceMapButtonReClick(
+                                    baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
                                 ),
                             )
                         }
 
-                        is PlaceUiState.Empty -> {
-                            mapManager?.unselectMarker()
+                        is PlaceMapEvent.StartPlaceDetail -> {
+                            startPlaceDetailActivity(event.placeDetail.value)
                         }
 
-                        else -> Unit
+                        is PlaceMapEvent.ShowErrorSnackBar -> {
+                            showErrorSnackBar(event.error.throwable)
+                        }
+
+                        is PlaceMapEvent.SetMarkerByTimeTag -> {
+                            if (event.isInitial) {
+                                mapManager?.setupMarker(event.placeGeographies)
+                            }
+
+                            when (val selectedTimeTag = event.selectedTimeTag) {
+                                is LoadState.Success -> {
+                                    mapManager?.filterMarkersByTimeTag(
+                                        selectedTimeTag.value.timeTagId,
+                                    )
+                                }
+
+                                is LoadState.Empty -> {
+                                    mapManager?.filterMarkersByTimeTag(TimeTag.EMTPY_TIME_TAG_ID)
+                                }
+
+                                else -> Unit
+                            }
+                        }
+
+                        is PlaceMapEvent.FilterMapByCategory -> {
+                            val selectedCategories = event.selectedCategories
+                            if (selectedCategories.isEmpty()) {
+                                mapManager?.clearFilter()
+                            } else {
+                                mapManager?.filterMarkersByCategories(selectedCategories)
+                            }
+                        }
+
+                        is PlaceMapEvent.MapViewDrag -> {
+                            if (event.isPreviewVisible) return@ObserveAsEvents
+                            bottomSheetState.update(PlaceListBottomSheetValue.COLLAPSED)
+                        }
+
+                        is PlaceMapEvent.SelectMarker -> {
+                            when (val place = event.placeDetail) {
+                                is LoadState.Success -> {
+                                    mapManager?.selectMarker(place.value.place.id)
+
+                                    val currentTimeTag = uiState.selectedTimeTag
+                                    val timeTagName =
+                                        if (currentTimeTag is LoadState.Success) {
+                                            currentTimeTag.value.name
+                                        } else {
+                                            "undefined"
+                                        }
+                                    binding.logger.log(
+                                        PlaceMarkerClick(
+                                            baseLogData = binding.logger.getBaseLogData(),
+                                            placeId = place.value.place.id,
+                                            timeTagName = timeTagName,
+                                            category = place.value.place.category.name,
+                                        ),
+                                    )
+                                }
+
+                                else -> Unit
+                            }
+                        }
+
+                        is PlaceMapEvent.UnselectMarker -> {
+                            mapManager?.unselectMarker()
+                        }
                     }
                 }
 
                 FestabookTheme {
                     PlaceMapScreen(
-                        places = places,
-                        selectedPlaceUiState = selectedPlace,
-                        timeTagsState = timeTags,
-                        selectedTimeTagState = selectedTimeTag,
-                        onMapReady = { map ->
-                            scope.launch {
-                                map.addOnLocationChangeListener {
-                                    binding.logger.log(
-                                        CurrentLocationChecked(
-                                            baseLogData = binding.logger.getBaseLogData(),
-                                        ),
-                                    )
-                                }
-                                map.locationSource = locationSource
-                                placeMapViewModel.initialMapSetting.collect { initialMapSetting ->
-                                    if (initialMapSetting !is PlaceUiState.Success) return@collect
-                                    if (mapManager == null) {
-                                        val graph =
-                                            createGraphFactory<MapManagerGraph.Factory>().create(
-                                                map,
-                                                initialMapSetting.value,
-                                                placeMapViewModel,
-                                                getInitialPadding(requireContext()),
-                                            )
-                                        mapManager = graph.mapManager
-                                        mapManager?.setupBackToInitialPosition { isExceededMaxLength ->
-                                            placeMapViewModel.setIsExceededMaxLength(
-                                                isExceededMaxLength,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        onTimeTagClick = { timeTag ->
-                            placeMapViewModel.onDaySelected(timeTag)
-                            binding.logger.log(
-                                PlaceTimeTagSelected(
-                                    baseLogData = binding.logger.getBaseLogData(),
-                                    timeTagName = timeTag.name,
-                                ),
-                            )
-                        },
-                        onPlaceClick = { place ->
-                            Timber.d("onPlaceClicked: $place")
-                            startPlaceDetailActivity(place)
-                            val selectedTimeTag = placeMapViewModel.selectedTimeTag.value
-                            val timeTagName =
-                                if (selectedTimeTag is PlaceUiState.Success) selectedTimeTag.value.name else "undefined"
-                            appGraph.defaultFirebaseLogger.log(
-                                PlaceItemClick(
-                                    baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
-                                    placeId = place.id,
-                                    timeTagName = timeTagName,
-                                    category = place.category.name,
-                                ),
-                            )
-                        },
-                        onPlaceLoad = {
-                            placeMapViewModel.selectedTimeTag.collect { selectedTimeTag ->
-                                when (selectedTimeTag) {
-                                    is PlaceUiState.Success -> {
-                                        placeListViewModel.updatePlacesByTimeTag(selectedTimeTag.value.timeTagId)
-                                    }
-
-                                    is PlaceUiState.Empty -> {
-                                        placeListViewModel.updatePlacesByTimeTag(TimeTag.EMTPY_TIME_TAG_ID)
-                                    }
-
-                                    else -> Unit
-                                }
-                            }
-                        },
-                        isExceedMaxLength = isExceedMaxLength,
-                        onPlaceLoadFinish = { places ->
-                            preloadImages(
-                                requireContext(),
-                                places,
-                            )
-                        },
-                        onPlaceListError = {
-                            showErrorSnackBar(it.throwable)
-                        },
-                        onBackToInitialPositionClick = {
-                            placeMapViewModel.onBackToInitialPositionClicked()
-                            appGraph.defaultFirebaseLogger.log(
-                                PlaceBackToSchoolClick(
-                                    baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
-                                ),
-                            )
-                        },
-                        onCategoryClick = { selectedCategories ->
-                            selectedCategoriesState = selectedCategories
-                            placeMapViewModel.unselectPlace()
-                            placeMapViewModel.setSelectedCategories(selectedCategories.toList())
-                            appGraph.defaultFirebaseLogger.log(
-                                PlaceCategoryClick(
-                                    baseLogData = appGraph.defaultFirebaseLogger.getBaseLogData(),
-                                    currentCategories = selectedCategories.joinToString(",") { it.toString() },
-                                ),
-                            )
-                        },
-                        onDisplayAllClick = { selectedCategories ->
-                            selectedCategoriesState = selectedCategories
-                            placeMapViewModel.unselectPlace()
-                            placeMapViewModel.setSelectedCategories(initialCategories)
-                        },
-                        isPlacePreviewVisible = isPlacePreviewVisible,
-                        isPlaceSecondaryPreviewVisible = isPlaceSecondaryPreviewVisible,
-                        onMapDrag = {
-                            placeMapViewModel.onMapViewClick()
-                        },
-                        selectedCategoriesState = selectedCategoriesState,
-                        initialCategories = initialCategories,
+                        uiState = uiState,
+                        onAction = { placeMapViewModel.onPlaceMapAction(it) },
                         bottomSheetState = bottomSheetState,
-                        onBackPress = {
-                            placeMapViewModel.unselectPlace()
-                        },
-                        onPlacePreviewClick = { selectedPlace ->
-                            val selectedTimeTag = placeMapViewModel.selectedTimeTag.value
-                            if (selectedPlace is PlaceUiState.Success &&
-                                selectedTimeTag is PlaceUiState.Success
-                            ) {
-                                startPlaceDetailActivity(selectedPlace.value)
-                                binding.logger.log(
-                                    PlacePreviewClick(
-                                        baseLogData = binding.logger.getBaseLogData(),
-                                        placeName =
-                                            selectedPlace.value.place.title
-                                                ?: "undefined",
-                                        timeTag = selectedTimeTag.value.name,
-                                        category = selectedPlace.value.place.category.name,
-                                    ),
-                                )
-                            }
-                        },
-                        onPlacePreviewError = {
-                            showErrorSnackBar(it.throwable)
-                        },
+                        mapState = mapState,
                     )
                 }
             }
         }
     }
 
-    private fun startPlaceDetailActivity(place: PlaceUiModel) {
-        placeMapViewModel.selectPlace(place.id)
-    }
-
     override fun onMenuItemReClick() {
-        placeMapViewModel.unselectPlace()
-        placeMapViewModel.onMenuItemReClick()
+        placeMapViewModel.onPlaceMapAction(PlaceMapAction.UnSelectPlace)
+        placeMapViewModel.onMenuItemReClicked()
     }
 
     private fun startPlaceDetailActivity(placeDetail: PlaceDetailUiModel) {

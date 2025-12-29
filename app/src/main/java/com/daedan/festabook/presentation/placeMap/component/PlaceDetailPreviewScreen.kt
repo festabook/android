@@ -22,9 +22,9 @@ import com.daedan.festabook.presentation.common.component.CoilImage
 import com.daedan.festabook.presentation.common.component.URLText
 import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
+import com.daedan.festabook.presentation.placeMap.model.LoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.FestabookTypography
@@ -33,11 +33,11 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
 fun PlaceDetailPreviewScreen(
-    placeUiState: PlaceUiState<PlaceDetailUiModel>,
+    selectedPlace: LoadState<PlaceDetailUiModel>,
     modifier: Modifier = Modifier,
     visible: Boolean = false,
-    onClick: (PlaceUiState<PlaceDetailUiModel>) -> Unit = {},
-    onError: (PlaceUiState.Error) -> Unit = {},
+    onClick: (LoadState<PlaceDetailUiModel>) -> Unit = {},
+    onError: (LoadState.Error) -> Unit = {},
     onBackPress: () -> Unit = {},
 ) {
     BackHandler(enabled = visible) {
@@ -48,16 +48,16 @@ fun PlaceDetailPreviewScreen(
         modifier =
             modifier
                 .wrapContentSize()
-                .clickable { onClick(placeUiState) },
+                .clickable { onClick(selectedPlace) },
     ) {
-        when (placeUiState) {
-            is PlaceUiState.Loading -> Unit
-            is PlaceUiState.Success -> {
-                PlaceDetailPreviewContent(placeDetail = placeUiState.value)
+        when (selectedPlace) {
+            is LoadState.Loading -> Unit
+            is LoadState.Success -> {
+                PlaceDetailPreviewContent(placeDetail = selectedPlace.value)
             }
 
-            is PlaceUiState.Error -> onError(placeUiState)
-            is PlaceUiState.Empty -> Unit
+            is LoadState.Error -> onError(selectedPlace)
+            is LoadState.Empty -> Unit
         }
     }
 }
@@ -187,8 +187,8 @@ private fun PlaceDetailPreviewScreenPreview() {
             modifier =
                 Modifier
                     .padding(festabookSpacing.paddingScreenGutter),
-            placeUiState =
-                PlaceUiState.Success(
+            selectedPlace =
+                LoadState.Success(
                     value = FAKE_PLACE_DETAIL,
                 ),
         )

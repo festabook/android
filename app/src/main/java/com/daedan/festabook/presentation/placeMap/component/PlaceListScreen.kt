@@ -39,8 +39,8 @@ import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.CoilImage
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
+import com.daedan.festabook.presentation.placeMap.model.ListLoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.festabookShapes
@@ -50,10 +50,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PlaceListScreen(
-    placesUiState: PlaceListUiState<List<PlaceUiModel>>,
+    placesUiState: ListLoadState<List<PlaceUiModel>>,
     modifier: Modifier = Modifier,
     map: NaverMap? = null,
-    isExceedMaxLength: Boolean = false,
+    isExceededMaxLength: Boolean = false,
     bottomSheetState: PlaceListBottomSheetState =
         rememberPlaceListBottomSheetState(
             PlaceListBottomSheetValue.HALF_EXPANDED,
@@ -61,7 +61,7 @@ fun PlaceListScreen(
     onPlaceClick: (place: PlaceUiModel) -> Unit = {},
     onPlaceLoadFinish: (places: List<PlaceUiModel>) -> Unit = {},
     onPlaceLoad: suspend () -> Unit = {},
-    onError: (PlaceListUiState.Error<List<PlaceUiModel>>) -> Unit = {},
+    onError: (ListLoadState.Error<List<PlaceUiModel>>) -> Unit = {},
     onBackToInitialPositionClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
@@ -81,7 +81,7 @@ fun PlaceListScreen(
                     CurrentLocationButton(
                         map = map,
                     )
-                    if (isExceedMaxLength) {
+                    if (isExceededMaxLength) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center,
@@ -120,19 +120,19 @@ fun PlaceListScreen(
             },
         ) {
             when (placesUiState) {
-                is PlaceListUiState.Loading ->
+                is ListLoadState.Loading ->
                     LoadingStateScreen(
                         modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
                     )
 
-                is PlaceListUiState.Error -> {
+                is ListLoadState.Error -> {
                     onError(placesUiState)
                     EmptyStateScreen(
                         modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
                     )
                 }
 
-                is PlaceListUiState.Success -> {
+                is ListLoadState.Success -> {
                     onPlaceLoadFinish(placesUiState.value)
                     if (placesUiState.value.isEmpty()) {
                         EmptyStateScreen(
@@ -148,7 +148,7 @@ fun PlaceListScreen(
                     }
                 }
 
-                is PlaceListUiState.PlaceLoaded -> {
+                is ListLoadState.PlaceLoaded -> {
                     LaunchedEffect(Unit) {
                         scope.launch {
                             currentOnPlaceLoad()
@@ -284,7 +284,7 @@ private fun PlaceListScreenPreview() {
     FestabookTheme {
         PlaceListScreen(
             placesUiState =
-                PlaceListUiState.Success(
+                ListLoadState.Success(
                     (0..100).map {
                         PlaceUiModel(
                             id = it.toLong(),
