@@ -1,6 +1,7 @@
-package com.daedan.festabook.presentation.placeMap
+package com.daedan.festabook.presentation.placeMap.listener
 
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
+import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapViewModel
 import timber.log.Timber
 
 class MapClickListenerImpl(

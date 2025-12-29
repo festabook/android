@@ -1,4 +1,4 @@
-package com.daedan.festabook.presentation.placeMap.placeList.component
+package com.daedan.festabook.presentation.placeMap.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.DraggableAnchors

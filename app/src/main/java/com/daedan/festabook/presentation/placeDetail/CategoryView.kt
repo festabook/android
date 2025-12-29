@@ -1,4 +1,4 @@
-package com.daedan.festabook.presentation.placeMap.placeList
+package com.daedan.festabook.presentation.placeDetail
 
 import android.content.Context
 import android.util.AttributeSet

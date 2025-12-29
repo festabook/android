@@ -1,4 +1,4 @@
-package com.daedan.festabook.presentation.placeMap.placeDetailPreview.component
+package com.daedan.festabook.presentation.placeMap.component
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable

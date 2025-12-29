@@ -1,4 +1,4 @@
-package com.daedan.festabook.presentation.placeMap.placeCategory.component
+package com.daedan.festabook.presentation.placeMap.component
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement

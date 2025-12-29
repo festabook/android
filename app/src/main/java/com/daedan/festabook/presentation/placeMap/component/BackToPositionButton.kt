@@ -1,4 +1,4 @@
-package com.daedan.festabook.presentation.placeMap.placeList.component
+package com.daedan.festabook.presentation.placeMap.component
 
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults

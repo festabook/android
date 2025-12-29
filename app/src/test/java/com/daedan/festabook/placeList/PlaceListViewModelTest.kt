@@ -7,7 +7,7 @@ import com.daedan.festabook.getOrAwaitValue
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
-import com.daedan.festabook.presentation.placeMap.placeList.PlaceListViewModel
+import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceListViewModel
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

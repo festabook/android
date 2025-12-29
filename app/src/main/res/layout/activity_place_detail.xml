@@ -64,7 +64,7 @@
                     app:ci_animator="@animator/scale_with_alpha"
                     app:layout_constraintBottom_toBottomOf="@id/vp_place_images"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                    app:layout_constraintEnd_toEndOf="parent" />
 
                 <ImageView
                     android:id="@+id/iv_back_to_previous"
@@ -74,18 +74,16 @@
                     android:clickable="true"
                     android:layout_marginTop="16dp"
                     app:layout_constraintStart_toStartOf="@id/start_guideline"
-                    app:layout_constraintTop_toTopOf="@id/vp_place_images"
-                    />
+                    app:layout_constraintTop_toTopOf="@id/vp_place_images" />
 
-                <com.daedan.festabook.presentation.placeMap.placeList.CategoryView
+                <com.daedan.festabook.presentation.placeDetail.CategoryView
                     android:id="@+id/cv_place_category"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:category="@{placeDetail.place.category}"
                     android:layout_marginTop="24dp"
                     app:layout_constraintStart_toStartOf="@id/start_guideline"
-                    app:layout_constraintTop_toBottomOf="@id/vp_place_images"
-                    />
+                    app:layout_constraintTop_toBottomOf="@id/vp_place_images" />
 
                 <TextView
                     android:id="@+id/tv_title_place"

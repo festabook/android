@@ -1,4 +1,4 @@
-package com.daedan.festabook.presentation.placeMap.placeDetailPreview.component
+package com.daedan.festabook.presentation.placeMap.component
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -22,7 +22,6 @@ import com.daedan.festabook.presentation.common.component.CoilImage
 import com.daedan.festabook.presentation.common.component.URLText
 import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
-import com.daedan.festabook.presentation.placeMap.component.PlaceCategoryLabel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiState

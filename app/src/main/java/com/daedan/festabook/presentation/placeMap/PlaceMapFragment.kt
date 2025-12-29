@@ -37,7 +37,9 @@ import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.toPx
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
+import com.daedan.festabook.presentation.placeMap.component.PlaceListBottomSheetValue
 import com.daedan.festabook.presentation.placeMap.component.PlaceMapScreen
+import com.daedan.festabook.presentation.placeMap.component.rememberPlaceListBottomSheetState
 import com.daedan.festabook.presentation.placeMap.logging.CurrentLocationChecked
 import com.daedan.festabook.presentation.placeMap.logging.PlaceBackToSchoolClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceCategoryClick
@@ -53,9 +55,8 @@ import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
 import com.daedan.festabook.presentation.placeMap.model.isSecondary
-import com.daedan.festabook.presentation.placeMap.placeList.PlaceListViewModel
-import com.daedan.festabook.presentation.placeMap.placeList.component.PlaceListBottomSheetValue
-import com.daedan.festabook.presentation.placeMap.placeList.component.rememberPlaceListBottomSheetState
+import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceListViewModel
+import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapViewModel
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.util.FusedLocationSource
 import dev.zacsweers.metro.AppScope

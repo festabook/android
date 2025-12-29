@@ -17,11 +17,6 @@ import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiState
-import com.daedan.festabook.presentation.placeMap.placeCategory.component.PlaceCategoryScreen
-import com.daedan.festabook.presentation.placeMap.placeDetailPreview.component.PlaceDetailPreviewScreen
-import com.daedan.festabook.presentation.placeMap.placeDetailPreview.component.PlaceDetailPreviewSecondaryScreen
-import com.daedan.festabook.presentation.placeMap.placeList.component.PlaceListBottomSheetState
-import com.daedan.festabook.presentation.placeMap.placeList.component.PlaceListScreen
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.festabookSpacing
 import com.naver.maps.map.NaverMap

@@ -1,4 +1,4 @@
-package com.daedan.festabook.presentation.placeMap.placeList
+package com.daedan.festabook.presentation.placeMap.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -37,7 +37,7 @@ class PlaceListViewModel(
 
     fun updatePlacesByCategories(category: List<PlaceCategoryUiModel>) {
         val secondaryCategories =
-            PlaceCategory.SECONDARY_CATEGORIES.map {
+            PlaceCategory.Companion.SECONDARY_CATEGORIES.map {
                 it.toUiModel()
             }
         val primaryCategoriesSelected = category.any { it !in secondaryCategories }
@@ -64,7 +64,7 @@ class PlaceListViewModel(
 
     fun updatePlacesByTimeTag(timeTagId: Long) {
         val filteredPlaces =
-            if (timeTagId == TimeTag.EMTPY_TIME_TAG_ID) {
+            if (timeTagId == TimeTag.Companion.EMTPY_TIME_TAG_ID) {
                 cachedPlaces
             } else {
                 filterPlacesByTimeTag(timeTagId)
