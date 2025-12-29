@@ -71,23 +71,27 @@ fun PlaceListScreen(
     val currentOnPlaceLoad by rememberUpdatedState(onPlaceLoad)
 
     Box(modifier = modifier.fillMaxSize()) {
-        OffsetDependentLayout(
-            modifier = Modifier.padding(horizontal = festabookSpacing.paddingBody1),
-            offset = offset,
-        ) {
-            Box {
-                CurrentLocationButton(
-                    map = map,
-                )
-                if (isExceedMaxLength) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        BackToPositionButton(
-                            text = stringResource(R.string.map_back_to_initial_position),
-                            onClick = onBackToInitialPositionClick,
-                        )
+        if (bottomSheetState.currentValue != PlaceListBottomSheetValue.EXPANDED) {
+            OffsetDependentLayout(
+                modifier =
+                    Modifier
+                        .padding(horizontal = festabookSpacing.paddingBody1),
+                offset = offset,
+            ) {
+                Box {
+                    CurrentLocationButton(
+                        map = map,
+                    )
+                    if (isExceedMaxLength) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            BackToPositionButton(
+                                text = stringResource(R.string.map_back_to_initial_position),
+                                onClick = onBackToInitialPositionClick,
+                            )
+                        }
                     }
                 }
             }

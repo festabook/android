@@ -28,8 +28,6 @@ import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
 import com.daedan.festabook.presentation.common.showErrorSnackBar
-import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
-import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.logging.PlaceBackToSchoolClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceItemClick
@@ -81,13 +79,13 @@ class PlaceListFragment(
             super.onCreateView(inflater, container, savedInstanceState)
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val places by childViewModel.placesFlow.collectAsStateWithLifecycle()
-                val isExceedMaxLength by viewModel.isExceededMaxLengthFlow.collectAsStateWithLifecycle()
+                val places by childViewModel.places.collectAsStateWithLifecycle()
+                val isExceedMaxLength by viewModel.isExceededMaxLength.collectAsStateWithLifecycle()
                 val bottomSheetState = rememberPlaceListBottomSheetState()
                 val map by mapFlow.collectAsStateWithLifecycle()
 
                 LaunchedEffect(Unit) {
-                    viewModel.onMapViewClickFlow.collect {
+                    viewModel.onMapViewClick.collect {
                         if (isGone || !isResumed || view == null) return@collect
                         bottomSheetState.update(PlaceListBottomSheetValue.COLLAPSED)
                     }
@@ -137,14 +135,6 @@ class PlaceListFragment(
             }
         }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
-        super.onViewCreated(view, savedInstanceState)
-        setUpObserver()
-    }
-
     override fun onPlaceClicked(place: PlaceUiModel) {
         Timber.d("onPlaceClicked: $place")
         startPlaceDetailActivity(place)
@@ -179,28 +169,8 @@ class PlaceListFragment(
         }
     }
 
-    private fun setUpObserver() {
-        viewModel.navigateToDetail.observe(viewLifecycleOwner) { selectedPlace ->
-            startPlaceDetailActivity(selectedPlace)
-        }
-
-        viewModel.selectedCategories.observe(viewLifecycleOwner) { selectedCategories ->
-            if (selectedCategories.isEmpty()) {
-                childViewModel.clearPlacesFilter()
-            } else {
-                childViewModel.updatePlacesByCategories(selectedCategories)
-            }
-        }
-    }
-
     private fun startPlaceDetailActivity(place: PlaceUiModel) {
         viewModel.selectPlace(place.id)
-    }
-
-    private fun startPlaceDetailActivity(placeDetail: PlaceDetailUiModel) {
-        Timber.d("start detail activity")
-        val intent = PlaceDetailActivity.newIntent(requireContext(), placeDetail)
-        startActivity(intent)
     }
 
     // OOM 주의 !! 추후 페이징 처리 및 chunk 단위로 나눠서 로드합니다

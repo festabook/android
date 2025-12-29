@@ -61,7 +61,7 @@ class PlaceDetailPreviewSecondaryFragment(
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                val placeDetailUiState by viewModel.selectedPlaceFlow.collectAsStateWithLifecycle()
+                val placeDetailUiState by viewModel.selectedPlace.collectAsStateWithLifecycle()
                 val visible = placeDetailUiState is PlaceUiState.Success
 
                 LaunchedEffect(placeDetailUiState) {

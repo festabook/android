@@ -1,5 +1,6 @@
 package com.daedan.festabook.presentation.placeMap.placeDetailPreview.component
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,8 +35,12 @@ fun PlaceDetailPreviewSecondaryScreen(
     onError: (PlaceUiState.Error) -> Unit = {},
     onEmpty: () -> Unit = {},
     onClick: (PlaceUiState<PlaceDetailUiModel>) -> Unit = {},
+    onBackPress: () -> Unit = {},
     visible: Boolean = false,
 ) {
+    BackHandler(enabled = visible) {
+        onBackPress()
+    }
     PreviewAnimatableBox(
         visible = visible,
         modifier =

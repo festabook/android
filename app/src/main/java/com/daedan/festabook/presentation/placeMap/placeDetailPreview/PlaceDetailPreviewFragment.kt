@@ -56,7 +56,7 @@ class PlaceDetailPreviewFragment(
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 FestabookTheme {
-                    val placeDetailUiState by viewModel.selectedPlaceFlow.collectAsStateWithLifecycle()
+                    val placeDetailUiState by viewModel.selectedPlace.collectAsStateWithLifecycle()
                     val visible = placeDetailUiState is PlaceUiState.Success
 
                     Box(

@@ -5,10 +5,13 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -19,26 +22,27 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Composable
 fun NaverMapContent(
     modifier: Modifier = Modifier,
     onMapDrag: () -> Unit = {},
     onMapReady: (NaverMap) -> Unit = {},
-    content: @Composable () -> Unit,
+    content: @Composable (NaverMap?) -> Unit,
 ) {
     val context = LocalContext.current
     val mapView = remember { MapView(context) }
+    var naverMap by remember { mutableStateOf<NaverMap?>(null) }
+    LaunchedEffect(mapView) {
+        naverMap = mapView.getMapAndRunCallback(onMapReady)
+    }
     AndroidView(
-        factory = {
-            mapView.apply {
-                getMapAsync(onMapReady)
-            }
-        },
+        factory = { mapView },
         modifier = modifier.dragInterceptor(onMapDrag),
     )
     RegisterMapLifeCycle(mapView)
-    content()
+    content(naverMap)
 }
 
 private fun Modifier.dragInterceptor(onMapDrag: () -> Unit): Modifier =
@@ -151,4 +155,14 @@ private fun MapView.lifecycleObserver(
             else -> throw IllegalStateException()
         }
         previousState.value = event
+    }
+
+private suspend fun MapView.getMapAndRunCallback(onMapReady: (NaverMap) -> Unit = {}): NaverMap =
+    suspendCancellableCoroutine { continuation ->
+        getMapAsync { map ->
+            onMapReady(map)
+            continuation.resumeWith(
+                Result.success(map),
+            )
+        }
     }
