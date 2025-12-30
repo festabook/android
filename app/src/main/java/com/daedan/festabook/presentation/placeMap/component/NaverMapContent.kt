@@ -7,12 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -21,20 +18,15 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.daedan.festabook.presentation.placeMap.viewmodel.MapDelegate
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withTimeout
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun NaverMapContent(
     modifier: Modifier = Modifier,
-    mapState: MapState = MapState(),
+    mapDelegate: MapDelegate = MapDelegate(),
     onMapDrag: () -> Unit = {},
     onMapReady: (NaverMap) -> Unit = {},
     content: @Composable (NaverMap?) -> Unit,
@@ -43,31 +35,14 @@ fun NaverMapContent(
     val mapView = remember { MapView(context) }
     LaunchedEffect(mapView) {
         val naverMap = mapView.getMapAndRunCallback(onMapReady)
-        mapState.initMap(naverMap)
+        mapDelegate.initMap(naverMap)
     }
     AndroidView(
         factory = { mapView },
         modifier = modifier.dragInterceptor(onMapDrag),
     )
     RegisterMapLifeCycle(mapView)
-    content(mapState.value)
-}
-
-class MapState {
-    var value: NaverMap? by mutableStateOf(null)
-        private set
-
-    fun initMap(map: NaverMap) {
-        value = map
-    }
-
-    suspend fun await(timeout: Duration = 3.seconds): NaverMap =
-        withTimeout(timeout) {
-            snapshotFlow { value }
-                .distinctUntilChanged()
-                .filterNotNull()
-                .first()
-        }
+    content(mapDelegate.value)
 }
 
 private fun Modifier.dragInterceptor(onMapDrag: () -> Unit): Modifier =

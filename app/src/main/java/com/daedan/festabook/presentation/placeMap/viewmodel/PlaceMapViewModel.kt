@@ -53,8 +53,11 @@ class PlaceMapViewModel(
     private val _uiState = MutableStateFlow(PlaceMapUiState())
     val uiState: StateFlow<PlaceMapUiState> = _uiState.asStateFlow()
 
-    private val _uiEvent = Channel<PlaceMapEvent>()
-    val uiEvent: Flow<PlaceMapEvent> = _uiEvent.receiveAsFlow()
+    private val _placeMapUiEvent = Channel<PlaceMapEvent>()
+    val placeMapUiEvent: Flow<PlaceMapEvent> = _placeMapUiEvent.receiveAsFlow()
+
+    private val _mapControlUiEvent = Channel<MapControlEvent>()
+    val mapControlUiEvent: Flow<MapControlEvent> = _mapControlUiEvent.receiveAsFlow()
 
     init {
         loadOrganizationGeography()
@@ -67,10 +70,10 @@ class PlaceMapViewModel(
         viewModelScope.launch {
             when (action) {
                 is PlaceMapAction.OnMapReady -> {
-                    _uiEvent.send(PlaceMapEvent.InitMap)
+                    _mapControlUiEvent.send(MapControlEvent.InitMap)
                     val setting =
                         uiState.await<LoadState.Success<InitialMapSettingUiModel>> { it.initialMapSetting }
-                    _uiEvent.send(PlaceMapEvent.InitMapManager(setting.value))
+                    _mapControlUiEvent.send(MapControlEvent.InitMapManager(setting.value))
                 }
 
                 is PlaceMapAction.OnTimeTagClick -> {
@@ -108,7 +111,7 @@ class PlaceMapViewModel(
                 }
 
                 is PlaceMapAction.OnPlaceLoadFinish ->
-                    _uiEvent.send(
+                    _placeMapUiEvent.send(
                         PlaceMapEvent.PreloadImages(
                             action.places,
                         ),
@@ -120,7 +123,7 @@ class PlaceMapViewModel(
                             baseLogData = logger.getBaseLogData(),
                         ),
                     )
-                    _uiEvent.send(PlaceMapEvent.BackToInitialPosition)
+                    _mapControlUiEvent.send(MapControlEvent.BackToInitialPosition)
                 }
 
                 is PlaceMapAction.OnCategoryClick -> {
@@ -132,7 +135,7 @@ class PlaceMapViewModel(
                         it.copy(selectedCategories = action.categories)
                     }
 
-                    _uiEvent.send(PlaceMapEvent.FilterMapByCategory(action.categories.toList()))
+                    _mapControlUiEvent.send(MapControlEvent.FilterMapByCategory(action.categories.toList()))
 
                     logger.log(
                         PlaceCategoryClick(
@@ -143,7 +146,7 @@ class PlaceMapViewModel(
                 }
 
                 is PlaceMapAction.OnMapDrag -> {
-                    _uiEvent.send(
+                    _placeMapUiEvent.send(
                         PlaceMapEvent.MapViewDrag(
                             uiState.value.isPlacePreviewVisible || uiState.value.isPlaceSecondaryPreviewVisible,
                         ),
@@ -160,7 +163,7 @@ class PlaceMapViewModel(
                     if (selectedPlace is LoadState.Success &&
                         selectedTimeTag is LoadState.Success
                     ) {
-                        _uiEvent.send(PlaceMapEvent.StartPlaceDetail(action.place))
+                        _placeMapUiEvent.send(PlaceMapEvent.StartPlaceDetail(action.place))
                         logger.log(
                             PlacePreviewClick(
                                 baseLogData = logger.getBaseLogData(),
@@ -190,7 +193,7 @@ class PlaceMapViewModel(
     }
 
     fun onMenuItemReClicked() {
-        _uiEvent.trySend(
+        _placeMapUiEvent.trySend(
             PlaceMapEvent.MenuItemReClicked(
                 uiState.value.isPlacePreviewVisible || uiState.value.isPlaceSecondaryPreviewVisible,
             ),
@@ -231,8 +234,8 @@ class PlaceMapViewModel(
 
             val placeGeographies =
                 uiState.await<LoadState.Success<List<PlaceCoordinateUiModel>>> { it.placeGeographies }
-            _uiEvent.send(
-                PlaceMapEvent.SetMarkerByTimeTag(
+            _mapControlUiEvent.send(
+                MapControlEvent.SetMarkerByTimeTag(
                     placeGeographies = placeGeographies.value,
                     selectedTimeTag = selectedTimeTag,
                     isInitial = true,
@@ -249,8 +252,8 @@ class PlaceMapViewModel(
         viewModelScope.launch {
             val placeGeographies =
                 uiState.await<LoadState.Success<List<PlaceCoordinateUiModel>>> { it.placeGeographies }
-            _uiEvent.send(
-                PlaceMapEvent.SetMarkerByTimeTag(
+            _mapControlUiEvent.send(
+                MapControlEvent.SetMarkerByTimeTag(
                     placeGeographies = placeGeographies.value,
                     selectedTimeTag = LoadState.Success(item),
                     isInitial = false,
@@ -268,7 +271,7 @@ class PlaceMapViewModel(
                     _uiState.update {
                         it.copy(selectedPlace = LoadState.Success(item.toUiModel()))
                     }
-                    _uiEvent.send(PlaceMapEvent.SelectMarker(uiState.value.selectedPlace))
+                    _mapControlUiEvent.send(MapControlEvent.SelectMarker(uiState.value.selectedPlace))
                     val selectedTimeTag = uiState.value.selectedTimeTag
                     val timeTagName =
                         if (selectedTimeTag is LoadState.Success) selectedTimeTag.value.name else "undefined"
@@ -288,7 +291,7 @@ class PlaceMapViewModel(
 
     private fun unselectPlace() {
         _uiState.update { it.copy(selectedPlace = LoadState.Empty) }
-        _uiEvent.trySend(PlaceMapEvent.UnselectMarker)
+        _mapControlUiEvent.trySend(MapControlEvent.UnselectMarker)
     }
 
     private fun loadOrganizationGeography() {
@@ -390,7 +393,7 @@ class PlaceMapViewModel(
                     .filterIsInstance<LoadState.Error>()
                     .debounce(1000)
                     .collect {
-                        _uiEvent.send(PlaceMapEvent.ShowErrorSnackBar(it))
+                        _placeMapUiEvent.send(PlaceMapEvent.ShowErrorSnackBar(it))
                     }
             }
         }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.daedan.festabook.presentation.placeMap.model.LoadState
+import com.daedan.festabook.presentation.placeMap.viewmodel.MapDelegate
 import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapAction
 import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
@@ -22,12 +23,12 @@ fun PlaceMapScreen(
     uiState: PlaceMapUiState,
     onAction: (PlaceMapAction) -> Unit,
     bottomSheetState: PlaceListBottomSheetState,
-    mapState: MapState,
+    mapDelegate: MapDelegate,
     modifier: Modifier = Modifier,
 ) {
     NaverMapContent(
         modifier = modifier.fillMaxSize(),
-        mapState = mapState,
+        mapDelegate = mapDelegate,
         onMapReady = { onAction(PlaceMapAction.OnMapReady) },
         onMapDrag = { onAction(PlaceMapAction.OnMapDrag) },
     ) { naverMap ->
