@@ -1,8 +1,8 @@
 package com.daedan.festabook.di.mapManager
 
+import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.mapManager.MapManager
 import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
-import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapViewModel
 import com.naver.maps.map.NaverMap
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides

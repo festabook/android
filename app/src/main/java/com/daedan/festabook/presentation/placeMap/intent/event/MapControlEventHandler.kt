@@ -1,12 +1,16 @@
-package com.daedan.festabook.presentation.placeMap.viewmodel
+package com.daedan.festabook.presentation.placeMap.intent.event
 
 import com.daedan.festabook.di.mapManager.MapManagerGraph
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.DefaultFirebaseLogger
+import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
+import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
+import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
+import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
+import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
 import com.daedan.festabook.presentation.placeMap.logging.CurrentLocationChecked
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMarkerClick
 import com.daedan.festabook.presentation.placeMap.mapManager.MapManager
-import com.daedan.festabook.presentation.placeMap.model.LoadState
 import com.naver.maps.map.LocationSource
 import dev.zacsweers.metro.createGraphFactory
 
@@ -48,7 +52,7 @@ class MapControlEventHandler(
                     mapManagerDelegate.init(graph.mapManager)
                     mapManager?.setupBackToInitialPosition { isExceededMaxLength ->
                         viewModel.onPlaceMapAction(
-                            PlaceMapAction.ExceededMaxLength(isExceededMaxLength),
+                            SelectAction.ExceededMaxLength(isExceededMaxLength),
                         )
                     }
                 }

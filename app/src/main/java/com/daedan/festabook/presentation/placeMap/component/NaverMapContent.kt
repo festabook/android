@@ -18,7 +18,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.daedan.festabook.presentation.placeMap.viewmodel.MapDelegate
+import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
 import kotlinx.coroutines.suspendCancellableCoroutine

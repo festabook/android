@@ -1,4 +1,6 @@
-package com.daedan.festabook.presentation.placeMap.model
+package com.daedan.festabook.presentation.placeMap.intent.state
+
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 
 sealed interface ListLoadState<T> {
     class Loading<T> : ListLoadState<T>

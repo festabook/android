@@ -9,13 +9,13 @@ import com.daedan.festabook.placeDetail.FAKE_ETC_PLACE_DETAIL
 import com.daedan.festabook.placeDetail.FAKE_PLACE_DETAIL
 import com.daedan.festabook.presentation.common.Event
 import com.daedan.festabook.presentation.placeDetail.model.toUiModel
+import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
+import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
+import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
-import com.daedan.festabook.presentation.placeMap.model.ListLoadState
-import com.daedan.festabook.presentation.placeMap.model.LoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
-import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapViewModel
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

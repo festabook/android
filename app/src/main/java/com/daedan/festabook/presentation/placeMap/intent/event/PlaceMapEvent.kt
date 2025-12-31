@@ -1,7 +1,7 @@
-package com.daedan.festabook.presentation.placeMap.viewmodel
+package com.daedan.festabook.presentation.placeMap.intent.event
 
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
-import com.daedan.festabook.presentation.placeMap.model.LoadState
+import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 
 sealed interface PlaceMapEvent {

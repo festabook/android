@@ -1,4 +1,4 @@
-package com.daedan.festabook.presentation.placeMap.viewmodel
+package com.daedan.festabook.presentation.placeMap.intent.state
 
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged

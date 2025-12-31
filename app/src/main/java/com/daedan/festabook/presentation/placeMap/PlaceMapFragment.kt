@@ -34,14 +34,13 @@ import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceMapScreen
 import com.daedan.festabook.presentation.placeMap.component.rememberPlaceListBottomSheetState
+import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
+import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
 import com.daedan.festabook.presentation.placeMap.logging.PlaceFragmentEnter
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.viewmodel.MapControlEventHandler
-import com.daedan.festabook.presentation.placeMap.viewmodel.MapDelegate
-import com.daedan.festabook.presentation.placeMap.viewmodel.MapManagerDelegate
-import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapAction
-import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapEventHandler
-import com.daedan.festabook.presentation.placeMap.viewmodel.PlaceMapViewModel
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.util.FusedLocationSource
 import dev.zacsweers.metro.AppScope
@@ -136,7 +135,7 @@ class PlaceMapFragment(
     }
 
     override fun onMenuItemReClick() {
-        placeMapViewModel.onPlaceMapAction(PlaceMapAction.UnSelectPlace)
+        placeMapViewModel.onPlaceMapAction(SelectAction.UnSelectPlace)
         placeMapViewModel.onMenuItemReClicked()
     }
 

@@ -1,4 +1,4 @@
-package com.daedan.festabook.presentation.placeMap.viewmodel
+package com.daedan.festabook.presentation.placeMap.intent.state
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

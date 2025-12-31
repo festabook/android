@@ -1,9 +1,9 @@
-package com.daedan.festabook.presentation.placeMap.viewmodel
+package com.daedan.festabook.presentation.placeMap.intent.event
 
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
+import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
-import com.daedan.festabook.presentation.placeMap.model.LoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCoordinateUiModel
 

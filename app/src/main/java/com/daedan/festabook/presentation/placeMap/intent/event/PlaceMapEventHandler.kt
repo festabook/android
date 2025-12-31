@@ -1,8 +1,11 @@
-package com.daedan.festabook.presentation.placeMap.viewmodel
+package com.daedan.festabook.presentation.placeMap.intent.event
 
 import com.daedan.festabook.logging.DefaultFirebaseLogger
+import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceListBottomSheetState
 import com.daedan.festabook.presentation.placeMap.component.PlaceListBottomSheetValue
+import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
+import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMapButtonReClick
 import com.daedan.festabook.presentation.placeMap.mapManager.MapManager
 
@@ -28,7 +31,7 @@ class PlaceMapEventHandler(
             is PlaceMapEvent.MenuItemReClicked -> {
                 mapManager?.moveToPosition()
                 if (!event.isPreviewVisible) return
-                viewModel.onPlaceMapAction(PlaceMapAction.UnSelectPlace)
+                viewModel.onPlaceMapAction(SelectAction.UnSelectPlace)
                 logger.log(
                     PlaceMapButtonReClick(
                         baseLogData = logger.getBaseLogData(),
