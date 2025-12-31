@@ -1,5 +1,7 @@
 package com.daedan.festabook.presentation.placeMap.intent.action
 
+import com.daedan.festabook.di.placeMapHandler.CachedPlaceByTimeTag
+import com.daedan.festabook.di.placeMapHandler.CachedPlaces
 import com.daedan.festabook.domain.model.PlaceCategory
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.DefaultFirebaseLogger
@@ -12,18 +14,20 @@ import com.daedan.festabook.presentation.placeMap.logging.PlaceCategoryClick
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
+@Inject
 class FilterActionHandler(
     private val _mapControlUiEvent: Channel<MapControlEvent>,
     private val logger: DefaultFirebaseLogger,
     private val uiState: StateFlow<PlaceMapUiState>,
-    private val cachedPlaces: StateFlow<List<PlaceUiModel>>,
-    private val cachedPlaceByTimeTag: StateFlow<List<PlaceUiModel>>,
+    @param:CachedPlaces private val cachedPlaces: StateFlow<List<PlaceUiModel>>,
+    @param:CachedPlaceByTimeTag private val cachedPlaceByTimeTag: StateFlow<List<PlaceUiModel>>,
     private val onUpdateCachedPlace: (List<PlaceUiModel>) -> Unit,
     private val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
 ) {

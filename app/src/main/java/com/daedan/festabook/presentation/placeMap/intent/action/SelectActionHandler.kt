@@ -13,11 +13,13 @@ import com.daedan.festabook.presentation.placeMap.logging.PlaceItemClick
 import com.daedan.festabook.presentation.placeMap.logging.PlacePreviewClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceTimeTagSelected
 import com.daedan.festabook.presentation.placeMap.model.PlaceCoordinateUiModel
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+@Inject
 class SelectActionHandler(
     private val filterActionHandler: FilterActionHandler,
     private val _placeMapUiEvent: Channel<PlaceMapEvent>,

@@ -8,9 +8,11 @@ import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import com.daedan.festabook.presentation.placeMap.intent.state.await
 import com.daedan.festabook.presentation.placeMap.logging.PlaceBackToSchoolClick
 import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
+import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
 
+@Inject
 class MapEventActionHandler(
     private val _mapControlUiEvent: Channel<MapControlEvent>,
     private val _placeMapUiEvent: Channel<PlaceMapEvent>,

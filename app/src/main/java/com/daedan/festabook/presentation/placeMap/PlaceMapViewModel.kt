@@ -2,17 +2,14 @@ package com.daedan.festabook.presentation.placeMap
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.daedan.festabook.di.FestaBookAppGraph
+import com.daedan.festabook.di.placeMapHandler.PlaceMapHandlerGraph
 import com.daedan.festabook.di.viewmodel.ViewModelKey
-import com.daedan.festabook.domain.repository.PlaceDetailRepository
 import com.daedan.festabook.domain.repository.PlaceListRepository
-import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
-import com.daedan.festabook.presentation.placeMap.intent.action.FilterActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
-import com.daedan.festabook.presentation.placeMap.intent.action.MapEventActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.action.PlaceMapAction
 import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.action.SelectActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
@@ -25,6 +22,7 @@ import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.asContribution
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -44,8 +42,7 @@ import kotlinx.coroutines.launch
 @Inject
 class PlaceMapViewModel(
     private val placeListRepository: PlaceListRepository,
-    private val placeDetailRepository: PlaceDetailRepository,
-    private val logger: DefaultFirebaseLogger,
+    appGraph: FestaBookAppGraph,
 ) : ViewModel() {
     private val cachedPlaces = MutableStateFlow(listOf<PlaceUiModel>())
     private val cachedPlaceByTimeTag = MutableStateFlow<List<PlaceUiModel>>(emptyList())
@@ -59,36 +56,19 @@ class PlaceMapViewModel(
     private val _mapControlUiEvent = Channel<MapControlEvent>()
     val mapControlUiEvent: Flow<MapControlEvent> = _mapControlUiEvent.receiveAsFlow()
 
-    private val mapEventActionHandler =
-        MapEventActionHandler(
-            _mapControlUiEvent = _mapControlUiEvent,
-            _placeMapUiEvent = _placeMapUiEvent,
-            uiState = uiState,
-            logger = logger,
-        )
-
-    private val filterActionHandler =
-        FilterActionHandler(
-            _mapControlUiEvent = _mapControlUiEvent,
-            logger = logger,
-            uiState = uiState,
-            cachedPlaces = cachedPlaces,
-            cachedPlaceByTimeTag = cachedPlaceByTimeTag,
-            onUpdateCachedPlace = { cachedPlaceByTimeTag.tryEmit(it) },
-            onUpdateState = { _uiState.update(it) },
-        )
-
-    private val selectActionHandler =
-        SelectActionHandler(
-            filterActionHandler = filterActionHandler,
-            _placeMapUiEvent = _placeMapUiEvent,
-            _mapControlUiEvent = _mapControlUiEvent,
-            uiState = uiState,
-            logger = logger,
-            placeDetailRepository = placeDetailRepository,
-            scope = viewModelScope,
-            onUpdateState = { _uiState.update(it) },
-        )
+    private val handlerGraph =
+        appGraph
+            .asContribution<PlaceMapHandlerGraph.Factory>()
+            .create(
+                mapControlUiEvent = _mapControlUiEvent,
+                placeMapUiEvent = _placeMapUiEvent,
+                uiState = uiState,
+                cachedPlaces = cachedPlaces,
+                cachedPlaceByTimeTag = cachedPlaceByTimeTag,
+                onUpdateCachedPlace = { cachedPlaceByTimeTag.tryEmit(it) },
+                onUpdateState = { _uiState.update(it) },
+                scope = viewModelScope,
+            )
 
     init {
         loadOrganizationGeography()
@@ -100,9 +80,9 @@ class PlaceMapViewModel(
     fun onPlaceMapAction(action: PlaceMapAction) {
         viewModelScope.launch {
             when (action) {
-                is FilterAction -> filterActionHandler(action)
-                is MapEventAction -> mapEventActionHandler(action)
-                is SelectAction -> selectActionHandler(action)
+                is FilterAction -> handlerGraph.filterActionHandler(action)
+                is MapEventAction -> handlerGraph.mapEventActionHandler(action)
+                is SelectAction -> handlerGraph.selectActionHandler(action)
             }
         }
     }
