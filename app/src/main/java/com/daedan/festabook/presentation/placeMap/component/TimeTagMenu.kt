@@ -148,7 +148,7 @@ private fun ExposedDropdownMenuBoxScope.TimeTagButton(
     Row(
         modifier =
             Modifier
-                .width(140.dp)
+                .width(festabookSpacing.timeTagButtonWidth)
                 .onGloballyPositioned { coordinates ->
                     onSizeDetermine(coordinates.size)
                 }.menuAnchor(

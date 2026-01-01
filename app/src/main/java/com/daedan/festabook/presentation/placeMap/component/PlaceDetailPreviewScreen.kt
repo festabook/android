@@ -16,7 +16,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.CoilImage
 import com.daedan.festabook.presentation.common.component.URLText
@@ -71,7 +70,7 @@ private fun PlaceDetailPreviewContent(
         modifier =
             modifier.padding(
                 horizontal = festabookSpacing.paddingScreenGutter,
-                vertical = 20.dp,
+                vertical = festabookSpacing.previewVerticalPadding,
             ),
     ) {
         PlaceCategoryLabel(
@@ -149,7 +148,7 @@ private fun PlaceDetailPreviewContent(
             CoilImage(
                 modifier =
                     Modifier
-                        .size(88.dp)
+                        .size(festabookSpacing.previewImageSize)
                         .clip(festabookShapes.radius2),
                 url = placeDetail.place.imageUrl.convertImageUrl() ?: "",
                 contentDescription = stringResource(R.string.content_description_booth_image),

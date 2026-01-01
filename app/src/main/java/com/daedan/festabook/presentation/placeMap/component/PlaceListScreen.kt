@@ -97,8 +97,8 @@ fun PlaceListScreen(
         }
 
         PlaceListBottomSheet(
-            peekHeight = 70.dp,
-            halfExpandedRatio = 0.4f,
+            peekHeight = festabookSpacing.placeListBottomSheetPeekHeight,
+            halfExpandedRatio = festabookSpacing.placeListBottomSheetHalfRatio,
             onStateUpdate = {
                 if (listState.firstVisibleItemIndex != 0) {
                     scope.launch { listState.scrollToItem(0) }
@@ -206,7 +206,7 @@ private fun PlaceListItem(
                 contentDescription = stringResource(R.string.content_description_booth_image),
                 modifier =
                     Modifier
-                        .size(80.dp)
+                        .size(festabookSpacing.placeListImageSize)
                         .clip(festabookShapes.radius2),
             )
             PlaceListItemContent(

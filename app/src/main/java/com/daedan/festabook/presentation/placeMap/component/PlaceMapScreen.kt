@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.unit.dp
 import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
 import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
 import com.daedan.festabook.presentation.placeMap.intent.action.PlaceMapAction
@@ -48,7 +47,7 @@ fun PlaceMapScreen(
                     Modifier
                         .background(
                             FestabookColor.white,
-                        ).padding(horizontal = 24.dp),
+                        ).padding(horizontal = festabookSpacing.timeTagHorizontalPadding),
             )
             PlaceCategoryScreen(
                 initialCategories = uiState.initialCategories,
