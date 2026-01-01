@@ -35,8 +35,8 @@ import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceMapScreen
 import com.daedan.festabook.presentation.placeMap.component.rememberPlaceListBottomSheetState
 import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEventHandler
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.handler.MapControlEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.handler.PlaceMapEventHandler
 import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
 import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
 import com.daedan.festabook.presentation.placeMap.logging.PlaceFragmentEnter

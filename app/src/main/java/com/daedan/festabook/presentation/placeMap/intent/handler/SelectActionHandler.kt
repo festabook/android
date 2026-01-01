@@ -1,9 +1,11 @@
-package com.daedan.festabook.presentation.placeMap.intent.action
+package com.daedan.festabook.presentation.placeMap.intent.handler
 
+import com.daedan.festabook.di.placeMapHandler.PlaceMapViewModelScope
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.domain.repository.PlaceDetailRepository
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeDetail.model.toUiModel
+import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
 import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
@@ -13,6 +15,7 @@ import com.daedan.festabook.presentation.placeMap.logging.PlaceItemClick
 import com.daedan.festabook.presentation.placeMap.logging.PlacePreviewClick
 import com.daedan.festabook.presentation.placeMap.logging.PlaceTimeTagSelected
 import com.daedan.festabook.presentation.placeMap.model.PlaceCoordinateUiModel
+import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -20,17 +23,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Inject
+@ContributesBinding(PlaceMapViewModelScope::class)
 class SelectActionHandler(
+    override val uiState: StateFlow<PlaceMapUiState>,
+    override val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
     private val filterActionHandler: FilterActionHandler,
     private val _placeMapUiEvent: Channel<PlaceMapEvent>,
     private val _mapControlUiEvent: Channel<MapControlEvent>,
-    private val uiState: StateFlow<PlaceMapUiState>,
     private val logger: DefaultFirebaseLogger,
     private val placeDetailRepository: PlaceDetailRepository,
     private val scope: CoroutineScope,
-    private val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
-) {
-    suspend operator fun invoke(action: SelectAction) {
+) : ActionHandler<SelectAction, PlaceMapUiState> {
+    override suspend operator fun invoke(action: SelectAction) {
         when (action) {
             is SelectAction.OnPlaceClick -> {
                 selectPlace(action.placeId)

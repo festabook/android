@@ -1,10 +1,11 @@
-package com.daedan.festabook.presentation.placeMap.intent.event
+package com.daedan.festabook.presentation.placeMap.intent.handler
 
 import com.daedan.festabook.di.mapManager.MapManagerGraph
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
 import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
@@ -21,11 +22,11 @@ class MapControlEventHandler(
     private val viewModel: PlaceMapViewModel,
     private val mapDelegate: MapDelegate,
     private val mapManagerDelegate: MapManagerDelegate,
-) {
+) : EventHandler<MapControlEvent> {
     private val uiState = viewModel.uiState.value
     private val mapManager: MapManager? get() = mapManagerDelegate.value
 
-    suspend operator fun invoke(event: MapControlEvent) {
+    override suspend operator fun invoke(event: MapControlEvent) {
         when (event) {
             is MapControlEvent.InitMap -> {
                 val naverMap = mapDelegate.await()

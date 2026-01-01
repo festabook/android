@@ -1,10 +1,10 @@
 package com.daedan.festabook.di.placeMapHandler
 
-import com.daedan.festabook.presentation.placeMap.intent.action.FilterActionHandler
-import com.daedan.festabook.presentation.placeMap.intent.action.MapEventActionHandler
-import com.daedan.festabook.presentation.placeMap.intent.action.SelectActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.FilterActionHandler
+import com.daedan.festabook.presentation.placeMap.intent.handler.MapEventActionHandler
+import com.daedan.festabook.presentation.placeMap.intent.handler.SelectActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import dev.zacsweers.metro.AppScope

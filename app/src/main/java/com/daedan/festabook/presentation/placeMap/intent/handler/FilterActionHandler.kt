@@ -1,10 +1,12 @@
-package com.daedan.festabook.presentation.placeMap.intent.action
+package com.daedan.festabook.presentation.placeMap.intent.handler
 
 import com.daedan.festabook.di.placeMapHandler.CachedPlaceByTimeTag
 import com.daedan.festabook.di.placeMapHandler.CachedPlaces
+import com.daedan.festabook.di.placeMapHandler.PlaceMapViewModelScope
 import com.daedan.festabook.domain.model.PlaceCategory
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.DefaultFirebaseLogger
+import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
 import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
@@ -14,6 +16,7 @@ import com.daedan.festabook.presentation.placeMap.logging.PlaceCategoryClick
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
+import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
@@ -22,16 +25,17 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 @Inject
+@ContributesBinding(PlaceMapViewModelScope::class)
 class FilterActionHandler(
+    override val uiState: StateFlow<PlaceMapUiState>,
+    override val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
     private val _mapControlUiEvent: Channel<MapControlEvent>,
     private val logger: DefaultFirebaseLogger,
-    private val uiState: StateFlow<PlaceMapUiState>,
+    private val onUpdateCachedPlace: (List<PlaceUiModel>) -> Unit,
     @param:CachedPlaces private val cachedPlaces: StateFlow<List<PlaceUiModel>>,
     @param:CachedPlaceByTimeTag private val cachedPlaceByTimeTag: StateFlow<List<PlaceUiModel>>,
-    private val onUpdateCachedPlace: (List<PlaceUiModel>) -> Unit,
-    private val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
-) {
-    suspend operator fun invoke(action: FilterAction) {
+) : ActionHandler<FilterAction, PlaceMapUiState> {
+    override suspend operator fun invoke(action: FilterAction) {
         when (action) {
             is FilterAction.OnCategoryClick -> {
                 uiState.await<ListLoadState.Success<PlaceUiModel>> { it.places }

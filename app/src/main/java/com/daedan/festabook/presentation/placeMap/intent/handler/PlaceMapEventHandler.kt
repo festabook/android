@@ -1,10 +1,11 @@
-package com.daedan.festabook.presentation.placeMap.intent.event
+package com.daedan.festabook.presentation.placeMap.intent.handler
 
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceListBottomSheetState
 import com.daedan.festabook.presentation.placeMap.component.PlaceListBottomSheetValue
 import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
 import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMapButtonReClick
 import com.daedan.festabook.presentation.placeMap.mapManager.MapManager
@@ -19,10 +20,10 @@ class PlaceMapEventHandler(
     private val onPreloadImages: (PlaceMapEvent.PreloadImages) -> Unit,
     private val onStartPlaceDetail: (PlaceMapEvent.StartPlaceDetail) -> Unit,
     private val onShowErrorSnackBar: (PlaceMapEvent.ShowErrorSnackBar) -> Unit,
-) {
+) : EventHandler<PlaceMapEvent> {
     private val mapManager: MapManager? get() = mapManagerDelegate.value
 
-    suspend operator fun invoke(event: PlaceMapEvent) {
+    override suspend operator fun invoke(event: PlaceMapEvent) {
         when (event) {
             is PlaceMapEvent.PreloadImages -> {
                 onPreloadImages(event)
