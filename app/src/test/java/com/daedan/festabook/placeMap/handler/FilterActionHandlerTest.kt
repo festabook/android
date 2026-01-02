@@ -2,7 +2,7 @@ package com.daedan.festabook.placeMap.handler
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.domain.model.TimeTag
-import com.daedan.festabook.observeEvent
+import com.daedan.festabook.observeMultipleEvent
 import com.daedan.festabook.placeMap.FAKE_PLACES_CATEGORY_FIXTURE
 import com.daedan.festabook.placeMap.FAKE_TIME_TAG
 import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
@@ -81,7 +81,8 @@ class FilterActionHandlerTest {
         runTest {
             // given
             val categories = setOf(PlaceCategoryUiModel.BOOTH)
-            val event = observeEvent(mapControlUiEvent.consumeAsFlow())
+            val eventResult = mutableListOf<MapControlEvent>()
+            observeMultipleEvent(mapControlUiEvent.consumeAsFlow(), eventResult)
             val places = ListLoadState.Success(FAKE_PLACES_CATEGORY_FIXTURE.map { it.toUiModel() })
             uiState.update { it.copy(places = places) }
 
@@ -89,7 +90,6 @@ class FilterActionHandlerTest {
             filterActionHandler(FilterAction.OnCategoryClick(categories))
 
             // then
-            val eventResult = event.await()
             advanceUntilIdle()
 
             assertThat(
@@ -98,7 +98,10 @@ class FilterActionHandlerTest {
                 categories,
             )
 
-            assertThat(eventResult).isInstanceOf(MapControlEvent.FilterMapByCategory::class.java)
+            assertThat(eventResult).containsExactly(
+                MapControlEvent.UnselectMarker,
+                MapControlEvent.FilterMapByCategory(categories.toList()),
+            )
             assertThat(uiState.value.places).isEqualTo(
                 ListLoadState.Success(emptyList<PlaceUiModel>()),
             )

@@ -2,6 +2,7 @@ package com.daedan.festabook.placeMap.handler
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.observeEvent
+import com.daedan.festabook.observeMultipleEvent
 import com.daedan.festabook.placeMap.FAKE_INITIAL_MAP_SETTING
 import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
 import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
@@ -17,9 +18,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -83,11 +82,7 @@ class MapEventActionHandlerTest {
         runTest {
             // given
             val eventResult = mutableListOf<MapControlEvent>()
-            backgroundScope.launch(UnconfinedTestDispatcher()) {
-                mapControlUiEvent.receiveAsFlow().collect {
-                    eventResult.add(it)
-                }
-            }
+            observeMultipleEvent(mapControlUiEvent.receiveAsFlow(), eventResult)
 
             val initialSetting = FAKE_INITIAL_MAP_SETTING
             uiState.update {

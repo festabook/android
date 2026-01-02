@@ -250,4 +250,50 @@ class PlaceMapViewModelTest {
             // then
             assertThat(result).isInstanceOf(PlaceMapEvent.MenuItemReClicked::class.java)
         }
+
+    @Test
+    fun `LoadState가 하나라도 에러가 있다면 에러 이벤트를 발송할 수 있다`() =
+        runTest {
+            // given
+            val throwable = Throwable()
+            coEvery { placeListRepository.getPlaceGeographies() } returns Result.failure(throwable)
+
+            // when
+            placeMapViewModel = PlaceMapViewModel(placeListRepository, handlerGraphFactory)
+            val event = observeEvent(placeMapViewModel.placeMapUiEvent)
+            advanceUntilIdle()
+
+            // then
+            val result = event.await()
+            advanceUntilIdle()
+
+            assertThat(result).isEqualTo(
+                PlaceMapEvent.ShowErrorSnackBar(
+                    LoadState.Error(throwable),
+                ),
+            )
+        }
+
+    @Test
+    fun `ListLoadState가 하나라도 에러가 있다면 에러 이벤트를 발송할 수 있다`() =
+        runTest {
+            // given
+            val throwable = Throwable()
+            coEvery { placeListRepository.getPlaces() } returns Result.failure(throwable)
+
+            // when
+            placeMapViewModel = PlaceMapViewModel(placeListRepository, handlerGraphFactory)
+            val event = observeEvent(placeMapViewModel.placeMapUiEvent)
+            advanceUntilIdle()
+
+            // then
+            val result = event.await()
+            advanceUntilIdle()
+
+            assertThat(result).isEqualTo(
+                PlaceMapEvent.ShowErrorSnackBar(
+                    LoadState.Error(throwable),
+                ),
+            )
+        }
 }
