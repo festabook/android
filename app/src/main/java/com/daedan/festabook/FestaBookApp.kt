@@ -36,7 +36,7 @@ class FestaBookApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-//        setGlobalExceptionHandler()
+        setGlobalExceptionHandler()
         festaBookGraph.inject(this)
         setupTimber()
         setupNaverSdk()
