@@ -95,10 +95,12 @@ class SelectActionHandler(
             placeDetailRepository
                 .getPlaceDetail(placeId = placeId)
                 .onSuccess { item ->
+                    val newSelectedPlace = LoadState.Success(item.toUiModel())
+
                     onUpdateState.invoke {
-                        it.copy(selectedPlace = LoadState.Success(item.toUiModel()))
+                        it.copy(selectedPlace = newSelectedPlace)
                     }
-                    _mapControlUiEvent.send(MapControlEvent.SelectMarker(uiState.value.selectedPlace))
+                    _mapControlUiEvent.send(MapControlEvent.SelectMarker(newSelectedPlace))
                     val selectedTimeTag = uiState.value.selectedTimeTag
                     val timeTagName =
                         if (selectedTimeTag is LoadState.Success) selectedTimeTag.value.name else "undefined"

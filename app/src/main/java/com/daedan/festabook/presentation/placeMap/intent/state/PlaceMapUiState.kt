@@ -13,7 +13,7 @@ data class PlaceMapUiState(
     val timeTags: LoadState<List<TimeTag>> = LoadState.Empty,
     val selectedTimeTag: LoadState<TimeTag> = LoadState.Empty,
     val selectedPlace: LoadState<PlaceDetailUiModel> = LoadState.Empty,
-    val places: ListLoadState<List<PlaceUiModel>> = ListLoadState.Loading(),
+    val places: ListLoadState<List<PlaceUiModel>> = ListLoadState.Loading,
     val isExceededMaxLength: Boolean = false,
     val selectedCategories: Set<PlaceCategoryUiModel> = emptySet(),
     val initialCategories: List<PlaceCategoryUiModel> = PlaceCategoryUiModel.entries,
