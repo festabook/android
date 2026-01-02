@@ -23,7 +23,7 @@ class MapControlEventHandler(
     private val mapDelegate: MapDelegate,
     private val mapManagerDelegate: MapManagerDelegate,
 ) : EventHandler<MapControlEvent> {
-    private val uiState = viewModel.uiState.value
+    private val uiState get() = viewModel.uiState.value
     private val mapManager: MapManager? get() = mapManagerDelegate.value
 
     override suspend operator fun invoke(event: MapControlEvent) {
