@@ -22,7 +22,6 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,16 +48,10 @@ class PlaceMapViewModel(
     private val _uiState = MutableStateFlow(PlaceMapUiState())
     val uiState: StateFlow<PlaceMapUiState> = _uiState.asStateFlow()
 
-    private val _placeMapUiEvent =
-        Channel<PlaceMapEvent>(
-            onBufferOverflow = BufferOverflow.DROP_OLDEST,
-        )
+    private val _placeMapUiEvent = Channel<PlaceMapEvent>()
     val placeMapUiEvent: Flow<PlaceMapEvent> = _placeMapUiEvent.receiveAsFlow()
 
-    private val _mapControlUiEvent =
-        Channel<MapControlEvent>(
-            onBufferOverflow = BufferOverflow.DROP_OLDEST,
-        )
+    private val _mapControlUiEvent = Channel<MapControlEvent>()
     val mapControlUiEvent: Flow<MapControlEvent> = _mapControlUiEvent.receiveAsFlow()
 
     private val handlerGraph =
