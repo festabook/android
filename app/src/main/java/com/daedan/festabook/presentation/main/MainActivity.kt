@@ -166,8 +166,10 @@ class MainActivity :
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                homeViewModel.navigateToScheduleEvent.collectLatest {
-                    binding.bnvMenu.selectedItemId = R.id.item_menu_schedule
+                homeViewModel.navigateToScheduleEvent.collect {
+                    if (binding.bnvMenu.selectedItemId != R.id.item_menu_schedule) {
+                        binding.bnvMenu.selectedItemId = R.id.item_menu_schedule
+                    }
                 }
             }
         }
