@@ -11,15 +11,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.withTimeout
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 fun <T> TestScope.observeEvent(flow: Flow<T>): Deferred<T> {
     val event =
         backgroundScope.async {
-            flow
-                .timeout(3.seconds)
-                .first()
+            withTimeout(3000) {
+                flow.first()
+            }
         }
     advanceUntilIdle()
     return event
