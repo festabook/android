@@ -4,7 +4,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.domain.repository.PlaceDetailRepository
 import com.daedan.festabook.getOrAwaitValue
 import com.daedan.festabook.news.FAKE_NOTICES
-import com.daedan.festabook.placeList.FAKE_PLACES
+import com.daedan.festabook.placeMap.FAKE_PLACES
 import com.daedan.festabook.presentation.news.notice.model.toUiModel
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiState

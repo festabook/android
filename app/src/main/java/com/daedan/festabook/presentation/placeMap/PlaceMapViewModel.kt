@@ -2,7 +2,6 @@ package com.daedan.festabook.presentation.placeMap
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.daedan.festabook.di.FestaBookAppGraph
 import com.daedan.festabook.di.placeMapHandler.PlaceMapHandlerGraph
 import com.daedan.festabook.di.viewmodel.ViewModelKey
 import com.daedan.festabook.domain.repository.PlaceListRepository
@@ -22,8 +21,8 @@ import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
-import dev.zacsweers.metro.asContribution
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +41,7 @@ import kotlinx.coroutines.launch
 @Inject
 class PlaceMapViewModel(
     private val placeListRepository: PlaceListRepository,
-    appGraph: FestaBookAppGraph,
+    handlerGraphFactory: PlaceMapHandlerGraph.Factory,
 ) : ViewModel() {
     private val cachedPlaces = MutableStateFlow(listOf<PlaceUiModel>())
     private val cachedPlaceByTimeTag = MutableStateFlow<List<PlaceUiModel>>(emptyList())
@@ -50,15 +49,20 @@ class PlaceMapViewModel(
     private val _uiState = MutableStateFlow(PlaceMapUiState())
     val uiState: StateFlow<PlaceMapUiState> = _uiState.asStateFlow()
 
-    private val _placeMapUiEvent = Channel<PlaceMapEvent>()
+    private val _placeMapUiEvent =
+        Channel<PlaceMapEvent>(
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
     val placeMapUiEvent: Flow<PlaceMapEvent> = _placeMapUiEvent.receiveAsFlow()
 
-    private val _mapControlUiEvent = Channel<MapControlEvent>()
+    private val _mapControlUiEvent =
+        Channel<MapControlEvent>(
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
     val mapControlUiEvent: Flow<MapControlEvent> = _mapControlUiEvent.receiveAsFlow()
 
     private val handlerGraph =
-        appGraph
-            .asContribution<PlaceMapHandlerGraph.Factory>()
+        handlerGraphFactory
             .create(
                 mapControlUiEvent = _mapControlUiEvent,
                 placeMapUiEvent = _placeMapUiEvent,
