@@ -32,8 +32,6 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 fun PlaceDetailPreviewSecondaryScreen(
     selectedPlace: LoadState<PlaceDetailUiModel>,
     modifier: Modifier = Modifier,
-    onError: (LoadState.Error) -> Unit = {},
-    onEmpty: () -> Unit = {},
     onClick: (LoadState<PlaceDetailUiModel>) -> Unit = {},
     onBackPress: () -> Unit = {},
     visible: Boolean = false,
@@ -52,9 +50,6 @@ fun PlaceDetailPreviewSecondaryScreen(
         shape = festabookShapes.radius2,
     ) {
         when (selectedPlace) {
-            is LoadState.Loading -> Unit
-            is LoadState.Error -> onError(selectedPlace)
-            is LoadState.Empty -> onEmpty()
             is LoadState.Success -> {
                 Row(
                     modifier =
@@ -87,6 +82,8 @@ fun PlaceDetailPreviewSecondaryScreen(
                     )
                 }
             }
+
+            else -> Unit
         }
     }
 }

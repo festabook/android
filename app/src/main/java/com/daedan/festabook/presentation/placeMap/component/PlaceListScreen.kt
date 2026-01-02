@@ -61,13 +61,21 @@ fun PlaceListScreen(
     onPlaceClick: (place: PlaceUiModel) -> Unit = {},
     onPlaceLoadFinish: (places: List<PlaceUiModel>) -> Unit = {},
     onPlaceLoad: suspend () -> Unit = {},
-    onError: (ListLoadState.Error<List<PlaceUiModel>>) -> Unit = {},
     onBackToInitialPositionClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var offset by remember { mutableFloatStateOf(0f) }
     val currentOnPlaceLoad by rememberUpdatedState(onPlaceLoad)
+    val currentOnPlaceLoadFinish by rememberUpdatedState(onPlaceLoadFinish)
+
+    LaunchedEffect(placesUiState) {
+        when (placesUiState) {
+            is ListLoadState.PlaceLoaded -> launch { currentOnPlaceLoad() }
+            is ListLoadState.Success -> currentOnPlaceLoadFinish(placesUiState.value)
+            else -> Unit
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (bottomSheetState.currentValue != PlaceListBottomSheetValue.EXPANDED) {
@@ -126,14 +134,12 @@ fun PlaceListScreen(
                     )
 
                 is ListLoadState.Error -> {
-                    onError(placesUiState)
                     EmptyStateScreen(
                         modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
                     )
                 }
 
                 is ListLoadState.Success -> {
-                    onPlaceLoadFinish(placesUiState.value)
                     if (placesUiState.value.isEmpty()) {
                         EmptyStateScreen(
                             modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
@@ -148,13 +154,7 @@ fun PlaceListScreen(
                     }
                 }
 
-                is ListLoadState.PlaceLoaded -> {
-                    LaunchedEffect(Unit) {
-                        scope.launch {
-                            currentOnPlaceLoad()
-                        }
-                    }
-                }
+                is ListLoadState.PlaceLoaded -> Unit
             }
         }
     }

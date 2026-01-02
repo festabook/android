@@ -36,7 +36,6 @@ fun PlaceDetailPreviewScreen(
     modifier: Modifier = Modifier,
     visible: Boolean = false,
     onClick: (LoadState<PlaceDetailUiModel>) -> Unit = {},
-    onError: (LoadState.Error) -> Unit = {},
     onBackPress: () -> Unit = {},
 ) {
     BackHandler(enabled = visible) {
@@ -50,13 +49,11 @@ fun PlaceDetailPreviewScreen(
                 .clickable { onClick(selectedPlace) },
     ) {
         when (selectedPlace) {
-            is LoadState.Loading -> Unit
             is LoadState.Success -> {
                 PlaceDetailPreviewContent(placeDetail = selectedPlace.value)
             }
 
-            is LoadState.Error -> onError(selectedPlace)
-            is LoadState.Empty -> Unit
+            else -> Unit
         }
     }
 }
