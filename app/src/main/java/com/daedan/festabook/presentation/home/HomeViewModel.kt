@@ -18,7 +18,8 @@ import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(HomeViewModel::class)
-class HomeViewModel @Inject constructor(
+@Inject
+class HomeViewModel(
     private val festivalRepository: FestivalRepository,
 ) : ViewModel() {
     private val _festivalUiState = MutableStateFlow<FestivalUiState>(FestivalUiState.Loading)
