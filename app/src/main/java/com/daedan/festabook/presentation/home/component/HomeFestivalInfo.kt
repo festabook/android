@@ -20,13 +20,12 @@ fun HomeFestivalInfo(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp),
     ) {
         Text(
             text = festivalName,
             style = FestabookTypography.displayMedium,
             color = FestabookColor.black,
-            modifier = Modifier.padding(horizontal = 20.dp),
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -35,7 +34,6 @@ fun HomeFestivalInfo(
             text = festivalDate,
             style = FestabookTypography.bodyLarge,
             color = FestabookColor.gray500,
-            modifier = Modifier.padding(horizontal = 20.dp),
         )
     }
 }
