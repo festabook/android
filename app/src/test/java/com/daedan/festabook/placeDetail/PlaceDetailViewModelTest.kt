@@ -2,7 +2,6 @@ package com.daedan.festabook.placeDetail
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.domain.repository.PlaceDetailRepository
-import com.daedan.festabook.getOrAwaitValue
 import com.daedan.festabook.news.FAKE_NOTICES
 import com.daedan.festabook.placeList.FAKE_PLACES
 import com.daedan.festabook.presentation.news.notice.model.toUiModel
@@ -86,7 +85,7 @@ class PlaceDetailViewModelTest {
 
             // then
             val expected = PlaceDetailUiState.Error(exception)
-            val actual = placeDetailViewModel.placeDetail.getOrAwaitValue()
+            val actual = placeDetailViewModel.placeDetail.value
             coVerify { placeDetailRepository.getPlaceDetail(FAKE_PLACES.first().id) }
             assertThat(actual).isEqualTo(expected)
         }
@@ -104,7 +103,7 @@ class PlaceDetailViewModelTest {
 
             // then
             coVerify(exactly = 0) { placeDetailRepository.getPlaceDetail(any()) }
-            val actual = placeDetailViewModel.placeDetail.getOrAwaitValue()
+            val actual = placeDetailViewModel.placeDetail.value
             assertThat(actual).isEqualTo(
                 PlaceDetailUiState.Success(expected),
             )
@@ -127,7 +126,7 @@ class PlaceDetailViewModelTest {
             // then
             val actual =
                 placeDetailViewModel.placeDetail
-                    .getOrAwaitValue()
+                    .value
                     .let { it as PlaceDetailUiState.Success }
                     .placeDetail
                     .notices
