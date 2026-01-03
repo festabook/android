@@ -31,6 +31,7 @@ import com.daedan.festabook.presentation.theme.FestabookColor
 fun URLText(
     text: String,
     modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
     fontStyle: FontStyle? = null,
@@ -78,6 +79,7 @@ fun URLText(
         modifier =
             modifier.pointerInput(Unit) {
                 detectTapGestures {
+                    onClick()
                     layoutResult?.let { result ->
                         val position = result.getOffsetForPosition(it)
                         linkedText
