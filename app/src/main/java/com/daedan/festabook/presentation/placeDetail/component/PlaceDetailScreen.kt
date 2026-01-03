@@ -47,10 +47,13 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import com.daedan.festabook.R
+import com.daedan.festabook.presentation.common.component.EmptyStateScreen
+import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.component.URLText
 import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.placeDetail.model.ImageUiModel
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
+import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiState
 import com.daedan.festabook.presentation.placeMap.component.PlaceCategoryLabel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
@@ -67,7 +70,7 @@ import com.skydoves.landscapist.zoomable.rememberZoomableState
 
 @Composable
 fun PlaceDetailScreen(
-    placeDetail: PlaceDetailUiModel,
+    uiState: PlaceDetailUiState,
     onBackToPreviousClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -75,32 +78,44 @@ fun PlaceDetailScreen(
     var isDialogOpen by remember { mutableStateOf(false) }
     var currentPage by remember { mutableIntStateOf(0) }
 
-    PlaceDetailImageDialog(
-        isDialogOpen = isDialogOpen,
-        onDismissRequest = { isDialogOpen = false },
-        initialPage = currentPage,
-        images = placeDetail.images,
-    )
+    when (uiState) {
+        is PlaceDetailUiState.Success -> {
+            PlaceDetailImageDialog(
+                isDialogOpen = isDialogOpen,
+                onDismissRequest = { isDialogOpen = false },
+                initialPage = currentPage,
+                images = uiState.placeDetail.images,
+            )
 
-    Column(
-        modifier =
-            modifier
-                .scrollable(
-                    state = scrollState,
-                    orientation = Orientation.Vertical,
-                ),
-    ) {
-        PlaceDetailImageContent(
-            images = placeDetail.images,
-            onBackToPreviousClick = onBackToPreviousClick,
-            onPageUpdate = { currentPage = it },
-            modifier =
-                Modifier
-                    .clickable { isDialogOpen = true }
-                    .fillMaxWidth(),
-        )
+            Column(
+                modifier =
+                    modifier
+                        .scrollable(
+                            state = scrollState,
+                            orientation = Orientation.Vertical,
+                        ),
+            ) {
+                PlaceDetailImageContent(
+                    images = uiState.placeDetail.images,
+                    onBackToPreviousClick = onBackToPreviousClick,
+                    onPageUpdate = { currentPage = it },
+                    modifier =
+                        Modifier
+                            .clickable { isDialogOpen = true }
+                            .fillMaxWidth(),
+                )
 
-        PlaceDetailContent(placeDetail = placeDetail)
+                PlaceDetailContent(placeDetail = uiState.placeDetail)
+            }
+        }
+
+        is PlaceDetailUiState.Loading -> {
+            LoadingStateScreen()
+        }
+
+        is PlaceDetailUiState.Error -> {
+            EmptyStateScreen()
+        }
     }
 }
 
@@ -223,6 +238,7 @@ private fun PlaceDetailImageContent(
                 failure = {
                     Image(
                         painter = painterResource(R.drawable.img_fallback),
+                        contentScale = ContentScale.Crop,
                         contentDescription = null,
                     )
                 },
@@ -402,37 +418,40 @@ private fun PlaceDetailScreenPreview() {
     FestabookTheme {
         PlaceDetailScreen(
             onBackToPreviousClick = {},
-            placeDetail =
-                PlaceDetailUiModel(
-                    place =
-                        PlaceUiModel(
-                            id = 1,
-                            imageUrl = null,
-                            title = "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
-                            description =
-                                "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스" +
-                                    "트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테" +
-                                    "스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트" +
-                                    "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
-                            location = "테스트테스트테스트테스트테스트테스트테스트테스트테스트",
-                            category = PlaceCategoryUiModel.FOOD_TRUCK,
-                            isBookmarked = true,
-                            timeTagId = listOf(1),
-                        ),
-                    notices = emptyList(),
-                    host = "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
-                    startTime = "09:00",
-                    endTime = "18:00",
-                    images =
-                        listOf(
-                            ImageUiModel(
-                                id = 1,
-                                url = "https://i1.sndcdn.com/artworks-AIxlEDn4gNDBnNJj-qHUnyA-t500x500.jpg",
-                            ),
-                            ImageUiModel(
-                                id = 2,
-                                url = "https://i.ytimg.com/vi/Wr8egRRLU28/maxresdefault.jpg",
-                            ),
+            uiState =
+                PlaceDetailUiState.Success(
+                    placeDetail =
+                        PlaceDetailUiModel(
+                            place =
+                                PlaceUiModel(
+                                    id = 1,
+                                    imageUrl = null,
+                                    title = "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
+                                    description =
+                                        "테스트테스트테스트테스트테스트테스.트테스트.테스트테스트테스트테스트//테스트테스트테스트테스트테스" +
+                                            "트테스트테스트테스트htt://i1.sndcdn.com/art트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테" +
+                                            "스트테스트테스트테스트https://i.ytimg.com/vi/Wr8egRRLU28/maxresdefault.jpg테스트테스트테스트테스트" +
+                                            "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
+                                    location = "테스트테스트테스트테스트테스트테스트테스트테스트테스트",
+                                    category = PlaceCategoryUiModel.FOOD_TRUCK,
+                                    isBookmarked = true,
+                                    timeTagId = listOf(1),
+                                ),
+                            notices = emptyList(),
+                            host = "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
+                            startTime = "09:00",
+                            endTime = "18:00",
+                            images =
+                                listOf(
+                                    ImageUiModel(
+                                        id = 1,
+                                        url = "https://i1.sndcdn.com/artworks-AIxlEDn4gNDBnNJj-qHUnyA-t500x500.jpg",
+                                    ),
+                                    ImageUiModel(
+                                        id = 2,
+                                        url = "https://i.ytimg.com/vi/Wr8egRRLU28/maxresdefault.jpg",
+                                    ),
+                                ),
                         ),
                 ),
         )
