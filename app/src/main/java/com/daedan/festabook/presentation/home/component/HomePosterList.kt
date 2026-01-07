@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.daedan.festabook.presentation.common.component.FestabookImage
 import com.daedan.festabook.presentation.common.component.cardBackground
+import com.daedan.festabook.presentation.theme.festabookShapes
 import kotlin.math.absoluteValue
 
 @Composable
@@ -87,8 +87,8 @@ fun HomePosterList(
                         scaleX = scale
                         scaleY = scale
                         this.alpha = alpha
-                    }.cardBackground(roundedCornerShape = 10.dp)
-                    .clip(RoundedCornerShape(10.dp)),
+                    }.cardBackground(shape = festabookShapes.radius2)
+                    .clip(festabookShapes.radius2),
         ) {
             FestabookImage(
                 imageUrl = imageUrl,
