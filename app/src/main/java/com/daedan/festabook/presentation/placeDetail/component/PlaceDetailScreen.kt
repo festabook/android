@@ -23,7 +23,10 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,9 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -48,9 +48,9 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
+import com.daedan.festabook.presentation.common.component.FestabookImage
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.component.URLText
-import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.placeDetail.model.ImageUiModel
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiState
@@ -61,12 +61,6 @@ import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.FestabookTypography
 import com.daedan.festabook.presentation.theme.festabookSpacing
-import com.skydoves.landscapist.ImageOptions
-import com.skydoves.landscapist.coil3.CoilImage
-import com.skydoves.landscapist.components.rememberImageComponent
-import com.skydoves.landscapist.crossfade.CrossfadePlugin
-import com.skydoves.landscapist.zoomable.ZoomablePlugin
-import com.skydoves.landscapist.zoomable.rememberZoomableState
 
 @Composable
 fun PlaceDetailScreen(
@@ -141,48 +135,40 @@ private fun PlaceDetailImageDialog(
                     usePlatformDefaultWidth = false,
                 ),
         ) {
-            HorizontalPager(
-                state = pagerState,
+            Box(
                 modifier =
                     modifier
                         .fillMaxSize()
-                        .background(color = FestabookColor.black),
-                verticalAlignment = Alignment.CenterVertically,
-                beyondViewportPageCount = 5,
-            ) { page ->
-                val zoomableState = rememberZoomableState()
+                        .background(FestabookColor.black.copy(alpha = 0.8f)),
+            ) {
+                HorizontalPager(
+                    state = pagerState,
+                    verticalAlignment = Alignment.CenterVertically,
+                    beyondViewportPageCount = 5,
+                ) { page ->
 
-                CoilImage(
+                    FestabookImage(
+                        imageUrl = images[page].url,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit,
+                        isZoomable = true,
+                        enablePopUp = false,
+                    )
+                }
+
+                IconButton(
+                    onClick = onDismissRequest,
                     modifier =
                         Modifier
-                            .fillMaxWidth()
-                            .graphicsLayer {
-                                scaleY = zoomableState.transformation.scale.scaleY
-                                scaleX = zoomableState.transformation.scale.scaleX
-                            },
-                    component =
-                        rememberImageComponent {
-                            +CrossfadePlugin()
-                            +ZoomablePlugin(state = zoomableState)
-                        },
-                    imageModel = { images[page].url.convertImageUrl() },
-                    imageOptions =
-                        ImageOptions(
-                            contentScale = ContentScale.Crop,
-                        ),
-                    loading = {
-                        Image(
-                            painter = ColorPainter(Color.LightGray),
-                            contentDescription = null,
-                        )
-                    },
-                    failure = {
-                        Image(
-                            painter = painterResource(R.drawable.img_fallback),
-                            contentDescription = null,
-                        )
-                    },
-                )
+                            .align(Alignment.TopEnd)
+                            .padding(16.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "close the popup",
+                        tint = FestabookColor.white,
+                    )
+                }
             }
         }
     }
@@ -215,33 +201,12 @@ private fun PlaceDetailImageContent(
             beyondViewportPageCount = 5,
         ) { page ->
             onPageUpdate(page)
-            CoilImage(
+            FestabookImage(
                 modifier =
                     Modifier
                         .fillMaxWidth()
                         .height(240.dp),
-                component =
-                    rememberImageComponent {
-                        +CrossfadePlugin()
-                    },
-                imageModel = { images[page].url.convertImageUrl() },
-                imageOptions =
-                    ImageOptions(
-                        contentScale = ContentScale.Crop,
-                    ),
-                loading = {
-                    Image(
-                        painter = ColorPainter(Color.LightGray),
-                        contentDescription = null,
-                    )
-                },
-                failure = {
-                    Image(
-                        painter = painterResource(R.drawable.img_fallback),
-                        contentScale = ContentScale.Crop,
-                        contentDescription = null,
-                    )
-                },
+                imageUrl = images[page].url,
             )
         }
 
