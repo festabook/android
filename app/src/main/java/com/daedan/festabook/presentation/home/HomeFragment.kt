@@ -35,9 +35,12 @@ class HomeFragment(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View {
-        return ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+    ): View =
+        ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(
+                ViewCompositionStrategy
+                    .DisposeOnViewTreeLifecycleDestroyed,
+            )
             setContent {
                 HomeScreen(
                     viewModel = viewModel,
@@ -47,5 +50,4 @@ class HomeFragment(
                 )
             }
         }
-    }
 }

@@ -18,16 +18,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.daedan.festabook.domain.model.Festival
+import com.daedan.festabook.domain.model.Organization
+import com.daedan.festabook.domain.model.Poster
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.formatFestivalPeriod
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.LineUpItemGroupUiModel
 import com.daedan.festabook.presentation.home.LineupItemUiModel
-import com.daedan.festabook.presentation.home.adapter.FestivalUiState
-import com.daedan.festabook.domain.model.Festival
-import com.daedan.festabook.domain.model.Organization
-import com.daedan.festabook.domain.model.Poster
 import com.daedan.festabook.presentation.home.LineupUiState
+import com.daedan.festabook.presentation.home.adapter.FestivalUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -79,11 +79,12 @@ private fun FestivalOverview(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = Color.White
+        containerColor = Color.White,
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier =
+                Modifier
+                    .fillMaxSize(),
         ) {
             HomeHeader(
                 universityName = universityName,
@@ -94,7 +95,7 @@ private fun FestivalOverview(
             LazyColumn(
                 modifier =
                     Modifier
-                        .fillMaxSize()
+                        .fillMaxSize(),
             ) {
                 // 포스터 리스트
                 item {
@@ -132,7 +133,6 @@ private fun FestivalOverview(
                             Modifier
                                 .padding(top = 16.dp),
                     )
-
                 }
 
                 // 라인업 헤더
@@ -196,14 +196,14 @@ private fun FestivalOverviewPreview() {
             group =
                 mapOf(
                     LocalDate.now() to
-                            listOf(
-                                LineupItemUiModel(1, "sample", "실리카겔", LocalDateTime.now()),
-                                LineupItemUiModel(2, "sample", "아이유", LocalDateTime.now()),
-                            ),
+                        listOf(
+                            LineupItemUiModel(1, "sample", "실리카겔", LocalDateTime.now()),
+                            LineupItemUiModel(2, "sample", "아이유", LocalDateTime.now()),
+                        ),
                     LocalDate.now().plusDays(1) to
-                            listOf(
-                                LineupItemUiModel(3, "sample", "뉴진스", LocalDateTime.now()),
-                            ),
+                        listOf(
+                            LineupItemUiModel(3, "sample", "뉴진스", LocalDateTime.now()),
+                        ),
                 ),
         )
 
@@ -214,4 +214,3 @@ private fun FestivalOverviewPreview() {
         onNavigateToSchedule = {},
     )
 }
-

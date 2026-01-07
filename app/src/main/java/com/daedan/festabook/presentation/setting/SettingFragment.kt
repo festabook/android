@@ -20,7 +20,6 @@ import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.showNotificationDeniedSnackbar
 import com.daedan.festabook.presentation.common.showSnackBar
 import com.daedan.festabook.presentation.home.HomeViewModel
-import com.daedan.festabook.presentation.home.adapter.FestivalUiState
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject

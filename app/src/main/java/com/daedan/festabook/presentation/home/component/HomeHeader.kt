@@ -33,7 +33,7 @@ fun HomeHeader(
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
     ) {
         Row(
             modifier = Modifier.clickable { onExpandClick() },
@@ -41,10 +41,11 @@ fun HomeHeader(
         ) {
             Text(
                 text = universityName,
-                style = FestabookTypography.displayLarge.copy(
-                    platformStyle = PlatformTextStyle(includeFontPadding = false),
-                    lineHeight = 34.sp
-                ),
+                style =
+                    FestabookTypography.displayLarge.copy(
+                        platformStyle = PlatformTextStyle(includeFontPadding = false),
+                        lineHeight = 34.sp,
+                    ),
                 color = FestabookColor.black,
             )
 
@@ -54,7 +55,7 @@ fun HomeHeader(
                 painter = painterResource(id = R.drawable.ic_dropdown),
                 tint = FestabookColor.black,
                 contentDescription = stringResource(R.string.home_navigate_to_explore_desc),
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
         }
     }
