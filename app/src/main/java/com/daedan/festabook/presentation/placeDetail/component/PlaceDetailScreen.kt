@@ -7,8 +7,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +21,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -83,11 +82,7 @@ fun PlaceDetailScreen(
 
             Column(
                 modifier =
-                    modifier
-                        .scrollable(
-                            state = scrollState,
-                            orientation = Orientation.Vertical,
-                        ),
+                    modifier.verticalScroll(scrollState),
             ) {
                 PlaceDetailImageContent(
                     images = uiState.placeDetail.images,
@@ -394,8 +389,8 @@ private fun PlaceDetailScreenPreview() {
                                     title = "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
                                     description =
                                         "테스트테스트테스트테스트테스트테스.트테스트.테스트테스트테스트테스트//테스트테스트테스트테스트테스" +
-                                            "트테스트테스트테스트htt://i1.sndcdn.com/art트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테" +
-                                            "스트테스트테스트테스트https://i.ytimg.com/vi/Wr8egRRLU28/maxresdefault.jpg테스트테스트테스트테스트" +
+                                            "트테스트테스트테스트http://i1.sndcdn.com/art 트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테" +
+                                            "스트테스트테스트테스트https://i.ytimg.com/vi/Wr8egRRLU28/maxresdefault.com테스트테스트테스트테스트" +
                                             "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
                                     location = "테스트테스트테스트테스트테스트테스트테스트테스트테스트",
                                     category = PlaceCategoryUiModel.FOOD_TRUCK,
