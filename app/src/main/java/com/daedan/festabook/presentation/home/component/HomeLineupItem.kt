@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,7 +42,7 @@ fun HomeLineupItem(
     ) {
         // 날짜 + 배지 영역
         Column(
-            modifier = Modifier.padding(horizontal = 16.dp).width(IntrinsicSize.Max)
+            modifier = Modifier.padding(horizontal = 16.dp).width(IntrinsicSize.Max),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -79,10 +78,7 @@ fun HomeLineupItem(
                 color = FestabookColor.gray700,
                 modifier = Modifier.fillMaxWidth(),
             )
-
         }
-
-
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -98,7 +94,7 @@ fun HomeLineupItem(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
     }
 }

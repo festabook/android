@@ -52,12 +52,13 @@ fun HomeArtistItem(
 }
 
 private object HomeArtistItem {
-    val ArtistImage = RoundedCornerShape(
-        topStartPercent = 50,
-        topEndPercent = 50,
-        bottomEndPercent = 50,
-        bottomStartPercent = 5,
-    )
+    val ArtistImage =
+        RoundedCornerShape(
+            topStartPercent = 50,
+            topEndPercent = 50,
+            bottomEndPercent = 50,
+            bottomStartPercent = 5,
+        )
 }
 
 @Preview
