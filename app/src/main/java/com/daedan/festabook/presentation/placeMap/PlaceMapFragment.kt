@@ -3,23 +3,29 @@ package com.daedan.festabook.presentation.placeMap
 import android.content.Context
 import android.os.Bundle
 import android.view.View
-import android.widget.AdapterView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentPlaceMapBinding
 import com.daedan.festabook.di.fragment.FragmentKey
 import com.daedan.festabook.di.mapManager.MapManagerGraph
-import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.logger
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.toPx
+import com.daedan.festabook.presentation.placeMap.component.NaverMapContent
 import com.daedan.festabook.presentation.placeMap.logging.CurrentLocationChecked
 import com.daedan.festabook.presentation.placeMap.logging.PlaceFragmentEnter
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMarkerClick
@@ -31,8 +37,9 @@ import com.daedan.festabook.presentation.placeMap.placeCategory.PlaceCategoryFra
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.PlaceDetailPreviewFragment
 import com.daedan.festabook.presentation.placeMap.placeDetailPreview.PlaceDetailPreviewSecondaryFragment
 import com.daedan.festabook.presentation.placeMap.placeList.PlaceListFragment
-import com.daedan.festabook.presentation.placeMap.timeTagSpinner.adapter.TimeTagSpinnerAdapter
-import com.naver.maps.map.MapFragment
+import com.daedan.festabook.presentation.placeMap.timeTagSpinner.component.TimeTagMenu
+import com.daedan.festabook.presentation.theme.FestabookColor
+import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.NaverMap
 import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.util.FusedLocationSource
@@ -41,7 +48,6 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metro.createGraphFactory
-import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @ContributesIntoMap(
@@ -55,14 +61,10 @@ class PlaceMapFragment(
     placeDetailPreviewFragment: PlaceDetailPreviewFragment,
     placeCategoryFragment: PlaceCategoryFragment,
     placeDetailPreviewSecondaryFragment: PlaceDetailPreviewSecondaryFragment,
-    mapFragment: MapFragment,
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
 ) : BaseFragment<FragmentPlaceMapBinding>(),
-    OnMenuItemReClickListener,
-    OnTimeTagSelectedListener {
+    OnMenuItemReClickListener {
     override val layoutId: Int = R.layout.fragment_place_map
-
-    @Inject
-    override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
 
     private lateinit var naverMap: NaverMap
 
@@ -74,8 +76,6 @@ class PlaceMapFragment(
             placeDetailPreviewSecondaryFragment,
         )
     }
-    private val mapFragment by lazy { getIfExists(mapFragment) }
-
     private val locationSource by lazy {
         FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
     }
@@ -88,26 +88,8 @@ class PlaceMapFragment(
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        binding.spinnerSelectTimeTag.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View?,
-                    position: Int,
-                    id: Long,
-                ) {
-                    val item = parent.getItemAtPosition(position) as TimeTag
-
-                    onTimeTagSelected(item)
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>) {
-                    onNothingSelected()
-                }
-            }
         if (savedInstanceState == null) {
             childFragmentManager.commit {
-                addWithSimpleTag(R.id.fcv_map_container, mapFragment)
                 addWithSimpleTag(R.id.fcv_place_list_container, placeListFragment)
                 addWithSimpleTag(R.id.fcv_map_container, placeDetailPreviewFragment)
                 addWithSimpleTag(R.id.fcv_place_category_container, placeCategoryFragment)
@@ -116,10 +98,9 @@ class PlaceMapFragment(
                 hide(placeDetailPreviewSecondaryFragment)
             }
         }
-        lifecycleScope.launch {
-            setUpMapManager()
-            setUpObserver()
-        }
+
+        setupComposeView()
+
         binding.logger.log(
             PlaceFragmentEnter(
                 baseLogData = binding.logger.getBaseLogData(),
@@ -140,21 +121,54 @@ class PlaceMapFragment(
         mapManager?.moveToPosition()
     }
 
-    override fun onTimeTagSelected(item: TimeTag) {
-        viewModel.unselectPlace()
-        viewModel.onDaySelected(item)
-        binding.logger.log(
-            PlaceTimeTagSelected(
-                baseLogData = binding.logger.getBaseLogData(),
-                timeTagName = item.name,
-            ),
-        )
+    private fun setupComposeView() {
+        binding.cvPlaceMap.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                FestabookTheme {
+                    NaverMapContent(
+                        modifier = Modifier.fillMaxSize(),
+                        onMapDrag = { viewModel.onMapViewClick() },
+                        onMapReady = { setupMap(it) },
+                    ) {
+                        // TODO 흩어져있는 ComposeView 통합, 추후 PlaceMapScreen 사용
+                    }
+                }
+            }
+        }
+        binding.cvTimeTagSpinner.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                val timeTags by viewModel.timeTags.collectAsStateWithLifecycle()
+                val title by viewModel.selectedTimeTagFlow.collectAsStateWithLifecycle()
+                FestabookTheme {
+                    if (timeTags.isNotEmpty()) {
+                        TimeTagMenu(
+                            title = title.name,
+                            timeTags = timeTags,
+                            onTimeTagClick = { timeTag ->
+                                viewModel.onDaySelected(timeTag)
+                                binding.logger.log(
+                                    PlaceTimeTagSelected(
+                                        baseLogData = binding.logger.getBaseLogData(),
+                                        timeTagName = timeTag.name,
+                                    ),
+                                )
+                            },
+                            modifier =
+                                Modifier
+                                    .background(
+                                        FestabookColor.white,
+                                    ).padding(horizontal = 24.dp),
+                        )
+                    }
+                }
+            }
+        }
     }
 
-    override fun onNothingSelected() = Unit
-
-    private suspend fun setUpMapManager() {
-        naverMap = mapFragment.getMap()
+    private fun setupMap(map: NaverMap) {
+        naverMap = map
         naverMap.addOnLocationChangeListener {
             binding.logger.log(
                 CurrentLocationChecked(
@@ -164,27 +178,10 @@ class PlaceMapFragment(
         }
         (placeListFragment as? OnMapReadyCallback)?.onMapReady(naverMap)
         naverMap.locationSource = locationSource
-        binding.viewMapTouchEventIntercept.setOnMapDragListener {
-            viewModel.onMapViewClick()
-        }
+        setUpObserver()
     }
 
     private fun setUpObserver() {
-        viewModel.timeTags.observe(viewLifecycleOwner) { timeTags ->
-            // 타임태그가 없는 경우 메뉴 GONE
-            binding.layoutMapMenu.visibility =
-                if (timeTags.isNullOrEmpty()) View.GONE else View.VISIBLE
-
-            if (binding.spinnerSelectTimeTag.adapter == null) {
-                val adapter = TimeTagSpinnerAdapter(requireContext(), timeTags.toMutableList())
-                binding.spinnerSelectTimeTag.adapter = adapter
-            } else {
-                val adapter = binding.spinnerSelectTimeTag.adapter as TimeTagSpinnerAdapter
-                adapter.updateItems(timeTags)
-                adapter.notifyDataSetChanged()
-            }
-        }
-
         viewModel.placeGeographies.observe(viewLifecycleOwner) { placeGeographies ->
             when (placeGeographies) {
                 is PlaceListUiState.Loading -> Unit

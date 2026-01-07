@@ -9,7 +9,8 @@ import dev.zacsweers.metro.Provider
 import kotlin.reflect.KClass
 
 @ContributesBinding(AppScope::class)
-class MetroFragmentFactory @Inject constructor(
+@Inject
+class MetroFragmentFactory(
     private val creators: Map<KClass<out Fragment>, Provider<Fragment>>,
 ) : FragmentFactory() {
     override fun instantiate(

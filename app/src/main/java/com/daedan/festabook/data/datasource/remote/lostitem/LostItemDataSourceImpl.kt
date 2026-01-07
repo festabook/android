@@ -10,7 +10,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class LostItemDataSourceImpl @Inject constructor(
+@Inject
+class LostItemDataSourceImpl(
     private val lostItemService: LostItemService,
     private val festivalService: FestivalService,
 ) : LostItemDataSource {

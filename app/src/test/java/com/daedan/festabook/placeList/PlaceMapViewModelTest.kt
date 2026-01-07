@@ -39,7 +39,7 @@ class PlaceMapViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var placeListRepository: PlaceListRepository
     private lateinit var placeDetailRepository: PlaceDetailRepository
-    private lateinit var PlaceMapViewModel: PlaceMapViewModel
+    private lateinit var placeMapViewModel: PlaceMapViewModel
 
     @Before
     fun setup() {
@@ -61,7 +61,7 @@ class PlaceMapViewModelTest {
                     FAKE_TIME_TAG,
                 ),
             )
-        PlaceMapViewModel =
+        placeMapViewModel =
             PlaceMapViewModel(
                 placeListRepository,
                 placeDetailRepository,
@@ -77,13 +77,13 @@ class PlaceMapViewModelTest {
     fun `뷰모델을 생성했을 때 전체 타임 태그와 선택된 타임 태그를 불러올 수 있다`() =
         runTest {
             // given - when
-            PlaceMapViewModel =
+            placeMapViewModel =
                 PlaceMapViewModel(placeListRepository, placeDetailRepository)
             advanceUntilIdle()
 
             // then
-            val actualAllTimeTag = PlaceMapViewModel.timeTags.getOrAwaitValue()
-            val actualSelectedTimeTag = PlaceMapViewModel.selectedTimeTag.getOrAwaitValue()
+            val actualAllTimeTag = placeMapViewModel.timeTags.value
+            val actualSelectedTimeTag = placeMapViewModel.selectedTimeTag.getOrAwaitValue()
             assertThat(actualAllTimeTag).isEqualTo(listOf(FAKE_TIME_TAG))
             assertThat(actualSelectedTimeTag).isEqualTo(FAKE_TIME_TAG)
         }
@@ -97,12 +97,12 @@ class PlaceMapViewModelTest {
             } returns Result.success(emptyList())
 
             // when
-            PlaceMapViewModel = PlaceMapViewModel(placeListRepository, placeDetailRepository)
+            placeMapViewModel = PlaceMapViewModel(placeListRepository, placeDetailRepository)
             advanceUntilIdle()
 
             // then
-            val actualAllTimeTag = PlaceMapViewModel.timeTags.getOrAwaitValue()
-            val actualSelectedTimeTag = PlaceMapViewModel.selectedTimeTag.getOrAwaitValue()
+            val actualAllTimeTag = placeMapViewModel.timeTags.value
+            val actualSelectedTimeTag = placeMapViewModel.selectedTimeTag.getOrAwaitValue()
             assertThat(actualAllTimeTag).isEqualTo(emptyList<TimeTag>())
             assertThat(actualSelectedTimeTag).isEqualTo(TimeTag.EMPTY)
         }
@@ -117,12 +117,12 @@ class PlaceMapViewModelTest {
                 )
 
             // when
-            PlaceMapViewModel = PlaceMapViewModel(placeListRepository, placeDetailRepository)
+            placeMapViewModel = PlaceMapViewModel(placeListRepository, placeDetailRepository)
             advanceUntilIdle()
 
             // then
             val expected = FAKE_PLACE_GEOGRAPHIES.map { it.toUiModel() }
-            val actual = PlaceMapViewModel.placeGeographies.getOrAwaitValue()
+            val actual = placeMapViewModel.placeGeographies.getOrAwaitValue()
             coVerify { placeListRepository.getPlaceGeographies() }
             assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
         }
@@ -137,12 +137,12 @@ class PlaceMapViewModelTest {
                 )
 
             // when
-            PlaceMapViewModel = PlaceMapViewModel(placeListRepository, placeDetailRepository)
+            placeMapViewModel = PlaceMapViewModel(placeListRepository, placeDetailRepository)
             advanceUntilIdle()
 
             // then
             val expected = FAKE_ORGANIZATION_GEOGRAPHY.toUiModel()
-            val actual = PlaceMapViewModel.initialMapSetting.getOrAwaitValue()
+            val actual = placeMapViewModel.initialMapSetting.getOrAwaitValue()
             assertThat(actual).isEqualTo(PlaceListUiState.Success(expected))
         }
 
@@ -159,16 +159,16 @@ class PlaceMapViewModelTest {
             coEvery { placeListRepository.getPlaceGeographies() } returns Result.failure(exception)
 
             // when
-            PlaceMapViewModel = PlaceMapViewModel(placeListRepository, placeDetailRepository)
+            placeMapViewModel = PlaceMapViewModel(placeListRepository, placeDetailRepository)
             advanceUntilIdle()
 
             // then
             val expected2 =
                 PlaceListUiState.Success<InitialMapSettingUiModel>(FAKE_ORGANIZATION_GEOGRAPHY.toUiModel())
-            val actual2 = PlaceMapViewModel.initialMapSetting.getOrAwaitValue()
+            val actual2 = placeMapViewModel.initialMapSetting.getOrAwaitValue()
 
             val expected3 = PlaceListUiState.Error<PlaceUiModel>(exception)
-            val actual3 = PlaceMapViewModel.placeGeographies.getOrAwaitValue()
+            val actual3 = placeMapViewModel.placeGeographies.getOrAwaitValue()
 
             assertThat(actual2).isEqualTo(expected2)
             assertThat(actual3).isEqualTo(expected3)
@@ -184,14 +184,14 @@ class PlaceMapViewModelTest {
                 )
 
             // when
-            PlaceMapViewModel.selectPlace(1)
+            placeMapViewModel.selectPlace(1)
             advanceUntilIdle()
 
             // then
             coVerify { placeDetailRepository.getPlaceDetail(1) }
 
             val expected = SelectedPlaceUiState.Success(FAKE_PLACE_DETAIL.toUiModel())
-            val actual = PlaceMapViewModel.selectedPlace.getOrAwaitValue()
+            val actual = placeMapViewModel.selectedPlace.getOrAwaitValue()
             assertThat(actual).isEqualTo(expected)
         }
 
@@ -205,12 +205,12 @@ class PlaceMapViewModelTest {
                 )
 
             // when
-            PlaceMapViewModel.selectPlace(1)
+            placeMapViewModel.selectPlace(1)
             advanceUntilIdle()
 
             // then
             val expected = SelectedPlaceUiState.Success(FAKE_ETC_PLACE_DETAIL.toUiModel())
-            val actual = PlaceMapViewModel.selectedPlace.getOrAwaitValue()
+            val actual = placeMapViewModel.selectedPlace.getOrAwaitValue()
             assertThat(actual).isEqualTo(expected)
         }
 
@@ -222,16 +222,16 @@ class PlaceMapViewModelTest {
                 Result.success(
                     FAKE_PLACE_DETAIL,
                 )
-            PlaceMapViewModel.selectPlace(1)
+            placeMapViewModel.selectPlace(1)
             advanceUntilIdle()
 
             // when
-            PlaceMapViewModel.unselectPlace()
+            placeMapViewModel.unselectPlace()
             advanceUntilIdle()
 
             // then
             val expected = SelectedPlaceUiState.Empty
-            val actual = PlaceMapViewModel.selectedPlace.getOrAwaitValue()
+            val actual = placeMapViewModel.selectedPlace.getOrAwaitValue()
             assertThat(actual).isEqualTo(expected)
         }
 
@@ -241,11 +241,11 @@ class PlaceMapViewModelTest {
             // given
 
             // when
-            PlaceMapViewModel.onBackToInitialPositionClicked()
+            placeMapViewModel.onBackToInitialPositionClicked()
             advanceUntilIdle()
 
             // then
-            val actual = PlaceMapViewModel.backToInitialPositionClicked.getOrAwaitValue()
+            val actual = placeMapViewModel.backToInitialPositionClicked.getOrAwaitValue()
             assertThat(actual).isInstanceOf(Event::class.java)
         }
 
@@ -256,10 +256,10 @@ class PlaceMapViewModelTest {
             val isExceededMaxLength = true
 
             // when
-            PlaceMapViewModel.setIsExceededMaxLength(isExceededMaxLength)
+            placeMapViewModel.setIsExceededMaxLength(isExceededMaxLength)
 
             // then
-            val actual = PlaceMapViewModel.isExceededMaxLength.getOrAwaitValue()
+            val actual = placeMapViewModel.isExceededMaxLength.getOrAwaitValue()
             assertThat(actual).isEqualTo(isExceededMaxLength)
         }
 
@@ -270,10 +270,10 @@ class PlaceMapViewModelTest {
             val categories = listOf(PlaceCategoryUiModel.FOOD_TRUCK, PlaceCategoryUiModel.BOOTH)
 
             // when
-            PlaceMapViewModel.setSelectedCategories(categories)
+            placeMapViewModel.setSelectedCategories(categories)
 
             // then
-            val actual = PlaceMapViewModel.selectedCategories.getOrAwaitValue()
+            val actual = placeMapViewModel.selectedCategories.getOrAwaitValue()
             assertThat(actual).isEqualTo(categories)
         }
 
@@ -284,11 +284,11 @@ class PlaceMapViewModelTest {
             val expected = Unit
 
             // when
-            PlaceMapViewModel.onMapViewClick()
+            placeMapViewModel.onMapViewClick()
             advanceUntilIdle()
 
             // then
-            val actual = PlaceMapViewModel.onMapViewClick.getOrAwaitValue()
+            val actual = placeMapViewModel.onMapViewClick.getOrAwaitValue()
             assertThat(actual.peekContent()).isEqualTo(expected)
         }
 
@@ -300,15 +300,15 @@ class PlaceMapViewModelTest {
                 placeDetailRepository.getPlaceDetail(FAKE_PLACE_DETAIL.id)
             } returns Result.success(FAKE_PLACE_DETAIL)
             val expected = FAKE_PLACE_DETAIL.toUiModel()
-            PlaceMapViewModel.selectPlace(FAKE_PLACE_DETAIL.id)
+            placeMapViewModel.selectPlace(FAKE_PLACE_DETAIL.id)
             advanceUntilIdle()
 
             // when
-            PlaceMapViewModel.onExpandedStateReached()
+            placeMapViewModel.onExpandedStateReached()
             advanceUntilIdle()
 
             // then
-            val actual = PlaceMapViewModel.navigateToDetail.value
+            val actual = placeMapViewModel.navigateToDetail.value
             assertThat(actual).isEqualTo(expected)
         }
 
@@ -319,11 +319,11 @@ class PlaceMapViewModelTest {
             val expected = TimeTag(1, "테스트1")
 
             // when
-            PlaceMapViewModel.onDaySelected(expected)
+            placeMapViewModel.onDaySelected(expected)
             advanceUntilIdle()
 
             // then
-            val actual = PlaceMapViewModel.selectedTimeTag.getOrAwaitValue()
+            val actual = placeMapViewModel.selectedTimeTag.getOrAwaitValue()
             assertThat(actual).isEqualTo(expected)
         }
 }

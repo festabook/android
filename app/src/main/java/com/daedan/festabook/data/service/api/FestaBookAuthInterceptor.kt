@@ -9,7 +9,8 @@ import okhttp3.Response
 import timber.log.Timber
 
 @ContributesBinding(AppScope::class)
-class FestaBookAuthInterceptor @Inject constructor(
+@Inject
+class FestaBookAuthInterceptor(
     private val festivalLocalDataSource: FestivalLocalDataSource,
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {

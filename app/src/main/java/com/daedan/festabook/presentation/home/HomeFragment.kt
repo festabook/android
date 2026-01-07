@@ -22,11 +22,13 @@ import dev.zacsweers.metro.binding
 
 @ContributesIntoMap(scope = AppScope::class, binding = binding<Fragment>())
 @FragmentKey(HomeFragment::class)
-class HomeFragment @Inject constructor() : BaseFragment<FragmentHomeBinding>() {
+@Inject
+class HomeFragment(
+    private val centerItemMotionEnlarger: RecyclerView.OnScrollListener,
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
+) : BaseFragment<FragmentHomeBinding>() {
     override val layoutId: Int = R.layout.fragment_home
 
-    @Inject
-    override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: HomeViewModel by viewModels({ requireActivity() })
 
     override fun onCreateView(

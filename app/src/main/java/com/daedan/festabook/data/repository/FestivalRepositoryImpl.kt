@@ -15,7 +15,8 @@ import dev.zacsweers.metro.Inject
 import java.time.LocalDate
 
 @ContributesBinding(AppScope::class)
-class FestivalRepositoryImpl @Inject constructor(
+@Inject
+class FestivalRepositoryImpl(
     private val festivalDataSource: FestivalDataSource,
     private val festivalLocalDataSource: FestivalLocalDataSource,
     private val lineupDataSource: LineupDataSource,

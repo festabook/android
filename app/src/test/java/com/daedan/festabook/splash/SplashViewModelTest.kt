@@ -19,7 +19,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class SplashViewModelTest {
     @get:Rule
@@ -44,15 +43,15 @@ class SplashViewModelTest {
     @Test
     fun `뷰모델을 생성할 때 현재 접속한 대학교가 있다면 MainActivity로 이동한다`() =
         runTest {
-            //given
+            // given
             coEvery { festivalLocalDataSource.getFestivalId() } returns 1
             val expected = NavigationState.NavigateToMain(1)
 
-            //when
+            // when
             splashViewModel = SplashViewModel(festivalLocalDataSource)
             advanceUntilIdle()
 
-            //then
+            // then
             val actual = splashViewModel.navigationState.value
             assertThat(actual).isEqualTo(expected)
         }
@@ -60,15 +59,15 @@ class SplashViewModelTest {
     @Test
     fun `뷰모델을 생성할 때 현재 접속한 대학교가 없다면 ExploreActivity로 이동한다`() =
         runTest {
-            //given
+            // given
             coEvery { festivalLocalDataSource.getFestivalId() } returns null
             val expected = NavigationState.NavigateToExplore
 
-            //when
+            // when
             splashViewModel = SplashViewModel(festivalLocalDataSource)
             advanceUntilIdle()
 
-            //then
+            // then
             val actual = splashViewModel.navigationState.value
             assertThat(actual).isEqualTo(expected)
         }

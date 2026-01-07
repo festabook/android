@@ -3,6 +3,7 @@ package com.daedan.festabook.presentation.placeMap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
 import com.daedan.festabook.domain.model.TimeTag
@@ -21,11 +22,18 @@ import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(PlaceMapViewModel::class)
-class PlaceMapViewModel @Inject constructor(
+@Inject
+class PlaceMapViewModel(
     private val placeListRepository: PlaceListRepository,
     private val placeDetailRepository: PlaceDetailRepository,
 ) : ViewModel() {
@@ -38,20 +46,45 @@ class PlaceMapViewModel @Inject constructor(
     val placeGeographies: LiveData<PlaceListUiState<List<PlaceCoordinateUiModel>>>
         get() = _placeGeographies
 
-    private val _timeTags = MutableLiveData<List<TimeTag>>()
-    val timeTags: LiveData<List<TimeTag>> = _timeTags
+    private val _timeTags = MutableStateFlow<List<TimeTag>>(emptyList())
+    val timeTags: StateFlow<List<TimeTag>> = _timeTags.asStateFlow()
 
     private val _selectedTimeTag = MutableLiveData<TimeTag>()
     val selectedTimeTag: LiveData<TimeTag> = _selectedTimeTag
 
+    // 임시 StateFlow
+    val selectedTimeTagFlow: StateFlow<TimeTag> =
+        _selectedTimeTag.asFlow().stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = TimeTag.EMPTY,
+        )
     private val _selectedPlace: MutableLiveData<SelectedPlaceUiState> = MutableLiveData()
     val selectedPlace: LiveData<SelectedPlaceUiState> = _selectedPlace
+
+    val selectedPlaceFlow: StateFlow<SelectedPlaceUiState> =
+        _selectedPlace
+            .asFlow()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Lazily,
+                initialValue = SelectedPlaceUiState.Loading,
+            )
 
     private val _navigateToDetail = SingleLiveData<PlaceDetailUiModel>()
     val navigateToDetail: LiveData<PlaceDetailUiModel> = _navigateToDetail
 
     private val _isExceededMaxLength: MutableLiveData<Boolean> = MutableLiveData()
     val isExceededMaxLength: LiveData<Boolean> = _isExceededMaxLength
+
+    val isExceededMaxLengthFlow: StateFlow<Boolean> =
+        _isExceededMaxLength
+            .asFlow()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Lazily,
+                initialValue = false,
+            )
 
     private val _backToInitialPositionClicked: MutableLiveData<Event<Unit>> = MutableLiveData()
     val backToInitialPositionClicked: LiveData<Event<Unit>> = _backToInitialPositionClicked
@@ -61,6 +94,10 @@ class PlaceMapViewModel @Inject constructor(
 
     private val _onMapViewClick: MutableLiveData<Event<Unit>> = MutableLiveData()
     val onMapViewClick: LiveData<Event<Unit>> = _onMapViewClick
+
+    val onMapViewClickFlow: Flow<Event<Unit>> =
+        _onMapViewClick
+            .asFlow()
 
     init {
         loadOrganizationGeography()
@@ -77,16 +114,17 @@ class PlaceMapViewModel @Inject constructor(
                     _timeTags.value = emptyList()
                 }
 
-            //         기본 선택값
-            if (!timeTags.value.isNullOrEmpty()) {
-                _selectedTimeTag.value = _timeTags.value?.first()
+            // 기본 선택값
+            if (!timeTags.value.isEmpty()) {
+                _selectedTimeTag.value = _timeTags.value.first()
             } else {
-                _selectedTimeTag.value = TimeTag.Companion.EMPTY
+                _selectedTimeTag.value = TimeTag.EMPTY
             }
         }
     }
 
     fun onDaySelected(item: TimeTag) {
+        unselectPlace()
         _selectedTimeTag.value = item
     }
 

@@ -35,12 +35,10 @@ import timber.log.Timber
 @Inject
 class SettingFragment(
     private val notificationPermissionManagerFactory: NotificationPermissionManager.Factory,
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory,
 ) : BaseFragment<FragmentSettingBinding>(),
     NotificationPermissionRequester {
     override val layoutId: Int = R.layout.fragment_setting
-
-    @Inject
-    override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
     private val settingViewModel: SettingViewModel by viewModels({ requireActivity() })
     private val homeViewModel: HomeViewModel by viewModels({ requireActivity() })
 
@@ -90,8 +88,7 @@ class SettingFragment(
         binding.tvSettingAppVersionName.text = versionName
     }
 
-    override fun shouldShowPermissionRationale(permission: String): Boolean =
-        shouldShowRequestPermissionRationale(permission)
+    override fun shouldShowPermissionRationale(permission: String): Boolean = shouldShowRequestPermissionRationale(permission)
 
     private fun setupObservers() {
         settingViewModel.permissionCheckEvent.observe(viewLifecycleOwner) {

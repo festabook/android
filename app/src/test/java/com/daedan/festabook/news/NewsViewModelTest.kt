@@ -5,7 +5,6 @@ import com.daedan.festabook.domain.model.Lost
 import com.daedan.festabook.domain.repository.FAQRepository
 import com.daedan.festabook.domain.repository.LostItemRepository
 import com.daedan.festabook.domain.repository.NoticeRepository
-import com.daedan.festabook.getOrAwaitValue
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.faq.FAQUiState
 import com.daedan.festabook.presentation.news.faq.model.toUiModel
@@ -79,7 +78,7 @@ class NewsViewModelTest {
 
             // then
             val expected = FAKE_NOTICES.map { it.toUiModel() }
-            val actual = newsViewModel.noticeUiState
+            val actual = newsViewModel.noticeUiState.value
             coVerify { noticeRepository.fetchNotices() }
             assertThat(actual).isEqualTo(
                 NoticeUiState.Success(expected, DEFAULT_POSITION),
@@ -99,11 +98,11 @@ class NewsViewModelTest {
                 )
 
             // when
-            newsViewModel.loadAllLostItems()
+            newsViewModel.loadAllLostItems(LostUiState.InitialLoading)
             advanceUntilIdle()
 
             // then
-            val actual = newsViewModel.lostUiState.getOrAwaitValue()
+            val actual = newsViewModel.lostUiState.value
             coVerify { lostItemRepository.getLost() }
             assertThat(actual).isEqualTo(expected)
         }
@@ -121,7 +120,7 @@ class NewsViewModelTest {
 
             // then
             val expected = NoticeUiState.Error(exception)
-            val actual = newsViewModel.noticeUiState
+            val actual = newsViewModel.noticeUiState.value
             coVerify { noticeRepository.fetchNotices() }
             assertThat(actual).isEqualTo(expected)
         }
@@ -138,7 +137,7 @@ class NewsViewModelTest {
 
             // then
             val expected = FAKE_FAQS.map { it.toUiModel() }
-            val actual = newsViewModel.faqUiState
+            val actual = newsViewModel.faqUiState.value
             coVerify { faqRepository.getAllFAQ() }
             assertThat(actual).isEqualTo(FAQUiState.Success(expected))
         }
@@ -156,7 +155,7 @@ class NewsViewModelTest {
 
             // then
             val expected = FAQUiState.Error(exception)
-            val actual = newsViewModel.faqUiState
+            val actual = newsViewModel.faqUiState.value
             coVerify { faqRepository.getAllFAQ() }
             assertThat(actual).isEqualTo(expected)
         }
@@ -168,7 +167,7 @@ class NewsViewModelTest {
             val notice = FAKE_NOTICES.first().toUiModel()
 
             // when
-            newsViewModel.toggleNoticeExpanded(notice)
+            newsViewModel.toggleNotice(notice)
             advanceUntilIdle()
 
             // then
@@ -183,7 +182,7 @@ class NewsViewModelTest {
                         createdAt = LocalDateTime.of(2025, 1, 1, 0, 0, 0),
                     ),
                 )
-            val actual = newsViewModel.noticeUiState
+            val actual = newsViewModel.noticeUiState.value
             assertThat(actual).isEqualTo(NoticeUiState.Success(expected, DEFAULT_POSITION))
         }
 
@@ -194,27 +193,13 @@ class NewsViewModelTest {
             val faq = FAKE_FAQS.first().toUiModel()
 
             // when
-            newsViewModel.toggleFAQExpanded(faq)
+            newsViewModel.toggleFAQ(faq)
             advanceUntilIdle()
 
             // then
             val expected = listOf(faq.copy(isExpanded = true))
-            val actual = newsViewModel.faqUiState
+            val actual = newsViewModel.faqUiState.value
             assertThat(actual).isEqualTo(FAQUiState.Success(expected))
-        }
-
-    @Test
-    fun `분실물 아이템의 클릭 이벤트를 발생시킬 수 있다`() =
-        runTest {
-            // given
-            val lostItem: LostUiModel.Item = mockk()
-
-            // when
-            newsViewModel.lostItemClick(lostItem)
-
-            // then
-            val actual = newsViewModel.lostItemClickEvent.getOrAwaitValue()
-            assertThat(actual.peekContent()).isEqualTo(lostItem)
         }
 
     @Test
@@ -233,7 +218,7 @@ class NewsViewModelTest {
             advanceUntilIdle()
 
             // then
-            val actual = newsViewModel.noticeUiState
+            val actual = newsViewModel.noticeUiState.value
             coVerify { noticeRepository.fetchNotices() }
             assertThat(actual).isEqualTo(NoticeUiState.Success(expected, 1))
         }
@@ -253,10 +238,10 @@ class NewsViewModelTest {
                 )
 
             // when
-            newsViewModel.toggleLostGuideExpanded()
+            newsViewModel.toggleLostGuide()
 
             // then
-            val actual = newsViewModel.lostUiState.getOrAwaitValue()
+            val actual = newsViewModel.lostUiState.value
             assertThat(actual).isEqualTo(expected)
         }
 }

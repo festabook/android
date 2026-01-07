@@ -21,7 +21,6 @@ class FAQViewHolder(
     init {
         binding.root.setOnClickListener {
             faqItem?.let {
-                newsClickListener.onFAQClick(it)
             } ?: run {
                 Timber.w("${this::class.java.simpleName} : FAQ 아이템이 null입니다.")
             }

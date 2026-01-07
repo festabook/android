@@ -4,6 +4,7 @@
 
     <!--공통-->
     <string name="empty_state_message">현재 표시할 항목이 없습니다.</string>
+    <string name="format_date">%1$s ~ %2$s</string>
 
     <!--바텀 네비게이션 바-->
     <string name="menu_home_title">홈</string>
@@ -96,7 +97,10 @@
     <string name="iv_speaker">공지 아이콘</string>
     <string name="iv_pin">고정핀 아이콘</string>
     <string name="content_description_iv_location">위치 아이콘</string>
+    <string name="content_description_iv_category_marker">카테고리 아이콘</string>
     <string name="content_description_booth_image">부스 이미지</string>
+    <string name="content_description_iv_clock">운영 시간 아이콘</string>
+    <string name="content_description_iv_host">호스트 아이콘</string>
     <string name="place_detail_no_notice">공지사항이 없습니다</string>
     <string name="refresh">새로고침</string>
     <string name="content_description_floating_action_button">플로팅 지도 버튼</string>

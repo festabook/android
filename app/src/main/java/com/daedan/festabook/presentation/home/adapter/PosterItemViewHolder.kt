@@ -19,19 +19,19 @@ import io.getstream.photoview.dialog.PhotoViewDialog
 class PosterItemViewHolder(
     private val binding: ItemHomePosterBinding,
 ) : RecyclerView.ViewHolder(binding.root) {
-
     fun bind(url: String) {
-        val imageDialog = PhotoViewDialog.Builder(
-            context = binding.root.context,
-            images = listOf(url),
-        ) { imageView, url ->
-            imageView.load(url.convertImageUrl()) {
-                crossfade(true)
-            }
-        }
-            .withHiddenStatusBar(false)
-            .withTransitionFrom(binding.ivHomePoster)
-            .build()
+        val imageDialog =
+            PhotoViewDialog
+                .Builder(
+                    context = binding.root.context,
+                    images = listOf(url),
+                ) { imageView, url ->
+                    imageView.load(url.convertImageUrl()) {
+                        crossfade(true)
+                    }
+                }.withHiddenStatusBar(false)
+                .withTransitionFrom(binding.ivHomePoster)
+                .build()
 
         binding.ivHomePoster.loadImage(url) {
             transformations(RoundedCornersTransformation(20f))

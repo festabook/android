@@ -10,23 +10,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
-import com.daedan.festabook.presentation.common.component.PULL_OFFSET_LIMIT
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
 import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.notice.NoticeUiState
 import com.daedan.festabook.presentation.news.notice.NoticeUiState.Companion.DEFAULT_POSITION
 import com.daedan.festabook.presentation.news.notice.model.NoticeUiModel
+import com.daedan.festabook.presentation.theme.festabookSpacing
 import timber.log.Timber
-
-private const val PADDING: Int = 8
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,9 +36,11 @@ fun NoticeScreen(
     PullToRefreshContainer(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
-    ) { pullToRefreshState ->
+    ) { graphicsLayer ->
         when (uiState) {
-            NoticeUiState.InitialLoading -> LoadingStateScreen()
+            NoticeUiState.InitialLoading -> {
+                LoadingStateScreen()
+            }
 
             is NoticeUiState.Error -> {
                 LaunchedEffect(uiState) {
@@ -54,10 +52,7 @@ fun NoticeScreen(
                 NoticeContent(
                     notices = uiState.oldNotices,
                     onNoticeClick = onNoticeClick,
-                    modifier =
-                        modifier.graphicsLayer {
-                            translationY = pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
-                        },
+                    modifier = modifier.then(graphicsLayer),
                 )
             }
 
@@ -66,10 +61,7 @@ fun NoticeScreen(
                     notices = uiState.notices,
                     expandPosition = uiState.expandPosition,
                     onNoticeClick = onNoticeClick,
-                    modifier =
-                        modifier.graphicsLayer {
-                            translationY = pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
-                        },
+                    modifier = modifier.then(graphicsLayer),
                 )
             }
         }
@@ -94,8 +86,12 @@ private fun NoticeContent(
         LazyColumn(
             modifier = modifier,
             state = listState,
-            contentPadding = PaddingValues(top = PADDING.dp, bottom = PADDING.dp),
-            verticalArrangement = Arrangement.spacedBy(PADDING.dp),
+            contentPadding =
+                PaddingValues(
+                    top = festabookSpacing.paddingBody2,
+                    bottom = festabookSpacing.paddingBody2,
+                ),
+            verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
         ) {
             items(
                 items = notices,

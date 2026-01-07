@@ -7,7 +7,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class FcmDataSourceImpl @Inject constructor(
+@Inject
+class FcmDataSourceImpl constructor(
     private val prefs: SharedPreferences,
 ) : FcmDataSource {
     override fun saveFcmToken(token: String) {

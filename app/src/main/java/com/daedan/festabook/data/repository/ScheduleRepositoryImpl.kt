@@ -11,7 +11,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class ScheduleRepositoryImpl @Inject constructor(
+@Inject
+class ScheduleRepositoryImpl(
     private val scheduleDataSource: ScheduleDataSource,
 ) : ScheduleRepository {
     override suspend fun fetchAllScheduleDates(): Result<List<ScheduleDate>> {

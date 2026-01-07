@@ -16,24 +16,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
-import com.daedan.festabook.presentation.common.component.PULL_OFFSET_LIMIT
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
 import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.lost.LostUiState
 import com.daedan.festabook.presentation.news.lost.model.LostItemUiStatus
 import com.daedan.festabook.presentation.news.lost.model.LostUiModel
+import com.daedan.festabook.presentation.theme.festabookSpacing
 import timber.log.Timber
 
 private const val SPAN_COUNT: Int = 2
-private const val PADDING: Int = 8
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,10 +53,11 @@ fun LostItemScreen(
     PullToRefreshContainer(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
-        modifier = modifier,
-    ) { pullToRefreshState ->
+    ) { graphicsLayer ->
         when (lostUiState) {
-            LostUiState.InitialLoading -> LoadingStateScreen()
+            LostUiState.InitialLoading -> {
+                LoadingStateScreen()
+            }
 
             is LostUiState.Error -> {
                 LaunchedEffect(lostUiState) {
@@ -75,10 +73,7 @@ fun LostItemScreen(
                     modifier =
                         modifier
                             .fillMaxSize()
-                            .graphicsLayer {
-                                translationY =
-                                    pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
-                            },
+                            .then(graphicsLayer),
                 )
             }
 
@@ -90,10 +85,7 @@ fun LostItemScreen(
                     modifier =
                         modifier
                             .fillMaxSize()
-                            .graphicsLayer {
-                                translationY =
-                                    pullToRefreshState.distanceFraction * PULL_OFFSET_LIMIT
-                            },
+                            .then(graphicsLayer),
                 )
             }
         }
@@ -109,15 +101,19 @@ private fun LostItemContent(
 ) {
     val isLostItemEmpty = lostItems.none { it is LostUiModel.Item }
     if (isLostItemEmpty) {
-        EmptyStateScreen(modifier = modifier)
+        EmptyStateScreen()
     }
 
     LazyVerticalGrid(
         modifier = modifier,
         columns = GridCells.Fixed(SPAN_COUNT),
-        contentPadding = PaddingValues(top = PADDING.dp, bottom = PADDING.dp),
-        verticalArrangement = Arrangement.spacedBy(PADDING.dp),
-        horizontalArrangement = Arrangement.spacedBy(PADDING.dp),
+        contentPadding =
+            PaddingValues(
+                top = festabookSpacing.paddingBody2,
+                bottom = festabookSpacing.paddingBody2,
+            ),
+        verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
+        horizontalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
     ) {
         item(span = { GridItemSpan(SPAN_COUNT) }) {
             val guide = lostItems.firstOrNull() as? LostUiModel.Guide

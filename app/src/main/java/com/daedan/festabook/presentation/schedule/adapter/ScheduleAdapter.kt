@@ -3,7 +3,6 @@ package com.daedan.festabook.presentation.schedule.adapter
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import com.daedan.festabook.presentation.schedule.OnBookmarkCheckedListener
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiModel
 
 class ScheduleAdapter : ListAdapter<ScheduleEventUiModel, ScheduleItemViewHolder>(DIFF_UTIL) {

@@ -10,7 +10,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class PlaceDetailRepositoryImpl @Inject constructor(
+@Inject
+class PlaceDetailRepositoryImpl(
     private val placeDataSource: PlaceDataSource,
 ) : PlaceDetailRepository {
     override suspend fun getPlaceDetail(placeId: Long): Result<PlaceDetail> {

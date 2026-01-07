@@ -8,7 +8,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class FAQDataSourceImpl @Inject constructor(
+@Inject
+class FAQDataSourceImpl(
     private val faqService: FAQService,
 ) : FAQDataSource {
     override suspend fun fetchAllFAQs(): ApiResult<List<FAQResponse>> = ApiResult.toApiResult { faqService.fetchAllFAQs() }

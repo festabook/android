@@ -14,6 +14,4 @@ sealed interface PlaceListUiState<T> {
     data class Error<T>(
         val throwable: Throwable,
     ) : PlaceListUiState<T>
-
-    class Complete<T> : PlaceListUiState<T>
 }

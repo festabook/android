@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.serialization)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktlint)
     id("kotlin-kapt")
     id("kotlin-parcelize")
     id("com.google.gms.google-services")
@@ -147,6 +148,7 @@ android {
 }
 
 dependencies {
+    ktlintRuleset(libs.ktlint)
     implementation(libs.map.sdk)
     implementation(libs.play.services.location)
     implementation(libs.androidx.core.ktx)
@@ -192,4 +194,13 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.logging.interceptor)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.junit.jupiter.params)
+    testImplementation(libs.junit.platform.launcher)
+    testRuntimeOnly(libs.junit.vintage.engine)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
