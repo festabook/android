@@ -19,7 +19,10 @@ import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.ActivityMainBinding
 import com.daedan.festabook.di.appGraph
@@ -40,6 +43,7 @@ import com.daedan.festabook.presentation.setting.SettingFragment
 import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class MainActivity :
@@ -158,8 +162,15 @@ class MainActivity :
                 if (isDoublePress) finish() else showToast(getString(R.string.back_press_exit_message))
             }
         }
-        homeViewModel.navigateToScheduleEvent.observe(this) {
-            binding.bnvMenu.selectedItemId = R.id.item_menu_schedule
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                homeViewModel.navigateToScheduleEvent.collect {
+                    if (binding.bnvMenu.selectedItemId != R.id.item_menu_schedule) {
+                        binding.bnvMenu.selectedItemId = R.id.item_menu_schedule
+                    }
+                }
+            }
         }
 
         mainViewModel.isFirstVisit.observe(this) { isFirstVisit ->
@@ -215,19 +226,27 @@ class MainActivity :
     private fun onMenuItemClick() {
         binding.bnvMenu.setOnItemSelectedListener { icon ->
             when (icon.itemId) {
-                R.id.item_menu_home -> switchFragment(HomeFragment::class.java, TAG_HOME_FRAGMENT)
-                R.id.item_menu_schedule ->
+                R.id.item_menu_home -> {
+                    switchFragment(HomeFragment::class.java, TAG_HOME_FRAGMENT)
+                }
+
+                R.id.item_menu_schedule -> {
                     switchFragment(
                         ScheduleFragment::class.java,
                         TAG_SCHEDULE_FRAGMENT,
                     )
+                }
 
-                R.id.item_menu_news -> switchFragment(NewsFragment::class.java, TAG_NEWS_FRAGMENT)
-                R.id.item_menu_setting ->
+                R.id.item_menu_news -> {
+                    switchFragment(NewsFragment::class.java, TAG_NEWS_FRAGMENT)
+                }
+
+                R.id.item_menu_setting -> {
                     switchFragment(
                         SettingFragment::class.java,
                         TAG_SETTING_FRAGMENT,
                     )
+                }
             }
             true
         }
@@ -242,14 +261,22 @@ class MainActivity :
     private fun onMenuItemReClick() {
         binding.bnvMenu.setOnItemReselectedListener { icon ->
             when (icon.itemId) {
-                R.id.item_menu_home -> Unit
+                R.id.item_menu_home -> {
+                    Unit
+                }
+
                 R.id.item_menu_schedule -> {
                     val fragment = supportFragmentManager.findFragmentByTag(TAG_SCHEDULE_FRAGMENT)
                     if (fragment is OnMenuItemReClickListener) fragment.onMenuItemReClick()
                 }
 
-                R.id.item_menu_news -> Unit
-                R.id.item_menu_setting -> Unit
+                R.id.item_menu_news -> {
+                    Unit
+                }
+
+                R.id.item_menu_setting -> {
+                    Unit
+                }
             }
         }
     }

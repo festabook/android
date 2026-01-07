@@ -20,7 +20,6 @@ import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.showNotificationDeniedSnackbar
 import com.daedan.festabook.presentation.common.showSnackBar
 import com.daedan.festabook.presentation.home.HomeViewModel
-import com.daedan.festabook.presentation.home.adapter.FestivalUiState
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
@@ -109,25 +108,25 @@ class SettingFragment(
             binding.btnNoticeAllow.isEnabled = !loading
         }
 
-        homeViewModel.festivalUiState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is FestivalUiState.Error -> {
-                    showErrorSnackBar(state.throwable)
-                    Timber.w(
-                        state.throwable,
-                        "${this::class.simpleName}: ${state.throwable.message}",
-                    )
-                }
-
-                FestivalUiState.Loading -> {
-                    binding.tvSettingCurrentUniversityNotice.text = ""
-                }
-
-                is FestivalUiState.Success -> {
-                    binding.tvSettingCurrentUniversity.text = state.organization.universityName
-                }
-            }
-        }
+//        homeViewModel.festivalUiState.observe(viewLifecycleOwner) { state ->
+//            when (state) {
+//                is FestivalUiState.Error -> {
+//                    showErrorSnackBar(state.throwable)
+//                    Timber.w(
+//                        state.throwable,
+//                        "${this::class.simpleName}: ${state.throwable.message}",
+//                    )
+//                }
+//
+//                FestivalUiState.Loading -> {
+//                    binding.tvSettingCurrentUniversityNotice.text = ""
+//                }
+//
+//                is FestivalUiState.Success -> {
+//                    binding.tvSettingCurrentUniversity.text = state.organization.universityName
+//                }
+//            }
+//        }
     }
 
     private fun setupServicePolicyClickListener() {
