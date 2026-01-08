@@ -2,13 +2,20 @@ package com.daedan.festabook.presentation.setting
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.BuildConfig
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.FragmentSettingBinding
@@ -16,10 +23,12 @@ import com.daedan.festabook.di.fragment.FragmentKey
 import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.NotificationPermissionRequester
 import com.daedan.festabook.presentation.common.BaseFragment
+import com.daedan.festabook.presentation.common.component.ObserveAsEvents
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.showNotificationDeniedSnackbar
 import com.daedan.festabook.presentation.common.showSnackBar
 import com.daedan.festabook.presentation.home.HomeViewModel
+import com.daedan.festabook.presentation.setting.component.SettingScreen
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
@@ -58,7 +67,7 @@ class SettingFragment(
                 onPermissionGranted()
             } else {
                 Timber.d("Notification permission denied")
-                showNotificationDeniedSnackbar(binding.root, requireContext())
+                showNotificationDeniedSnackbar(view!!, requireContext())
                 onPermissionDenied()
             }
         }
@@ -69,87 +78,60 @@ class SettingFragment(
 
     override fun onPermissionDenied() = Unit
 
-    override fun onViewCreated(
-        view: View,
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ) {
-        super.onViewCreated(view, savedInstanceState)
-        setupBindings()
+    ): View =
+        ComposeView(requireContext()).apply {
+            super.onCreateView(inflater, container, savedInstanceState)
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                val festival by homeViewModel.festivalUiState.collectAsStateWithLifecycle()
+                val isUniversitySubscribed by settingViewModel.isAllowed.collectAsStateWithLifecycle()
+                val isSubscribedLoading by settingViewModel.isLoading.collectAsStateWithLifecycle()
+                val context = LocalContext.current
 
-        setupNoticeAllowButtonClickListener()
-        setupServicePolicyClickListener()
-        setupContactUsButtonClickListener()
-        setupObservers()
-    }
+                ObserveAsEvents(flow = settingViewModel.permissionCheckEvent) {
+                    notificationPermissionManager.requestNotificationPermission(context)
+                }
 
-    private fun setupBindings() {
-        val versionName = BuildConfig.VERSION_NAME
-        binding.tvSettingAppVersionName.text = versionName
-    }
+                ObserveAsEvents(flow = settingViewModel.successFlow) {
+                    requireActivity().showSnackBar(getString(R.string.setting_notice_enabled))
+                }
+
+                ObserveAsEvents(flow = settingViewModel.error) {
+                    showErrorSnackBar(it)
+                }
+
+                SettingScreen(
+                    festivalUiState = festival,
+                    isUniversitySubscribed = isUniversitySubscribed,
+                    appVersion = BuildConfig.VERSION_NAME,
+                    isSubscribeEnabled = !isSubscribedLoading,
+                    onSubscribeClick = {
+                        settingViewModel.notificationAllowClick()
+                    },
+                    onPolicyClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, POLICY_URL.toUri())
+                        startActivity(intent)
+                    },
+                    onContactUsClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, CONTACT_US_URL.toUri())
+                        startActivity(intent)
+                    },
+                    onError = {
+                        showErrorSnackBar(it.throwable)
+                        Timber.w(
+                            it.throwable,
+                            "${this::class.simpleName}: ${it.throwable.message}",
+                        )
+                    },
+                )
+            }
+        }
 
     override fun shouldShowPermissionRationale(permission: String): Boolean = shouldShowRequestPermissionRationale(permission)
-
-    private fun setupObservers() {
-        settingViewModel.permissionCheckEvent.observe(viewLifecycleOwner) {
-            notificationPermissionManager.requestNotificationPermission(
-                requireContext(),
-            )
-        }
-        settingViewModel.isAllowed.observe(viewLifecycleOwner) {
-            binding.btnNoticeAllow.isChecked = it
-        }
-        settingViewModel.success.observe(viewLifecycleOwner) {
-            requireActivity().showSnackBar(getString(R.string.setting_notice_enabled))
-        }
-        settingViewModel.error.observe(viewLifecycleOwner) { throwable ->
-            showErrorSnackBar(throwable)
-        }
-        settingViewModel.isLoading.observe(viewLifecycleOwner) { loading ->
-            binding.btnNoticeAllow.isEnabled = !loading
-        }
-
-//        homeViewModel.festivalUiState.observe(viewLifecycleOwner) { state ->
-//            when (state) {
-//                is FestivalUiState.Error -> {
-//                    showErrorSnackBar(state.throwable)
-//                    Timber.w(
-//                        state.throwable,
-//                        "${this::class.simpleName}: ${state.throwable.message}",
-//                    )
-//                }
-//
-//                FestivalUiState.Loading -> {
-//                    binding.tvSettingCurrentUniversityNotice.text = ""
-//                }
-//
-//                is FestivalUiState.Success -> {
-//                    binding.tvSettingCurrentUniversity.text = state.organization.universityName
-//                }
-//            }
-//        }
-    }
-
-    private fun setupServicePolicyClickListener() {
-        binding.tvSettingServicePolicy.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, POLICY_URL.toUri())
-            startActivity(intent)
-        }
-    }
-
-    private fun setupContactUsButtonClickListener() {
-        binding.tvSettingContactUs.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, CONTACT_US_URL.toUri())
-            startActivity(intent)
-        }
-    }
-
-    private fun setupNoticeAllowButtonClickListener() {
-        binding.btnNoticeAllow.setOnClickListener {
-            // 기본적으로 클릭했을 때 checked되는 기능 무효화
-            binding.btnNoticeAllow.isChecked = !binding.btnNoticeAllow.isChecked
-            settingViewModel.notificationAllowClick()
-        }
-    }
 
     companion object {
         private const val POLICY_URL: String =
