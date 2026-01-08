@@ -1,9 +1,11 @@
 package com.daedan.festabook.presentation.setting.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
@@ -15,9 +17,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,21 +34,27 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
-import com.daedan.festabook.presentation.common.component.Header
+import com.daedan.festabook.domain.model.Festival
+import com.daedan.festabook.domain.model.Organization
+import com.daedan.festabook.presentation.common.component.FestabookTopAppBar
+import com.daedan.festabook.presentation.home.adapter.FestivalUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.FestabookTypography
 import com.daedan.festabook.presentation.theme.festabookSpacing
+import java.time.LocalDate
 
 @Composable
 fun SettingScreen(
-    universityName: String,
+    festivalUiState: FestivalUiState,
     isUniversitySubscribed: Boolean,
     appVersion: String,
+    isSubscribeEnabled: Boolean,
     modifier: Modifier = Modifier,
     onSubscribeClick: (Boolean) -> Unit = {},
     onPolicyClick: () -> Unit = {},
     onContactUsClick: () -> Unit = {},
+    onError: (FestivalUiState.Error) -> Unit = {},
 ) {
     val windowInfo = LocalWindowInfo.current
     val density = LocalDensity.current
@@ -52,10 +62,18 @@ fun SettingScreen(
         with(density) {
             windowInfo.containerSize.width.toDp()
         }
+    val currentOnError by rememberUpdatedState(onError)
+
+    LaunchedEffect(festivalUiState) {
+        when (festivalUiState) {
+            is FestivalUiState.Error -> currentOnError(festivalUiState)
+            else -> Unit
+        }
+    }
 
     Scaffold(
         topBar = {
-            Header(
+            FestabookTopAppBar(
                 title = stringResource(R.string.setting_title),
             )
         },
@@ -64,14 +82,23 @@ fun SettingScreen(
         Column(
             modifier =
                 Modifier
+                    .fillMaxSize()
+                    .background(color = FestabookColor.white)
                     .padding(horizontal = festabookSpacing.paddingScreenGutter)
                     .padding(innerPadding),
         ) {
-            SubscriptionContent(
-                universityName = universityName,
-                isUniversitySubscribed = isUniversitySubscribed,
-                onSubscribeClick = onSubscribeClick,
-            )
+            when (festivalUiState) {
+                is FestivalUiState.Success -> {
+                    SubscriptionContent(
+                        universityName = festivalUiState.organization.universityName,
+                        isUniversitySubscribed = isUniversitySubscribed,
+                        onSubscribeClick = onSubscribeClick,
+                        isSubscribeEnabled = isSubscribeEnabled,
+                    )
+                }
+
+                else -> Unit
+            }
 
             HorizontalDivider(
                 modifier =
@@ -86,6 +113,7 @@ fun SettingScreen(
                 appVersion = appVersion,
                 onPolicyClick = onPolicyClick,
                 onContactUsClick = onContactUsClick,
+                modifier = Modifier.background(color = FestabookColor.white),
             )
         }
     }
@@ -95,6 +123,7 @@ fun SettingScreen(
 private fun SubscriptionContent(
     universityName: String,
     isUniversitySubscribed: Boolean,
+    isSubscribeEnabled: Boolean,
     onSubscribeClick: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -134,6 +163,7 @@ private fun SubscriptionContent(
             }
 
             Switch(
+                enabled = isSubscribeEnabled,
                 modifier = Modifier.wrapContentSize(),
                 checked = isUniversitySubscribed,
                 onCheckedChange = onSubscribeClick,
@@ -141,8 +171,8 @@ private fun SubscriptionContent(
                     SwitchDefaults.colors().copy(
                         checkedBorderColor = Color.Transparent,
                         uncheckedBorderColor = Color.Transparent,
-                        disabledCheckedBorderColor = Color.Transparent,
-                        disabledUncheckedBorderColor = Color.Transparent,
+                        disabledCheckedTrackColor = FestabookColor.black,
+                        disabledUncheckedTrackColor = FestabookColor.gray200,
                         checkedTrackColor = FestabookColor.black,
                         uncheckedTrackColor = FestabookColor.gray200,
                     ),
@@ -249,10 +279,24 @@ private fun SettingScreenPreview() {
     FestabookTheme {
         var isSubscribed by remember { mutableStateOf(false) }
         SettingScreen(
-            universityName = "성균관대학교 인문사회과학철학문학자연캠퍼스 인문사회과학철학문학자연캠퍼스",
+            festivalUiState =
+                FestivalUiState.Success(
+                    Organization(
+                        id = 1,
+                        universityName = "성균관대학교 인문사회과학철학문학자연캠퍼스 인문사회과학철학문학자연캠퍼스",
+                        festival =
+                            Festival(
+                                festivalName = "성균관대학교 축제축제축제축제축제축제축제축제축제축제축제축제",
+                                festivalImages = listOf(),
+                                startDate = LocalDate.of(2026, 1, 1),
+                                endDate = LocalDate.of(2026, 2, 1),
+                            ),
+                    ),
+                ),
             isUniversitySubscribed = isSubscribed,
             onSubscribeClick = { isSubscribed = !isSubscribed },
             appVersion = "v1.0.0",
+            isSubscribeEnabled = true,
         )
     }
 }
