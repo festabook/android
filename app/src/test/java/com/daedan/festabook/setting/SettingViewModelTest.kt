@@ -2,7 +2,6 @@ package com.daedan.festabook.setting
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.domain.repository.FestivalNotificationRepository
-import com.daedan.festabook.getOrAwaitValue
 import com.daedan.festabook.presentation.setting.SettingViewModel
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -56,7 +55,7 @@ class SettingViewModelTest {
             advanceUntilIdle()
 
             // then
-            val actual = settingViewModel.permissionCheckEvent.value
+            val actual = settingViewModel.permissionCheckEvent.replayCache.first()
             assertThat(actual).isEqualTo(expected)
         }
 
@@ -72,7 +71,7 @@ class SettingViewModelTest {
             advanceUntilIdle()
 
             // then
-            val result = settingViewModel.isAllowed.getOrAwaitValue()
+            val result = settingViewModel.isAllowed.value
             coVerify { festivalNotificationRepository.setFestivalNotificationIsAllow(false) }
             coVerify { festivalNotificationRepository.deleteFestivalNotification() }
             assertThat(result).isFalse()
@@ -83,7 +82,10 @@ class SettingViewModelTest {
         runTest {
             // given
             coEvery { festivalNotificationRepository.getFestivalNotificationIsAllow() } returns true
-            coEvery { festivalNotificationRepository.deleteFestivalNotification() } returns Result.failure(Throwable())
+            coEvery { festivalNotificationRepository.deleteFestivalNotification() } returns
+                Result.failure(
+                    Throwable(),
+                )
 
             // when
             settingViewModel = SettingViewModel(festivalNotificationRepository)
@@ -91,7 +93,7 @@ class SettingViewModelTest {
             advanceUntilIdle()
 
             // then
-            val result = settingViewModel.isAllowed.getOrAwaitValue()
+            val result = settingViewModel.isAllowed.value
             coVerify { festivalNotificationRepository.setFestivalNotificationIsAllow(true) }
             assertThat(result).isTrue()
         }
@@ -100,14 +102,17 @@ class SettingViewModelTest {
     fun `알림을 허용했을 때 서버에 알림 정보 삭제에 실패하면 이전 상태로 원복한다`() =
         runTest {
             // given
-            coEvery { festivalNotificationRepository.saveFestivalNotification() } returns Result.failure(Throwable())
+            coEvery { festivalNotificationRepository.saveFestivalNotification() } returns
+                Result.failure(
+                    Throwable(),
+                )
 
             // when
             settingViewModel.saveNotificationId()
             advanceUntilIdle()
 
             // then
-            val result = settingViewModel.isAllowed.getOrAwaitValue()
+            val result = settingViewModel.isAllowed.value
             coVerify { festivalNotificationRepository.setFestivalNotificationIsAllow(false) }
             assertThat(result).isFalse()
         }
