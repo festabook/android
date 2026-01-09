@@ -9,15 +9,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import coil3.ImageLoader
-import coil3.asImage
+import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import com.daedan.festabook.R
@@ -99,10 +97,7 @@ class PlaceListFragment(
                         bottomSheetState = bottomSheetState,
                         isExceedMaxLength = isExceedMaxLength,
                         onPlaceLoadFinish = { places ->
-                            preloadImages(
-                                requireContext(),
-                                places,
-                            )
+                            preloadImages(requireContext(), places)
                         },
                         onPlaceLoad = {
                             viewModel.selectedTimeTagFlow.collect {
@@ -194,14 +189,8 @@ class PlaceListFragment(
         places: List<PlaceUiModel?>,
         maxSize: Int = 20,
     ) {
-        val imageLoader = ImageLoader(context)
+        val imageLoader = context.imageLoader
         val deferredList = mutableListOf<Deferred<ImageResult?>>()
-        val defaultImage =
-            ContextCompat
-                .getDrawable(
-                    requireContext(),
-                    R.drawable.img_fallback,
-                )?.asImage()
 
         lifecycleScope.launch(Dispatchers.IO) {
             places
@@ -214,18 +203,14 @@ class PlaceListFragment(
                                 ImageRequest
                                     .Builder(context)
                                     .data(place.imageUrl)
-                                    .error {
-                                        defaultImage
-                                    }.fallback {
-                                        defaultImage
-                                    }.build()
+                                    .build()
 
                             runCatching {
                                 withTimeout(2000) {
                                     imageLoader.execute(request)
                                 }
                             }.onFailure {
-                                imageLoader.shutdown()
+                                Timber.d("preload 실패")
                             }.getOrNull()
                         }
                     deferredList.add(deferred)
