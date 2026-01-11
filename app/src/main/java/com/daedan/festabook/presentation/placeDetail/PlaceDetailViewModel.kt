@@ -18,7 +18,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class PlaceDetailViewModel @AssistedInject constructor(
+@AssistedInject
+class PlaceDetailViewModel(
     private val placeDetailRepository: PlaceDetailRepository,
     @Assisted private val place: PlaceUiModel?,
     @Assisted private val receivedPlaceDetail: PlaceDetailUiModel?,
