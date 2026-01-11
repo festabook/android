@@ -25,9 +25,7 @@ class SettingViewModel(
     private val festivalNotificationRepository: FestivalNotificationRepository,
 ) : ViewModel() {
     private val _permissionCheckEvent: MutableSharedFlow<Unit> =
-        MutableSharedFlow(
-            replay = 1,
-        )
+        MutableSharedFlow()
     val permissionCheckEvent: SharedFlow<Unit> = _permissionCheckEvent.asSharedFlow()
 
     private val _isAllowed =
@@ -37,24 +35,22 @@ class SettingViewModel(
     val isAllowed: StateFlow<Boolean> = _isAllowed.asStateFlow()
 
     private val _error: MutableSharedFlow<Throwable> =
-        MutableSharedFlow(
-            replay = 1,
-        )
+        MutableSharedFlow()
     val error: SharedFlow<Throwable> = _error.asSharedFlow()
 
     private val _isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _success: MutableSharedFlow<Unit> =
-        MutableSharedFlow(
-            replay = 1,
-        )
+        MutableSharedFlow()
     val success: LiveData<Unit> = _success.asLiveData()
     val successFlow = _success.asSharedFlow()
 
     fun notificationAllowClick() {
         if (!_isAllowed.value) {
-            _permissionCheckEvent.tryEmit(Unit)
+            viewModelScope.launch {
+                _permissionCheckEvent.emit(Unit)
+            }
         } else {
             deleteNotificationId()
         }
@@ -75,15 +71,16 @@ class SettingViewModel(
         // Optimistic UI 적용, 요청 실패 시 원복
         saveNotificationIsAllowed(true)
         updateNotificationIsAllowed(true)
-        _success.tryEmit(Unit)
 
         viewModelScope.launch {
+            _success.emit(Unit)
+
             val result =
                 festivalNotificationRepository.saveFestivalNotification()
 
             result
                 .onFailure {
-                    _error.tryEmit(it)
+                    _error.emit(it)
                     saveNotificationIsAllowed(false)
                     updateNotificationIsAllowed(false)
                     Timber.e(it, "${this::class.java.simpleName} NotificationId 저장 실패")
@@ -107,7 +104,7 @@ class SettingViewModel(
 
             result
                 .onFailure {
-                    _error.tryEmit(it)
+                    _error.emit(it)
                     saveNotificationIsAllowed(true)
                     updateNotificationIsAllowed(true)
                     Timber.e(it, "${this::class.java.simpleName} NotificationId 삭제 실패")
