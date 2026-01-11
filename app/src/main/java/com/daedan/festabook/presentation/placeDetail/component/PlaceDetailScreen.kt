@@ -186,8 +186,8 @@ private fun PlaceDetailImageContent(
             modifier =
                 Modifier
                     .padding(
-                        start = festabookSpacing.paddingScreenGutter,
                         top = festabookSpacing.paddingBody4,
+                        start = festabookSpacing.paddingScreenGutter,
                     ).zIndex(1f),
             onClick = onBackToPreviousClick,
         )
@@ -338,7 +338,6 @@ private fun BackToPreviousButton(
     Image(
         modifier =
             modifier
-                .padding(top = festabookSpacing.paddingBody4)
                 .size(30.dp)
                 .clickable { onClick() },
         painter = painterResource(id = R.drawable.btn_back_to_previous),
