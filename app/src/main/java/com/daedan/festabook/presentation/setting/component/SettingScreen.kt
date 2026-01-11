@@ -115,7 +115,6 @@ fun SettingScreen(
                 appVersion = appVersion,
                 onPolicyClick = onPolicyClick,
                 onContactUsClick = onContactUsClick,
-                modifier = Modifier.background(color = FestabookColor.white),
             )
         }
     }
