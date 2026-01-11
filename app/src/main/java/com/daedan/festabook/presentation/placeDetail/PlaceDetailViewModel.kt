@@ -39,17 +39,12 @@ class PlaceDetailViewModel(
     val placeDetail: StateFlow<PlaceDetailUiState> = _placeDetail
 
     init {
-        if (receivedPlaceDetail != null) {
+        receivedPlaceDetail?.let {
             val placeDetailUiModel =
-                if (receivedPlaceDetail.images.isEmpty()) {
-                    receivedPlaceDetail.copy(images = listOf(ImageUiModel()))
-                } else {
-                    receivedPlaceDetail
-                }
+                if (it.images.isEmpty()) it.copy(images = listOf(ImageUiModel())) else it
             _placeDetail.value = PlaceDetailUiState.Success(placeDetailUiModel)
-        } else if (place != null) {
-            loadPlaceDetail(place.id)
         }
+        place?.let { loadPlaceDetail(it.id) }
     }
 
     fun loadPlaceDetail(placeId: Long) {
