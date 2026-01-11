@@ -67,7 +67,7 @@ class SettingFragment(
                 onPermissionGranted()
             } else {
                 Timber.d("Notification permission denied")
-                showNotificationDeniedSnackbar(view!!, requireContext())
+                showNotificationDeniedSnackbar(requireView(), requireContext())
                 onPermissionDenied()
             }
         }
