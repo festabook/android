@@ -59,9 +59,12 @@ fun SettingScreen(
     val windowInfo = LocalWindowInfo.current
     val density = LocalDensity.current
     val screenWidthDp =
-        with(density) {
-            windowInfo.containerSize.width.toDp()
+        remember {
+            with(density) {
+                windowInfo.containerSize.width.toDp()
+            }
         }
+
     val currentOnError by rememberUpdatedState(onError)
 
     LaunchedEffect(festivalUiState) {
@@ -188,13 +191,6 @@ private fun AppInfoContent(
     onContactUsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val windowInfo = LocalWindowInfo.current
-    val density = LocalDensity.current
-    val screenWidthDp =
-        with(density) {
-            windowInfo.containerSize.width.toDp()
-        }
-
     Column(modifier = modifier) {
         Text(
             text = stringResource(R.string.setting_app_info_title),
@@ -202,74 +198,84 @@ private fun AppInfoContent(
             style = FestabookTypography.bodyMedium,
         )
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = festabookSpacing.paddingBody3),
-        ) {
-            Text(
-                text = stringResource(R.string.setting_app_version),
-                style = FestabookTypography.titleMedium,
-            )
+        AppVersionInfo(
+            appVersion = appVersion,
+        )
 
-            Text(
-                text = appVersion,
-                style = FestabookTypography.bodyMedium,
-            )
+        AppInfoButton(
+            text = stringResource(R.string.setting_service_policy),
+            onClick = onPolicyClick,
+        )
+        AppInfoButton(
+            text = stringResource(R.string.setting_contact_us),
+            onClick = onContactUsClick,
+        )
+    }
+}
+
+@Composable
+private fun AppVersionInfo(
+    appVersion: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(vertical = festabookSpacing.paddingBody3),
+    ) {
+        Text(
+            text = stringResource(R.string.setting_app_version),
+            style = FestabookTypography.titleMedium,
+        )
+
+        Text(
+            text = appVersion,
+            style = FestabookTypography.bodyMedium,
+        )
+    }
+}
+
+@Composable
+private fun AppInfoButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
+    val screenWidthDp =
+        remember {
+            with(density) {
+                windowInfo.containerSize.width.toDp()
+            }
         }
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier =
-                Modifier
-                    .requiredWidth(screenWidthDp)
-                    .clickable {
-                        onPolicyClick()
-                    }.padding(
-                        horizontal = festabookSpacing.paddingScreenGutter,
-                        vertical = festabookSpacing.paddingBody3,
-                    ),
-        ) {
-            Text(
-                text = stringResource(R.string.setting_service_policy),
-                style = FestabookTypography.titleMedium,
-            )
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+            modifier
+                .requiredWidth(screenWidthDp)
+                .clickable {
+                    onClick()
+                }.padding(
+                    horizontal = festabookSpacing.paddingScreenGutter,
+                    vertical = festabookSpacing.paddingBody3,
+                ),
+    ) {
+        Text(
+            text = text,
+            style = FestabookTypography.titleMedium,
+        )
 
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_forward_right),
-                contentDescription = stringResource(R.string.move),
-                tint = Color.Unspecified,
-            )
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier =
-                Modifier
-                    .requiredWidth(screenWidthDp)
-                    .clickable {
-                        onContactUsClick()
-                    }.padding(
-                        horizontal = festabookSpacing.paddingScreenGutter,
-                        vertical = festabookSpacing.paddingBody3,
-                    ),
-        ) {
-            Text(
-                text = stringResource(R.string.setting_contact_us),
-                style = FestabookTypography.titleMedium,
-            )
-
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_forward_right),
-                contentDescription = stringResource(R.string.move),
-                tint = Color.Unspecified,
-            )
-        }
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_forward_right),
+            contentDescription = stringResource(R.string.move),
+            tint = Color.Unspecified,
+        )
     }
 }
 
