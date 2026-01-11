@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.daedan.festabook.R
 import com.daedan.festabook.domain.model.Festival
 import com.daedan.festabook.domain.model.Organization
+import com.daedan.festabook.presentation.common.component.FestabookSwitch
 import com.daedan.festabook.presentation.common.component.FestabookTopAppBar
 import com.daedan.festabook.presentation.home.adapter.FestivalUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
@@ -165,20 +164,10 @@ private fun SubscriptionContent(
                 )
             }
 
-            Switch(
+            FestabookSwitch(
                 enabled = isSubscribeEnabled,
-                modifier = Modifier.wrapContentSize(),
                 checked = isUniversitySubscribed,
                 onCheckedChange = onSubscribeClick,
-                colors =
-                    SwitchDefaults.colors().copy(
-                        checkedBorderColor = Color.Transparent,
-                        uncheckedBorderColor = Color.Transparent,
-                        disabledCheckedTrackColor = FestabookColor.black,
-                        disabledUncheckedTrackColor = FestabookColor.gray200,
-                        checkedTrackColor = FestabookColor.black,
-                        uncheckedTrackColor = FestabookColor.gray200,
-                    ),
             )
         }
     }
