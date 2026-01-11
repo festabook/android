@@ -342,7 +342,7 @@ private fun BackToPreviousButton(
                 .size(30.dp)
                 .clickable { onClick() },
         painter = painterResource(id = R.drawable.btn_back_to_previous),
-        contentDescription = null,
+        contentDescription = stringResource(R.string.content_description_exit_place_detail),
     )
 }
 
