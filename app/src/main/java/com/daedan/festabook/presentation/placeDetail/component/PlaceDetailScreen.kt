@@ -28,10 +28,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,10 +75,16 @@ fun PlaceDetailScreen(
 
     when (uiState) {
         is PlaceDetailUiState.Success -> {
+            val pagerState =
+                rememberPagerState(
+                    initialPage = currentPage,
+                    pageCount = { uiState.placeDetail.images.size },
+                )
+
             PlaceDetailImageDialog(
                 isDialogOpen = isDialogOpen,
                 onDismissRequest = { isDialogOpen = false },
-                initialPage = currentPage,
+                pagerState = pagerState,
                 images = uiState.placeDetail.images,
             )
 
@@ -87,7 +95,7 @@ fun PlaceDetailScreen(
                 PlaceDetailImageContent(
                     images = uiState.placeDetail.images,
                     onBackToPreviousClick = onBackToPreviousClick,
-                    onPageUpdate = { currentPage = it },
+                    onPageUpdate = { pagerState.scrollToPage(it) },
                     modifier =
                         Modifier
                             .clickable { isDialogOpen = true }
@@ -111,17 +119,11 @@ fun PlaceDetailScreen(
 @Composable
 private fun PlaceDetailImageDialog(
     isDialogOpen: Boolean,
-    initialPage: Int,
+    pagerState: PagerState,
     images: List<ImageUiModel>,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val pagerState =
-        rememberPagerState(
-            initialPage = initialPage,
-            pageCount = { images.size },
-        )
-
     if (isDialogOpen) {
         Dialog(
             onDismissRequest = onDismissRequest,
@@ -174,9 +176,13 @@ private fun PlaceDetailImageContent(
     images: List<ImageUiModel>,
     onBackToPreviousClick: (() -> Unit),
     modifier: Modifier = Modifier,
-    onPageUpdate: (page: Int) -> Unit = {},
+    onPageUpdate: suspend (page: Int) -> Unit = {},
 ) {
     val pagerState = rememberPagerState(pageCount = { images.size })
+    val currentOnPageUpdate by rememberUpdatedState(onPageUpdate)
+    LaunchedEffect(pagerState.settledPage) {
+        currentOnPageUpdate(pagerState.settledPage)
+    }
 
     Box(modifier = modifier) {
         BackToPreviousButton(
@@ -195,7 +201,6 @@ private fun PlaceDetailImageContent(
             verticalAlignment = Alignment.CenterVertically,
             beyondViewportPageCount = 5,
         ) { page ->
-            onPageUpdate(page)
             FestabookImage(
                 modifier =
                     Modifier
