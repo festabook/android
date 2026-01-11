@@ -1,6 +1,5 @@
 package com.daedan.festabook.placeDetail
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.domain.repository.PlaceDetailRepository
 import com.daedan.festabook.news.FAKE_NOTICES
 import com.daedan.festabook.placeList.FAKE_PLACES
@@ -22,13 +21,10 @@ import kotlinx.coroutines.test.setMain
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaceDetailViewModelTest {
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var placeDetailRepository: PlaceDetailRepository
     private lateinit var placeDetailViewModel: PlaceDetailViewModel
