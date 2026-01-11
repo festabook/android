@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -71,13 +70,11 @@ fun PlaceDetailScreen(
 ) {
     val scrollState = rememberScrollState()
     var isDialogOpen by remember { mutableStateOf(false) }
-    var currentPage by remember { mutableIntStateOf(0) }
 
     when (uiState) {
         is PlaceDetailUiState.Success -> {
             val pagerState =
                 rememberPagerState(
-                    initialPage = currentPage,
                     pageCount = { uiState.placeDetail.images.size },
                 )
 
@@ -384,7 +381,7 @@ private fun formattedDate(
     if (startTime == null && endTime == null) {
         stringResource(R.string.place_detail_default_time)
     } else {
-        listOf(startTime, endTime).joinToString(" ~ ")
+        stringResource(R.string.format_date, startTime.toString(), endTime.toString())
     }
 
 @Preview(showBackground = true)
