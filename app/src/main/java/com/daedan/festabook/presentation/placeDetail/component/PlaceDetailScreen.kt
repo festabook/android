@@ -236,6 +236,44 @@ private fun PlaceDetailContent(
             style = FestabookTypography.displayMedium,
         )
 
+        PlaceDetailInfo(placeDetail = placeDetail)
+
+        URLText(
+            modifier =
+                Modifier
+                    .animateContentSize(
+                        animationSpec =
+                            spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessMedium,
+                            ),
+                    ).padding(
+                        top = festabookSpacing.paddingBody3,
+                    ),
+            onClick = {
+                isDescriptionExpand = !isDescriptionExpand
+            },
+            text =
+                placeDetail.place.description
+                    ?: stringResource(R.string.place_list_default_description),
+            style = FestabookTypography.bodySmall,
+            maxLines =
+                if (isDescriptionExpand) {
+                    Int.MAX_VALUE
+                } else {
+                    1
+                },
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun PlaceDetailInfo(
+    placeDetail: PlaceDetailUiModel,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
         Row(
             modifier = Modifier.padding(top = festabookSpacing.paddingBody4),
         ) {
@@ -287,34 +325,6 @@ private fun PlaceDetailContent(
                 color = FestabookColor.gray500,
             )
         }
-
-        URLText(
-            modifier =
-                Modifier
-                    .animateContentSize(
-                        animationSpec =
-                            spring(
-                                dampingRatio = Spring.DampingRatioLowBouncy,
-                                stiffness = Spring.StiffnessMedium,
-                            ),
-                    ).padding(
-                        top = festabookSpacing.paddingBody3,
-                    ),
-            onClick = {
-                isDescriptionExpand = !isDescriptionExpand
-            },
-            text =
-                placeDetail.place.description
-                    ?: stringResource(R.string.place_list_default_description),
-            style = FestabookTypography.bodySmall,
-            maxLines =
-                if (isDescriptionExpand) {
-                    Int.MAX_VALUE
-                } else {
-                    1
-                },
-            overflow = TextOverflow.Ellipsis,
-        )
     }
 }
 
