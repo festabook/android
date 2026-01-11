@@ -22,6 +22,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.fail
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaceDetailViewModelTest {
@@ -123,8 +124,10 @@ class PlaceDetailViewModelTest {
             val actual =
                 placeDetailViewModel.placeDetail
                     .value
-                    .let { it as PlaceDetailUiState.Success }
-                    .placeDetail
+                    .let {
+                        (it as? PlaceDetailUiState.Success)
+                            ?: fail { "PlaceDetailUiState 가 성공 상태가 아님" }
+                    }.placeDetail
                     .notices
 
             assertThat(actual).isEqualTo(expected)
