@@ -106,7 +106,7 @@ class FilterActionHandler(
             PlaceCategory.SECONDARY_CATEGORIES.map {
                 it.toUiModel()
             }
-        val primaryCategoriesSelected = category.any { it !in secondaryCategories }
+        val primaryCategoriesSelected = category.none { it in secondaryCategories }
 
         if (!primaryCategoriesSelected) {
             clearPlacesFilter()
