@@ -24,6 +24,7 @@ import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.di.fragment.FragmentKey
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
+import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
@@ -202,7 +203,7 @@ class PlaceListFragment(
                             val request =
                                 ImageRequest
                                     .Builder(context)
-                                    .data(place.imageUrl)
+                                    .data(place.imageUrl.convertImageUrl())
                                     .build()
 
                             runCatching {
