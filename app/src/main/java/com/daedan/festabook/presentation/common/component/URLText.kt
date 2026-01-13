@@ -1,6 +1,5 @@
 package com.daedan.festabook.presentation.common.component
 
-import android.util.Patterns
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material3.LocalTextStyle
@@ -31,6 +30,7 @@ import com.daedan.festabook.presentation.theme.FestabookColor
 fun URLText(
     text: String,
     modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
     fontStyle: FontStyle? = null,
@@ -53,23 +53,21 @@ fun URLText(
     val linkedText =
         buildAnnotatedString {
             append(text)
-            val urlPattern = Patterns.WEB_URL
-            val matcher = urlPattern.matcher(text)
-            while (matcher.find()) {
+            WEB_REGEX.findAll(text).forEach { result ->
                 addStyle(
                     style =
                         SpanStyle(
                             color = FestabookColor.gray500,
                             textDecoration = TextDecoration.Underline,
                         ),
-                    start = matcher.start(),
-                    end = matcher.end(),
+                    start = result.range.first,
+                    end = result.range.last + 1,
                 )
                 addStringAnnotation(
                     tag = "URL",
-                    annotation = matcher.group(),
-                    start = matcher.start(),
-                    end = matcher.end(),
+                    annotation = result.value,
+                    start = result.range.first,
+                    end = result.range.last + 1,
                 )
             }
         }
@@ -85,7 +83,7 @@ fun URLText(
                             .firstOrNull()
                             ?.let { annotation ->
                                 uriHandler.openUri(annotation.item)
-                            }
+                            } ?: onClick()
                     }
                 }
             },
@@ -110,3 +108,6 @@ fun URLText(
         style = style,
     )
 }
+
+private val WEB_REGEX =
+    """(https?|ftp|file)://[a-zA-Z0-9+&@#/%?=~_|!:,.;]+(?<![.,:;])""".toRegex()

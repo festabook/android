@@ -1,8 +1,6 @@
 package com.daedan.festabook.placeDetail
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.domain.repository.PlaceDetailRepository
-import com.daedan.festabook.getOrAwaitValue
 import com.daedan.festabook.news.FAKE_NOTICES
 import com.daedan.festabook.placeMap.FAKE_PLACES
 import com.daedan.festabook.presentation.news.notice.model.toUiModel
@@ -23,13 +21,11 @@ import kotlinx.coroutines.test.setMain
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
+import org.junit.jupiter.api.fail
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaceDetailViewModelTest {
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var placeDetailRepository: PlaceDetailRepository
     private lateinit var placeDetailViewModel: PlaceDetailViewModel
@@ -86,7 +82,7 @@ class PlaceDetailViewModelTest {
 
             // then
             val expected = PlaceDetailUiState.Error(exception)
-            val actual = placeDetailViewModel.placeDetail.getOrAwaitValue()
+            val actual = placeDetailViewModel.placeDetail.value
             coVerify { placeDetailRepository.getPlaceDetail(FAKE_PLACES.first().id) }
             assertThat(actual).isEqualTo(expected)
         }
@@ -104,7 +100,7 @@ class PlaceDetailViewModelTest {
 
             // then
             coVerify(exactly = 0) { placeDetailRepository.getPlaceDetail(any()) }
-            val actual = placeDetailViewModel.placeDetail.getOrAwaitValue()
+            val actual = placeDetailViewModel.placeDetail.value
             assertThat(actual).isEqualTo(
                 PlaceDetailUiState.Success(expected),
             )
@@ -127,9 +123,11 @@ class PlaceDetailViewModelTest {
             // then
             val actual =
                 placeDetailViewModel.placeDetail
-                    .getOrAwaitValue()
-                    .let { it as PlaceDetailUiState.Success }
-                    .placeDetail
+                    .value
+                    .let {
+                        (it as? PlaceDetailUiState.Success)
+                            ?: fail { "PlaceDetailUiState 가 성공 상태가 아님" }
+                    }.placeDetail
                     .notices
 
             assertThat(actual).isEqualTo(expected)
