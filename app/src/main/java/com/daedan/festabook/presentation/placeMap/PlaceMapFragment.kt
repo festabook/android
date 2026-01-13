@@ -34,9 +34,9 @@ import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceMapScreen
 import com.daedan.festabook.presentation.placeMap.component.rememberPlaceListBottomSheetState
-import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.handler.MapControlEventHandler
-import com.daedan.festabook.presentation.placeMap.intent.handler.PlaceMapEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.MapControlSideEffectHandler
+import com.daedan.festabook.presentation.placeMap.intent.handler.PlaceMapSideEffectHandler
 import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
 import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
 import com.daedan.festabook.presentation.placeMap.logging.PlaceFragmentEnter
@@ -90,9 +90,9 @@ class PlaceMapFragment(
                 val bottomSheetState = rememberPlaceListBottomSheetState()
                 val mapDelegate = remember { MapDelegate() }
                 val mapManagerDelegate = remember { MapManagerDelegate() }
-                val mapControlEventHandler =
+                val mapControlSideEffectHandler =
                     remember {
-                        MapControlEventHandler(
+                        MapControlSideEffectHandler(
                             initialPadding = with(density) { 254.dp.toPx() }.toInt(),
                             logger = appGraph.defaultFirebaseLogger,
                             locationSource = locationSource,
@@ -101,9 +101,9 @@ class PlaceMapFragment(
                             mapManagerDelegate = mapManagerDelegate,
                         )
                     }
-                val placeMapEventHandler =
+                val placeMapSideEffectHandler =
                     remember {
-                        PlaceMapEventHandler(
+                        PlaceMapSideEffectHandler(
                             mapManagerDelegate = mapManagerDelegate,
                             bottomSheetState = bottomSheetState,
                             viewModel = placeMapViewModel,
@@ -115,17 +115,17 @@ class PlaceMapFragment(
                     }
 
                 ObserveAsEvents(flow = placeMapViewModel.mapControlSideEffect) { event ->
-                    mapControlEventHandler(event)
+                    mapControlSideEffectHandler(event)
                 }
 
                 ObserveAsEvents(flow = placeMapViewModel.placeMapSideEffect) { event ->
-                    placeMapEventHandler(event)
+                    placeMapSideEffectHandler(event)
                 }
 
                 FestabookTheme {
                     PlaceMapScreen(
                         uiState = uiState,
-                        onAction = { placeMapViewModel.onPlaceMapAction(it) },
+                        onEvent = { placeMapViewModel.onPlaceMapEvent(it) },
                         bottomSheetState = bottomSheetState,
                         mapDelegate = mapDelegate,
                     )
@@ -135,7 +135,7 @@ class PlaceMapFragment(
     }
 
     override fun onMenuItemReClick() {
-        placeMapViewModel.onPlaceMapAction(SelectAction.UnSelectPlace)
+        placeMapViewModel.onPlaceMapEvent(SelectEvent.UnSelectPlace)
         placeMapViewModel.onMenuItemReClicked()
     }
 

@@ -4,10 +4,10 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.observeEvent
 import com.daedan.festabook.observeMultipleEvent
 import com.daedan.festabook.placeMap.FAKE_INITIAL_MAP_SETTING
-import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
-import com.daedan.festabook.presentation.placeMap.intent.handler.MapEventActionHandler
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.MapControlEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import io.mockk.mockk
@@ -34,7 +34,7 @@ class MapEventActionHandlerTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var mapEventActionHandler: MapEventActionHandler
+    private lateinit var mapEventActionHandler: MapControlEventHandler
 
     private lateinit var uiState: MutableStateFlow<PlaceMapUiState>
 
@@ -53,7 +53,7 @@ class MapEventActionHandlerTest {
         Dispatchers.setMain(testDispatcher)
         uiState = MutableStateFlow(PlaceMapUiState())
         mapEventActionHandler =
-            MapEventActionHandler(
+            MapControlEventHandler(
                 uiState = uiState,
                 onUpdateState = { uiState.update(it) },
                 _mapControlSideEffect = mapControlUiEvent,
@@ -75,7 +75,7 @@ class MapEventActionHandlerTest {
             advanceUntilIdle()
 
             // when
-            mapEventActionHandler(MapEventAction.OnBackToInitialPositionClick)
+            mapEventActionHandler(MapControlEvent.OnBackToInitialPositionClick)
 
             val event = eventResult.await()
             advanceUntilIdle()
@@ -97,7 +97,7 @@ class MapEventActionHandlerTest {
             }
 
             // when
-            mapEventActionHandler(MapEventAction.OnMapReady)
+            mapEventActionHandler(MapControlEvent.OnMapReady)
             advanceUntilIdle()
 
             // then
@@ -115,7 +115,7 @@ class MapEventActionHandlerTest {
             advanceUntilIdle()
 
             // when
-            mapEventActionHandler(MapEventAction.OnPlaceLoadFinish(emptyList()))
+            mapEventActionHandler(MapControlEvent.OnPlaceLoadFinish(emptyList()))
 
             // then
             val event = eventResult.await()
@@ -131,7 +131,7 @@ class MapEventActionHandlerTest {
             advanceUntilIdle()
 
             // when
-            mapEventActionHandler(MapEventAction.OnBackToInitialPositionClick)
+            mapEventActionHandler(MapControlEvent.OnBackToInitialPositionClick)
             val event = eventResult.await()
             advanceUntilIdle()
 
@@ -147,7 +147,7 @@ class MapEventActionHandlerTest {
             advanceUntilIdle()
 
             // when
-            mapEventActionHandler(MapEventAction.OnMapDrag)
+            mapEventActionHandler(MapControlEvent.OnMapDrag)
 
             // then
             val event = eventResult.await()

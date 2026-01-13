@@ -1,10 +1,10 @@
 package com.daedan.festabook.di.placeMapHandler
 
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
-import com.daedan.festabook.presentation.placeMap.intent.handler.FilterActionHandler
-import com.daedan.festabook.presentation.placeMap.intent.handler.MapEventActionHandler
-import com.daedan.festabook.presentation.placeMap.intent.handler.SelectActionHandler
+import com.daedan.festabook.presentation.placeMap.intent.handler.FilterEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.handler.MapControlEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.handler.SelectEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import dev.zacsweers.metro.AppScope
@@ -17,9 +17,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 @GraphExtension(PlaceMapViewModelScope::class)
 interface PlaceMapHandlerGraph {
-    val filterActionHandler: FilterActionHandler
-    val selectActionHandler: SelectActionHandler
-    val mapEventActionHandler: MapEventActionHandler
+    val filterEventHandler: FilterEventHandler
+    val selectEventHandler: SelectEventHandler
+    val mapControlEventHandler: MapControlEventHandler
 
     @ContributesTo(AppScope::class)
     @GraphExtension.Factory

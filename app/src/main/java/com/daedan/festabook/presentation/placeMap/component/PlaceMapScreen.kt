@@ -10,10 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
-import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
-import com.daedan.festabook.presentation.placeMap.intent.action.PlaceMapAction
-import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
+import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
@@ -23,7 +23,7 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 @Composable
 fun PlaceMapScreen(
     uiState: PlaceMapUiState,
-    onAction: (PlaceMapAction) -> Unit,
+    onEvent: (PlaceMapEvent) -> Unit,
     bottomSheetState: PlaceListBottomSheetState,
     mapDelegate: MapDelegate,
     modifier: Modifier = Modifier,
@@ -31,8 +31,8 @@ fun PlaceMapScreen(
     NaverMapContent(
         modifier = modifier.fillMaxSize(),
         mapDelegate = mapDelegate,
-        onMapReady = { onAction(MapEventAction.OnMapReady) },
-        onMapDrag = { onAction(MapEventAction.OnMapDrag) },
+        onMapReady = { onEvent(MapControlEvent.OnMapReady) },
+        onMapDrag = { onEvent(MapControlEvent.OnMapDrag) },
     ) { naverMap ->
         Column(
             modifier = Modifier.wrapContentSize(),
@@ -41,7 +41,7 @@ fun PlaceMapScreen(
                 timeTagsState = uiState.timeTags,
                 selectedTimeTagState = uiState.selectedTimeTag,
                 onTimeTagClick = { timeTag ->
-                    onAction(SelectAction.OnTimeTagClick(timeTag))
+                    onEvent(SelectEvent.OnTimeTagClick(timeTag))
                 },
                 modifier =
                     Modifier
@@ -52,8 +52,8 @@ fun PlaceMapScreen(
             PlaceCategoryScreen(
                 initialCategories = uiState.initialCategories,
                 selectedCategories = uiState.selectedCategories,
-                onCategoryClick = { onAction(FilterAction.OnCategoryClick(it)) },
-                onDisplayAllClick = { onAction(FilterAction.OnCategoryClick(it)) },
+                onCategoryClick = { onEvent(FilterEvent.OnCategoryClick(it)) },
+                onDisplayAllClick = { onEvent(FilterEvent.OnCategoryClick(it)) },
             )
 
             Box(
@@ -77,12 +77,12 @@ fun PlaceMapScreen(
                         ),
                     placesUiState = uiState.places,
                     map = naverMap,
-                    onPlaceClick = { onAction(SelectAction.OnPlaceClick(it.id)) },
+                    onPlaceClick = { onEvent(SelectEvent.OnPlaceClick(it.id)) },
                     bottomSheetState = bottomSheetState,
                     isExceededMaxLength = uiState.isExceededMaxLength,
-                    onPlaceLoadFinish = { onAction(MapEventAction.OnPlaceLoadFinish(it)) },
-                    onPlaceLoad = { onAction(FilterAction.OnPlaceLoad) },
-                    onBackToInitialPositionClick = { onAction(MapEventAction.OnBackToInitialPositionClick) },
+                    onPlaceLoadFinish = { onEvent(MapControlEvent.OnPlaceLoadFinish(it)) },
+                    onPlaceLoad = { onEvent(FilterEvent.OnPlaceLoad) },
+                    onBackToInitialPositionClick = { onEvent(MapControlEvent.OnBackToInitialPositionClick) },
                 )
 
                 if (uiState.isPlacePreviewVisible) {
@@ -96,8 +96,8 @@ fun PlaceMapScreen(
                                 ),
                         selectedPlace = uiState.selectedPlace,
                         visible = true,
-                        onClick = { onAction(SelectAction.OnPlacePreviewClick(it)) },
-                        onBackPress = { onAction(SelectAction.OnBackPress) },
+                        onClick = { onEvent(SelectEvent.OnPlacePreviewClick(it)) },
+                        onBackPress = { onEvent(SelectEvent.OnBackPress) },
                     )
                 }
 
@@ -112,7 +112,7 @@ fun PlaceMapScreen(
                                 ),
                         selectedPlace = uiState.selectedPlace,
                         visible = true,
-                        onBackPress = { onAction(SelectAction.OnBackPress) },
+                        onBackPress = { onEvent(SelectEvent.OnBackPress) },
                     )
                 }
             }

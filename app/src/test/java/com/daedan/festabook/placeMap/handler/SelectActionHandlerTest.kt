@@ -8,10 +8,10 @@ import com.daedan.festabook.placeDetail.FAKE_ETC_PLACE_DETAIL
 import com.daedan.festabook.placeDetail.FAKE_PLACE_DETAIL
 import com.daedan.festabook.placeMap.FAKE_TIME_TAG
 import com.daedan.festabook.presentation.placeDetail.model.toUiModel
-import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
-import com.daedan.festabook.presentation.placeMap.intent.handler.SelectActionHandler
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.SelectEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import io.mockk.coEvery
@@ -41,7 +41,7 @@ class SelectActionHandlerTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var selectActionHandler: SelectActionHandler
+    private lateinit var selectActionHandler: SelectEventHandler
 
     private lateinit var uiState: MutableStateFlow<PlaceMapUiState>
 
@@ -64,7 +64,7 @@ class SelectActionHandlerTest {
         uiState = MutableStateFlow(PlaceMapUiState())
 
         selectActionHandler =
-            SelectActionHandler(
+            SelectEventHandler(
                 _mapControlSideEffect = mapControlUiEvent,
                 _placeMapSideEffect = placeMapUiEvent,
                 filterActionHandler = mockk(relaxed = true),
@@ -92,7 +92,7 @@ class SelectActionHandlerTest {
             val eventResult = observeEvent(mapControlUiEvent.receiveAsFlow())
 
             // when
-            selectActionHandler(SelectAction.OnPlaceClick(1))
+            selectActionHandler(SelectEvent.OnPlaceClick(1))
             advanceUntilIdle()
 
             // then
@@ -118,7 +118,7 @@ class SelectActionHandlerTest {
             val eventResult = observeEvent(mapControlUiEvent.receiveAsFlow())
 
             // when
-            selectActionHandler(SelectAction.OnPlaceClick(1))
+            selectActionHandler(SelectEvent.OnPlaceClick(1))
             advanceUntilIdle()
 
             // then
@@ -139,12 +139,12 @@ class SelectActionHandlerTest {
                 Result.success(
                     FAKE_PLACE_DETAIL,
                 )
-            selectActionHandler(SelectAction.OnPlaceClick(1))
+            selectActionHandler(SelectEvent.OnPlaceClick(1))
             val eventResult = observeEvent(mapControlUiEvent.receiveAsFlow())
             advanceUntilIdle()
 
             // when
-            selectActionHandler(SelectAction.UnSelectPlace)
+            selectActionHandler(SelectEvent.UnSelectPlace)
             advanceUntilIdle()
 
             // then
@@ -164,7 +164,7 @@ class SelectActionHandlerTest {
             val isExceededMaxLength = true
 
             // when
-            selectActionHandler(SelectAction.ExceededMaxLength(isExceededMaxLength))
+            selectActionHandler(SelectEvent.ExceededMaxLength(isExceededMaxLength))
             advanceUntilIdle()
 
             // then
@@ -190,7 +190,7 @@ class SelectActionHandlerTest {
 
             // when
             selectActionHandler(
-                SelectAction.OnPlacePreviewClick(expected),
+                SelectEvent.OnPlacePreviewClick(expected),
             )
             advanceUntilIdle()
 
@@ -210,7 +210,7 @@ class SelectActionHandlerTest {
             val expected = TimeTag(1, "테스트1")
 
             // when
-            selectActionHandler(SelectAction.OnTimeTagClick(expected))
+            selectActionHandler(SelectEvent.OnTimeTagClick(expected))
             advanceUntilIdle()
 
             // then
@@ -227,7 +227,7 @@ class SelectActionHandlerTest {
             val eventResult = observeEvent(mapControlUiEvent.receiveAsFlow())
 
             // when
-            selectActionHandler(SelectAction.OnBackPress)
+            selectActionHandler(SelectEvent.OnBackPress)
 
             // then
             val event = eventResult.await()

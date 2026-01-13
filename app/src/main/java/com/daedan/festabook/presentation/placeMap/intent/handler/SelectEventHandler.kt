@@ -5,9 +5,9 @@ import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.domain.repository.PlaceDetailRepository
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeDetail.model.toUiModel
-import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import com.daedan.festabook.presentation.placeMap.intent.state.await
@@ -24,52 +24,52 @@ import kotlinx.coroutines.launch
 
 @Inject
 @ContributesBinding(PlaceMapViewModelScope::class)
-class SelectActionHandler(
+class SelectEventHandler(
     override val uiState: StateFlow<PlaceMapUiState>,
     override val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
-    private val filterActionHandler: FilterActionHandler,
+    private val filterActionHandler: FilterEventHandler,
     private val _placeMapSideEffect: Channel<PlaceMapSideEffect>,
     private val _mapControlSideEffect: Channel<MapControlSideEffect>,
     private val logger: DefaultFirebaseLogger,
     private val placeDetailRepository: PlaceDetailRepository,
     private val scope: CoroutineScope,
-) : ActionHandler<SelectAction, PlaceMapUiState> {
-    override suspend operator fun invoke(action: SelectAction) {
-        when (action) {
-            is SelectAction.OnPlaceClick -> {
-                selectPlace(action.placeId)
+) : EventHandler<SelectEvent, PlaceMapUiState> {
+    override suspend operator fun invoke(event: SelectEvent) {
+        when (event) {
+            is SelectEvent.OnPlaceClick -> {
+                selectPlace(event.placeId)
             }
 
-            is SelectAction.UnSelectPlace -> {
+            is SelectEvent.UnSelectPlace -> {
                 unselectPlace()
             }
 
-            is SelectAction.ExceededMaxLength -> {
+            is SelectEvent.ExceededMaxLength -> {
                 onUpdateState.invoke {
                     it.copy(
-                        isExceededMaxLength = action.isExceededMaxLength,
+                        isExceededMaxLength = event.isExceededMaxLength,
                     )
                 }
             }
 
-            is SelectAction.OnTimeTagClick -> {
-                onDaySelected(action.timeTag)
-                filterActionHandler.updatePlacesByTimeTag(action.timeTag.timeTagId)
+            is SelectEvent.OnTimeTagClick -> {
+                onDaySelected(event.timeTag)
+                filterActionHandler.updatePlacesByTimeTag(event.timeTag.timeTagId)
                 logger.log(
                     PlaceTimeTagSelected(
                         baseLogData = logger.getBaseLogData(),
-                        timeTagName = action.timeTag.name,
+                        timeTagName = event.timeTag.name,
                     ),
                 )
             }
 
-            is SelectAction.OnPlacePreviewClick -> {
+            is SelectEvent.OnPlacePreviewClick -> {
                 val selectedTimeTag = uiState.value.selectedTimeTag
-                val selectedPlace = action.place
+                val selectedPlace = event.place
                 if (selectedPlace is LoadState.Success &&
                     selectedTimeTag is LoadState.Success
                 ) {
-                    _placeMapSideEffect.send(PlaceMapSideEffect.StartPlaceDetail(action.place))
+                    _placeMapSideEffect.send(PlaceMapSideEffect.StartPlaceDetail(event.place))
                     logger.log(
                         PlacePreviewClick(
                             baseLogData = logger.getBaseLogData(),
@@ -83,7 +83,7 @@ class SelectActionHandler(
                 }
             }
 
-            is SelectAction.OnBackPress -> {
+            is SelectEvent.OnBackPress -> {
                 unselectPlace()
             }
         }

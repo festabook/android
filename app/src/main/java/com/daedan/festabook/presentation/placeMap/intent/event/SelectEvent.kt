@@ -1,27 +1,27 @@
-package com.daedan.festabook.presentation.placeMap.intent.action
+package com.daedan.festabook.presentation.placeMap.intent.event
 
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 
-sealed interface SelectAction : PlaceMapAction {
+sealed interface SelectEvent : PlaceMapEvent {
     data class OnPlaceClick(
         val placeId: Long,
-    ) : SelectAction
+    ) : SelectEvent
 
     data class OnPlacePreviewClick(
         val place: LoadState<PlaceDetailUiModel>,
-    ) : SelectAction
+    ) : SelectEvent
 
-    data object UnSelectPlace : SelectAction
+    data object UnSelectPlace : SelectEvent
 
     data class ExceededMaxLength(
         val isExceededMaxLength: Boolean,
-    ) : SelectAction
+    ) : SelectEvent
 
     data class OnTimeTagClick(
         val timeTag: TimeTag,
-    ) : SelectAction
+    ) : SelectEvent
 
-    data object OnBackPress : SelectAction
+    data object OnBackPress : SelectEvent
 }

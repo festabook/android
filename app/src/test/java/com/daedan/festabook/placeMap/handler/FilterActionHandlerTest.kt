@@ -5,9 +5,9 @@ import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.observeMultipleEvent
 import com.daedan.festabook.placeMap.FAKE_PLACES_CATEGORY_FIXTURE
 import com.daedan.festabook.placeMap.FAKE_TIME_TAG
-import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
-import com.daedan.festabook.presentation.placeMap.intent.handler.FilterActionHandler
+import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.FilterEventHandler
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
@@ -39,7 +39,7 @@ class FilterActionHandlerTest {
     val instantTaskExecutorRule = InstantTaskExecutorRule()
     private val testDispatcher = StandardTestDispatcher()
 
-    private lateinit var filterActionHandler: FilterActionHandler
+    private lateinit var filterActionHandler: FilterEventHandler
 
     private lateinit var cachedPlaces: MutableStateFlow<List<PlaceUiModel>>
 
@@ -60,7 +60,7 @@ class FilterActionHandlerTest {
         cachedPlaces = MutableStateFlow(FAKE_PLACES_CATEGORY_FIXTURE.map { it.toUiModel() })
 
         filterActionHandler =
-            FilterActionHandler(
+            FilterEventHandler(
                 uiState = uiState,
                 _mapControlSideEffect = mapControlUiEvent,
                 onUpdateState = { uiState.update(it) },
@@ -87,7 +87,7 @@ class FilterActionHandlerTest {
             uiState.update { it.copy(places = places) }
 
             // when
-            filterActionHandler(FilterAction.OnCategoryClick(categories))
+            filterActionHandler(FilterEvent.OnCategoryClick(categories))
 
             // then
             advanceUntilIdle()
@@ -117,7 +117,7 @@ class FilterActionHandlerTest {
             uiState.update { it.copy(places = places) }
 
             // when
-            filterActionHandler(FilterAction.OnCategoryClick(targetCategories))
+            filterActionHandler(FilterEvent.OnCategoryClick(targetCategories))
             advanceUntilIdle()
 
             // then
@@ -139,7 +139,7 @@ class FilterActionHandlerTest {
             uiState.update { it.copy(places = places) }
 
             // when
-            filterActionHandler(FilterAction.OnCategoryClick(targetCategories))
+            filterActionHandler(FilterEvent.OnCategoryClick(targetCategories))
             advanceUntilIdle()
 
             // then
@@ -157,10 +157,10 @@ class FilterActionHandlerTest {
                 setOf(PlaceCategoryUiModel.FOOD_TRUCK, PlaceCategoryUiModel.BOOTH)
             val places = ListLoadState.Success(FAKE_PLACES_CATEGORY_FIXTURE.map { it.toUiModel() })
             uiState.update { it.copy(places = places) }
-            filterActionHandler(FilterAction.OnCategoryClick(targetCategories))
+            filterActionHandler(FilterEvent.OnCategoryClick(targetCategories))
 
             // when
-            filterActionHandler(FilterAction.OnCategoryClick(emptySet()))
+            filterActionHandler(FilterEvent.OnCategoryClick(emptySet()))
 
             // then
             val expected = FAKE_PLACES_CATEGORY_FIXTURE.map { it.toUiModel() }
@@ -222,7 +222,7 @@ class FilterActionHandlerTest {
             }
 
             // when
-            filterActionHandler(FilterAction.OnPlaceLoad)
+            filterActionHandler(FilterEvent.OnPlaceLoad)
             advanceUntilIdle()
 
             // then

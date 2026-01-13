@@ -6,8 +6,8 @@ import com.daedan.festabook.di.placeMapHandler.PlaceMapViewModelScope
 import com.daedan.festabook.domain.model.PlaceCategory
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.DefaultFirebaseLogger
-import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.map
 
 @Inject
 @ContributesBinding(PlaceMapViewModelScope::class)
-class FilterActionHandler(
+class FilterEventHandler(
     override val uiState: StateFlow<PlaceMapUiState>,
     override val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
     private val _mapControlSideEffect: Channel<MapControlSideEffect>,
@@ -34,29 +34,29 @@ class FilterActionHandler(
     private val onUpdateCachedPlace: (List<PlaceUiModel>) -> Unit,
     @param:CachedPlaces private val cachedPlaces: StateFlow<List<PlaceUiModel>>,
     @param:CachedPlaceByTimeTag private val cachedPlaceByTimeTag: StateFlow<List<PlaceUiModel>>,
-) : ActionHandler<FilterAction, PlaceMapUiState> {
-    override suspend operator fun invoke(action: FilterAction) {
-        when (action) {
-            is FilterAction.OnCategoryClick -> {
+) : EventHandler<FilterEvent, PlaceMapUiState> {
+    override suspend operator fun invoke(event: FilterEvent) {
+        when (event) {
+            is FilterEvent.OnCategoryClick -> {
                 uiState.await<ListLoadState.Success<PlaceUiModel>> { it.places }
                 unselectPlace()
-                updatePlacesByCategories(action.categories.toList())
+                updatePlacesByCategories(event.categories.toList())
 
                 onUpdateState.invoke {
-                    it.copy(selectedCategories = action.categories)
+                    it.copy(selectedCategories = event.categories)
                 }
 
-                _mapControlSideEffect.send(MapControlSideEffect.FilterMapByCategory(action.categories.toList()))
+                _mapControlSideEffect.send(MapControlSideEffect.FilterMapByCategory(event.categories.toList()))
 
                 logger.log(
                     PlaceCategoryClick(
                         baseLogData = logger.getBaseLogData(),
-                        currentCategories = action.categories.joinToString(",") { it.toString() },
+                        currentCategories = event.categories.joinToString(",") { it.toString() },
                     ),
                 )
             }
 
-            is FilterAction.OnPlaceLoad -> {
+            is FilterEvent.OnPlaceLoad -> {
                 val selectedTimeTag =
                     uiState
                         .map { it.selectedTimeTag }

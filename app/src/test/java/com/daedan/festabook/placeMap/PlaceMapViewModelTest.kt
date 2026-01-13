@@ -6,10 +6,10 @@ import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.domain.repository.PlaceListRepository
 import com.daedan.festabook.observeEvent
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
-import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
-import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
-import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
@@ -225,15 +225,15 @@ class PlaceMapViewModelTest {
 
             // when
             placeMapViewModel = PlaceMapViewModel(placeListRepository, handlerGraphFactory)
-            placeMapViewModel.onPlaceMapAction(SelectAction.UnSelectPlace)
-            placeMapViewModel.onPlaceMapAction(FilterAction.OnPlaceLoad)
-            placeMapViewModel.onPlaceMapAction(MapEventAction.OnMapDrag)
+            placeMapViewModel.onPlaceMapEvent(SelectEvent.UnSelectPlace)
+            placeMapViewModel.onPlaceMapEvent(FilterEvent.OnPlaceLoad)
+            placeMapViewModel.onPlaceMapEvent(MapControlEvent.OnMapDrag)
             advanceUntilIdle()
 
             // then
-            coVerify(exactly = 1) { fakeHandlerGraph.filterActionHandler }
-            coVerify(exactly = 1) { fakeHandlerGraph.selectActionHandler }
-            coVerify(exactly = 1) { fakeHandlerGraph.mapEventActionHandler }
+            coVerify(exactly = 1) { fakeHandlerGraph.filterEventHandler }
+            coVerify(exactly = 1) { fakeHandlerGraph.selectEventHandler }
+            coVerify(exactly = 1) { fakeHandlerGraph.mapControlEventHandler }
         }
 
     @Test

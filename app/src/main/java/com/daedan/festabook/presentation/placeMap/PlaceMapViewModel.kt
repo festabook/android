@@ -5,12 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.placeMapHandler.PlaceMapHandlerGraph
 import com.daedan.festabook.di.viewmodel.ViewModelKey
 import com.daedan.festabook.domain.repository.PlaceListRepository
-import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
-import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
-import com.daedan.festabook.presentation.placeMap.intent.action.PlaceMapAction
-import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
@@ -74,12 +74,12 @@ class PlaceMapViewModel(
         observeErrorEvent()
     }
 
-    fun onPlaceMapAction(action: PlaceMapAction) {
+    fun onPlaceMapEvent(event: PlaceMapEvent) {
         viewModelScope.launch {
-            when (action) {
-                is FilterAction -> handlerGraph.filterActionHandler(action)
-                is MapEventAction -> handlerGraph.mapEventActionHandler(action)
-                is SelectAction -> handlerGraph.selectActionHandler(action)
+            when (event) {
+                is FilterEvent -> handlerGraph.filterEventHandler(event)
+                is MapControlEvent -> handlerGraph.mapControlEventHandler(event)
+                is SelectEvent -> handlerGraph.selectEventHandler(event)
             }
         }
     }

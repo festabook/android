@@ -4,13 +4,13 @@ import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceListBottomSheetState
 import com.daedan.festabook.presentation.placeMap.component.PlaceListBottomSheetValue
-import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
 import com.daedan.festabook.presentation.placeMap.logging.PlaceMapButtonReClick
 import com.daedan.festabook.presentation.placeMap.mapManager.MapManager
 
-class PlaceMapEventHandler(
+class PlaceMapSideEffectHandler(
     private val mapManagerDelegate: MapManagerDelegate,
     private val bottomSheetState: PlaceListBottomSheetState,
     private val viewModel: PlaceMapViewModel,
@@ -20,7 +20,7 @@ class PlaceMapEventHandler(
     private val onPreloadImages: (PlaceMapSideEffect.PreloadImages) -> Unit,
     private val onStartPlaceDetail: (PlaceMapSideEffect.StartPlaceDetail) -> Unit,
     private val onShowErrorSnackBar: (PlaceMapSideEffect.ShowErrorSnackBar) -> Unit,
-) : EventHandler<PlaceMapSideEffect> {
+) : SideEffectHandler<PlaceMapSideEffect> {
     private val mapManager: MapManager? get() = mapManagerDelegate.value
 
     override suspend operator fun invoke(event: PlaceMapSideEffect) {
@@ -32,7 +32,7 @@ class PlaceMapEventHandler(
             is PlaceMapSideEffect.MenuItemReClicked -> {
                 mapManager?.moveToPosition()
                 if (!event.isPreviewVisible) return
-                viewModel.onPlaceMapAction(SelectAction.UnSelectPlace)
+                viewModel.onPlaceMapEvent(SelectEvent.UnSelectPlace)
                 logger.log(
                     PlaceMapButtonReClick(
                         baseLogData = logger.getBaseLogData(),
