@@ -1,7 +1,5 @@
 package com.daedan.festabook.presentation.placeMap.intent.handler
 
-import com.daedan.festabook.di.placeMapHandler.CachedPlaceByTimeTag
-import com.daedan.festabook.di.placeMapHandler.CachedPlaces
 import com.daedan.festabook.di.placeMapHandler.PlaceMapViewModelScope
 import com.daedan.festabook.domain.model.PlaceCategory
 import com.daedan.festabook.domain.model.TimeTag
@@ -18,7 +16,6 @@ import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -27,14 +24,12 @@ import kotlinx.coroutines.flow.map
 @Inject
 @ContributesBinding(PlaceMapViewModelScope::class)
 class FilterEventHandler(
-    override val uiState: StateFlow<PlaceMapUiState>,
-    override val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
-    private val _mapControlSideEffect: Channel<MapControlSideEffect>,
+    private val context: EventHandlerContext,
     private val logger: DefaultFirebaseLogger,
-    private val onUpdateCachedPlace: (List<PlaceUiModel>) -> Unit,
-    @param:CachedPlaces private val cachedPlaces: StateFlow<List<PlaceUiModel>>,
-    @param:CachedPlaceByTimeTag private val cachedPlaceByTimeTag: StateFlow<List<PlaceUiModel>>,
 ) : EventHandler<FilterEvent, PlaceMapUiState> {
+    override val uiState: StateFlow<PlaceMapUiState> = context.uiState
+    override val onUpdateState = context.onUpdateState
+
     override suspend operator fun invoke(event: FilterEvent) {
         when (event) {
             is FilterEvent.OnCategoryClick -> {
@@ -46,7 +41,7 @@ class FilterEventHandler(
                     it.copy(selectedCategories = event.categories)
                 }
 
-                _mapControlSideEffect.send(MapControlSideEffect.FilterMapByCategory(event.categories.toList()))
+                context.mapControlSideEffect.send(MapControlSideEffect.FilterMapByCategory(event.categories.toList()))
 
                 logger.log(
                     PlaceCategoryClick(
@@ -80,20 +75,20 @@ class FilterEventHandler(
 
     private fun unselectPlace() {
         onUpdateState.invoke { it.copy(selectedPlace = LoadState.Empty) }
-        _mapControlSideEffect.trySend(MapControlSideEffect.UnselectMarker)
+        context.mapControlSideEffect.trySend(MapControlSideEffect.UnselectMarker)
     }
 
     fun updatePlacesByTimeTag(timeTagId: Long) {
         val filteredPlaces =
             if (timeTagId == TimeTag.EMTPY_TIME_TAG_ID) {
-                cachedPlaces.value
+                context.cachedPlaces.value
             } else {
                 filterPlacesByTimeTag(timeTagId)
             }
         onUpdateState.invoke {
             it.copy(places = ListLoadState.Success(filteredPlaces))
         }
-        onUpdateCachedPlace(filteredPlaces)
+        context.onUpdateCachedPlace(filteredPlaces)
     }
 
     private fun updatePlacesByCategories(category: List<PlaceCategoryUiModel>) {
@@ -114,7 +109,7 @@ class FilterEventHandler(
         }
 
         val filteredPlaces =
-            cachedPlaceByTimeTag.value
+            context.cachedPlaceByTimeTag.value
                 .filter { place ->
                     place.category in category
                 }
@@ -125,7 +120,7 @@ class FilterEventHandler(
 
     private fun filterPlacesByTimeTag(timeTagId: Long): List<PlaceUiModel> {
         val filteredPlaces =
-            cachedPlaces.value.filter { place ->
+            context.cachedPlaces.value.filter { place ->
                 place.timeTagId.contains(timeTagId)
             }
         return filteredPlaces
@@ -133,7 +128,7 @@ class FilterEventHandler(
 
     private fun clearPlacesFilter() {
         onUpdateState.invoke {
-            it.copy(places = ListLoadState.Success(cachedPlaceByTimeTag.value))
+            it.copy(places = ListLoadState.Success(context.cachedPlaceByTimeTag.value))
         }
     }
 }

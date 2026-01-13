@@ -9,6 +9,7 @@ import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.EventHandlerContext
 import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
@@ -57,14 +58,16 @@ class PlaceMapViewModel(
     private val handlerGraph =
         handlerGraphFactory
             .create(
-                mapControlSideEffect = _mapControlSideEffect,
-                placeMapSideEffect = _placeMapSideEffect,
-                uiState = uiState,
-                cachedPlaces = cachedPlaces,
-                cachedPlaceByTimeTag = cachedPlaceByTimeTag,
-                onUpdateCachedPlace = { cachedPlaceByTimeTag.tryEmit(it) },
-                onUpdateState = { _uiState.update(it) },
-                scope = viewModelScope,
+                EventHandlerContext(
+                    mapControlSideEffect = _mapControlSideEffect,
+                    placeMapSideEffect = _placeMapSideEffect,
+                    uiState = uiState,
+                    cachedPlaces = cachedPlaces,
+                    cachedPlaceByTimeTag = cachedPlaceByTimeTag,
+                    onUpdateCachedPlace = { cachedPlaceByTimeTag.tryEmit(it) },
+                    onUpdateState = { _uiState.update(it) },
+                    scope = viewModelScope,
+                ),
             )
 
     init {

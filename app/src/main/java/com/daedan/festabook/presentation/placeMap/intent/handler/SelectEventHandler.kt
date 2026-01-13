@@ -17,23 +17,20 @@ import com.daedan.festabook.presentation.placeMap.logging.PlaceTimeTagSelected
 import com.daedan.festabook.presentation.placeMap.model.PlaceCoordinateUiModel
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @Inject
 @ContributesBinding(PlaceMapViewModelScope::class)
 class SelectEventHandler(
-    override val uiState: StateFlow<PlaceMapUiState>,
-    override val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
+    private val context: EventHandlerContext,
     private val filterActionHandler: FilterEventHandler,
-    private val _placeMapSideEffect: Channel<PlaceMapSideEffect>,
-    private val _mapControlSideEffect: Channel<MapControlSideEffect>,
     private val logger: DefaultFirebaseLogger,
     private val placeDetailRepository: PlaceDetailRepository,
-    private val scope: CoroutineScope,
 ) : EventHandler<SelectEvent, PlaceMapUiState> {
+    override val uiState: StateFlow<PlaceMapUiState> = context.uiState
+    override val onUpdateState = context.onUpdateState
+
     override suspend operator fun invoke(event: SelectEvent) {
         when (event) {
             is SelectEvent.OnPlaceClick -> {
@@ -69,7 +66,7 @@ class SelectEventHandler(
                 if (selectedPlace is LoadState.Success &&
                     selectedTimeTag is LoadState.Success
                 ) {
-                    _placeMapSideEffect.send(PlaceMapSideEffect.StartPlaceDetail(event.place))
+                    context.placeMapSideEffect.send(PlaceMapSideEffect.StartPlaceDetail(event.place))
                     logger.log(
                         PlacePreviewClick(
                             baseLogData = logger.getBaseLogData(),
@@ -90,7 +87,7 @@ class SelectEventHandler(
     }
 
     private fun selectPlace(placeId: Long) {
-        scope.launch {
+        context.scope.launch {
             onUpdateState.invoke { it.copy(selectedPlace = LoadState.Loading) }
             placeDetailRepository
                 .getPlaceDetail(placeId = placeId)
@@ -100,7 +97,11 @@ class SelectEventHandler(
                     onUpdateState.invoke {
                         it.copy(selectedPlace = newSelectedPlace)
                     }
-                    _mapControlSideEffect.send(MapControlSideEffect.SelectMarker(newSelectedPlace))
+                    context.mapControlSideEffect.send(
+                        MapControlSideEffect.SelectMarker(
+                            newSelectedPlace,
+                        ),
+                    )
                     val selectedTimeTag = uiState.value.selectedTimeTag
                     val timeTagName =
                         if (selectedTimeTag is LoadState.Success) selectedTimeTag.value.name else "undefined"
@@ -122,7 +123,7 @@ class SelectEventHandler(
 
     private fun unselectPlace() {
         onUpdateState.invoke { it.copy(selectedPlace = LoadState.Empty) }
-        _mapControlSideEffect.trySend(MapControlSideEffect.UnselectMarker)
+        context.mapControlSideEffect.trySend(MapControlSideEffect.UnselectMarker)
     }
 
     private fun onDaySelected(item: TimeTag) {
@@ -130,10 +131,10 @@ class SelectEventHandler(
         onUpdateState.invoke {
             it.copy(selectedTimeTag = LoadState.Success(item))
         }
-        scope.launch {
+        context.scope.launch {
             val placeGeographies =
                 uiState.await<LoadState.Success<List<PlaceCoordinateUiModel>>> { it.placeGeographies }
-            _mapControlSideEffect.send(
+            context.mapControlSideEffect.send(
                 MapControlSideEffect.SetMarkerByTimeTag(
                     placeGeographies = placeGeographies.value,
                     selectedTimeTag = LoadState.Success(item),

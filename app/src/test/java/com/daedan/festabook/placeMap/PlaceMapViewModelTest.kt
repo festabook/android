@@ -211,16 +211,7 @@ class PlaceMapViewModelTest {
             // given
             val fakeHandlerGraph = mockk<PlaceMapHandlerGraph>(relaxed = true)
             coEvery {
-                handlerGraphFactory.create(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                )
+                handlerGraphFactory.create(any())
             } returns fakeHandlerGraph
 
             // when

@@ -6,6 +6,7 @@ import com.daedan.festabook.observeMultipleEvent
 import com.daedan.festabook.placeMap.FAKE_PLACES_CATEGORY_FIXTURE
 import com.daedan.festabook.placeMap.FAKE_TIME_TAG
 import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.EventHandlerContext
 import com.daedan.festabook.presentation.placeMap.intent.handler.FilterEventHandler
 import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
@@ -61,12 +62,16 @@ class FilterActionHandlerTest {
 
         filterActionHandler =
             FilterEventHandler(
-                uiState = uiState,
-                _mapControlSideEffect = mapControlUiEvent,
-                onUpdateState = { uiState.update(it) },
-                onUpdateCachedPlace = { cachedPlaceByTimeTag.tryEmit(it) },
-                cachedPlaces = cachedPlaces,
-                cachedPlaceByTimeTag = cachedPlaceByTimeTag,
+                EventHandlerContext(
+                    uiState = uiState,
+                    mapControlSideEffect = mapControlUiEvent,
+                    onUpdateState = { uiState.update(it) },
+                    onUpdateCachedPlace = { cachedPlaceByTimeTag.tryEmit(it) },
+                    cachedPlaces = cachedPlaces,
+                    cachedPlaceByTimeTag = cachedPlaceByTimeTag,
+                    scope = mockk(relaxed = true),
+                    placeMapSideEffect = mockk(relaxed = true),
+                ),
                 logger = mockk(relaxed = true),
             )
     }

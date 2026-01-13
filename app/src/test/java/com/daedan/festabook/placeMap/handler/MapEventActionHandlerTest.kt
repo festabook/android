@@ -5,6 +5,7 @@ import com.daedan.festabook.observeEvent
 import com.daedan.festabook.observeMultipleEvent
 import com.daedan.festabook.placeMap.FAKE_INITIAL_MAP_SETTING
 import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.EventHandlerContext
 import com.daedan.festabook.presentation.placeMap.intent.handler.MapControlEventHandler
 import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
@@ -54,10 +55,16 @@ class MapEventActionHandlerTest {
         uiState = MutableStateFlow(PlaceMapUiState())
         mapEventActionHandler =
             MapControlEventHandler(
-                uiState = uiState,
-                onUpdateState = { uiState.update(it) },
-                _mapControlSideEffect = mapControlUiEvent,
-                _placeMapSideEffect = placeMapUiEvent,
+                EventHandlerContext(
+                    uiState = uiState,
+                    onUpdateState = { uiState.update(it) },
+                    mapControlSideEffect = mapControlUiEvent,
+                    placeMapSideEffect = placeMapUiEvent,
+                    scope = mockk(relaxed = true),
+                    cachedPlaces = mockk(relaxed = true),
+                    cachedPlaceByTimeTag = mockk(relaxed = true),
+                    onUpdateCachedPlace = mockk(relaxed = true),
+                ),
                 logger = mockk(relaxed = true),
             )
     }

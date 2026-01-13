@@ -12,29 +12,28 @@ import com.daedan.festabook.presentation.placeMap.logging.PlaceBackToSchoolClick
 import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.StateFlow
 
 @Inject
 @ContributesBinding(PlaceMapViewModelScope::class)
 class MapControlEventHandler(
-    override val uiState: StateFlow<PlaceMapUiState>,
-    override val onUpdateState: ((before: PlaceMapUiState) -> PlaceMapUiState) -> Unit,
-    private val _mapControlSideEffect: Channel<MapControlSideEffect>,
-    private val _placeMapSideEffect: Channel<PlaceMapSideEffect>,
+    private val context: EventHandlerContext,
     private val logger: DefaultFirebaseLogger,
 ) : EventHandler<MapControlEvent, PlaceMapUiState> {
+    override val uiState: StateFlow<PlaceMapUiState> = context.uiState
+    override val onUpdateState = context.onUpdateState
+
     override suspend operator fun invoke(event: MapControlEvent) {
         when (event) {
             is MapControlEvent.OnMapReady -> {
-                _mapControlSideEffect.send(MapControlSideEffect.InitMap)
+                context.mapControlSideEffect.send(MapControlSideEffect.InitMap)
                 val setting =
                     uiState.await<LoadState.Success<InitialMapSettingUiModel>> { it.initialMapSetting }
-                _mapControlSideEffect.send(MapControlSideEffect.InitMapManager(setting.value))
+                context.mapControlSideEffect.send(MapControlSideEffect.InitMapManager(setting.value))
             }
 
             is MapControlEvent.OnPlaceLoadFinish ->
-                _placeMapSideEffect.send(
+                context.placeMapSideEffect.send(
                     PlaceMapSideEffect.PreloadImages(
                         event.places,
                     ),
@@ -46,11 +45,11 @@ class MapControlEventHandler(
                         baseLogData = logger.getBaseLogData(),
                     ),
                 )
-                _mapControlSideEffect.send(MapControlSideEffect.BackToInitialPosition)
+                context.mapControlSideEffect.send(MapControlSideEffect.BackToInitialPosition)
             }
 
             is MapControlEvent.OnMapDrag -> {
-                _placeMapSideEffect.send(
+                context.placeMapSideEffect.send(
                     PlaceMapSideEffect.MapViewDrag(
                         uiState.value.isPlacePreviewVisible || uiState.value.isPlaceSecondaryPreviewVisible,
                     ),

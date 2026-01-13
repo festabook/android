@@ -9,6 +9,7 @@ import com.daedan.festabook.placeDetail.FAKE_PLACE_DETAIL
 import com.daedan.festabook.placeMap.FAKE_TIME_TAG
 import com.daedan.festabook.presentation.placeDetail.model.toUiModel
 import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.EventHandlerContext
 import com.daedan.festabook.presentation.placeMap.intent.handler.SelectEventHandler
 import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
@@ -65,13 +66,18 @@ class SelectActionHandlerTest {
 
         selectActionHandler =
             SelectEventHandler(
-                _mapControlSideEffect = mapControlUiEvent,
-                _placeMapSideEffect = placeMapUiEvent,
-                filterActionHandler = mockk(relaxed = true),
+                EventHandlerContext(
+                    mapControlSideEffect = mapControlUiEvent,
+                    placeMapSideEffect = placeMapUiEvent,
+                    uiState = uiState,
+                    onUpdateState = { uiState.update(it) },
+                    scope = CoroutineScope(testDispatcher),
+                    cachedPlaces = mockk(relaxed = true),
+                    cachedPlaceByTimeTag = mockk(relaxed = true),
+                    onUpdateCachedPlace = mockk(relaxed = true),
+                ),
                 logger = mockk(relaxed = true),
-                uiState = uiState,
-                onUpdateState = { uiState.update(it) },
-                scope = CoroutineScope(testDispatcher),
+                filterActionHandler = mockk(relaxed = true),
                 placeDetailRepository = placeDetailRepository,
             )
     }
