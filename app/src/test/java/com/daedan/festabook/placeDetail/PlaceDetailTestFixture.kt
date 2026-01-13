@@ -6,7 +6,7 @@ import com.daedan.festabook.domain.model.PlaceDetail
 import com.daedan.festabook.domain.model.PlaceDetailImage
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.news.FAKE_NOTICES
-import com.daedan.festabook.placeList.FAKE_PLACES
+import com.daedan.festabook.placeMap.FAKE_PLACES
 import java.time.LocalTime
 
 val FAKE_PLACE_DETAIL =

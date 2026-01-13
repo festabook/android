@@ -64,7 +64,12 @@ class MapFilterManagerImpl(
     override fun clearFilter() {
         markers.forEach { marker ->
             val place = marker.tag as? PlaceCoordinateUiModel ?: return@forEach
-            marker.isVisible = place.timeTagIds.contains(selectedTimeTagId)
+            // 타임태그가 없다면, 타임태그 검사 생략
+            if (selectedTimeTagId == TimeTag.EMTPY_TIME_TAG_ID) {
+                marker.isVisible = true
+            } else {
+                marker.isVisible = place.timeTagIds.contains(selectedTimeTagId)
+            }
 
             val isSelectedMarker = marker == selectedMarker
 

@@ -21,6 +21,7 @@ import com.daedan.festabook.presentation.placeMap.model.getIconId
 import com.daedan.festabook.presentation.placeMap.model.getLabelColor
 import com.daedan.festabook.presentation.placeMap.model.getTextId
 import com.daedan.festabook.presentation.theme.festabookShapes
+import com.daedan.festabook.presentation.theme.festabookSpacing
 import kotlin.math.roundToInt
 
 @Composable
@@ -51,7 +52,7 @@ fun PlaceCategoryLabel(
                 modifier = Modifier.size(12.dp),
             )
             Text(
-                modifier = Modifier.padding(start = 4.dp),
+                modifier = Modifier.padding(start = festabookSpacing.paddingBody1),
                 text = stringResource(category.getTextId()),
                 style = MaterialTheme.typography.labelMedium,
             )

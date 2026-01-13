@@ -1,101 +1,121 @@
 package com.daedan.festabook.presentation.placeMap.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.daedan.festabook.domain.model.TimeTag
-import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
-import com.daedan.festabook.presentation.placeMap.placeCategory.component.PlaceCategoryScreen
-import com.daedan.festabook.presentation.placeMap.timeTagSpinner.component.TimeTagMenu
+import androidx.compose.ui.draw.alpha
+import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
+import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
+import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
-import com.daedan.festabook.presentation.theme.FestabookTheme
-import com.naver.maps.map.NaverMap
+import com.daedan.festabook.presentation.theme.festabookSpacing
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaceMapScreen(
-    timeTagTitle: String,
-    timeTags: List<TimeTag>,
-    places: List<PlaceUiModel>,
-    modifier: Modifier = Modifier,
-    onMapReady: (NaverMap) -> Unit = {},
-    onPlaceClick: (PlaceUiModel) -> Unit = {},
-    onTimeTagClick: (TimeTag) -> Unit = {},
-) {
-    PlaceMapContent(
-        title = timeTagTitle,
-        timeTags = timeTags,
-        onMapReady = onMapReady,
-        onTimeTagClick = onTimeTagClick,
-    )
-}
-
-@Composable
-private fun PlaceMapContent(
-    timeTags: List<TimeTag>,
-    title: String,
-    onMapReady: (NaverMap) -> Unit,
-    onTimeTagClick: (TimeTag) -> Unit,
+    uiState: PlaceMapUiState,
+    onEvent: (PlaceMapEvent) -> Unit,
+    bottomSheetState: PlaceListBottomSheetState,
+    mapDelegate: MapDelegate,
     modifier: Modifier = Modifier,
 ) {
     NaverMapContent(
         modifier = modifier.fillMaxSize(),
-        onMapReady = onMapReady,
-    ) {
+        mapDelegate = mapDelegate,
+        onMapReady = { onEvent(MapControlEvent.OnMapReady) },
+        onMapDrag = { onEvent(MapControlEvent.OnMapDrag) },
+    ) { naverMap ->
         Column(
             modifier = Modifier.wrapContentSize(),
         ) {
-            if (timeTags.isNotEmpty()) {
-                TimeTagMenu(
-                    title = title,
-                    timeTags = timeTags,
-                    onTimeTagClick = { timeTag ->
-                        onTimeTagClick(timeTag)
-                    },
-                    modifier =
-                        Modifier
-                            .background(
-                                FestabookColor.white,
-                            ).padding(horizontal = 24.dp),
-                )
-            }
-            PlaceCategoryScreen()
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun PlaceMapScreenPreview() {
-    FestabookTheme {
-        PlaceMapScreen(
-            timeTagTitle = "테스트",
-            timeTags =
-                listOf(
-                    TimeTag(1, "테스트1"),
-                    TimeTag(2, "테스트2"),
-                ),
-            places =
-                (0..100).map {
-                    PlaceUiModel(
-                        id = it.toLong(),
-                        imageUrl = null,
-                        title = "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
-                        description = "테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트테스트",
-                        location = "테스트테스트테스트테스트테스트테스트테스트테스트테스트",
-                        category = PlaceCategoryUiModel.BAR,
-                        isBookmarked = true,
-                        timeTagId = listOf(1),
-                    )
+            TimeTagMenu(
+                timeTagsState = uiState.timeTags,
+                selectedTimeTagState = uiState.selectedTimeTag,
+                onTimeTagClick = { timeTag ->
+                    onEvent(SelectEvent.OnTimeTagClick(timeTag))
                 },
-        )
+                modifier =
+                    Modifier
+                        .background(
+                            FestabookColor.white,
+                        ).padding(horizontal = festabookSpacing.timeTagHorizontalPadding),
+            )
+            PlaceCategoryScreen(
+                initialCategories = uiState.initialCategories,
+                selectedCategories = uiState.selectedCategories,
+                onCategoryClick = { onEvent(FilterEvent.OnCategoryClick(it)) },
+                onDisplayAllClick = { onEvent(FilterEvent.OnCategoryClick(it)) },
+            )
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                NaverMapLogo(
+                    modifier =
+                        Modifier.padding(
+                            horizontal = festabookSpacing.paddingScreenGutter,
+                        ),
+                )
+
+                PlaceListScreen(
+                    modifier =
+                        Modifier.alpha(
+                            if (uiState.selectedPlace is LoadState.Empty) {
+                                1f
+                            } else {
+                                0f
+                            },
+                        ),
+                    placesUiState = uiState.places,
+                    map = naverMap,
+                    onPlaceClick = { onEvent(SelectEvent.OnPlaceClick(it.id)) },
+                    bottomSheetState = bottomSheetState,
+                    isExceededMaxLength = uiState.isExceededMaxLength,
+                    onPlaceLoadFinish = { onEvent(MapControlEvent.OnPlaceLoadFinish(it)) },
+                    onPlaceLoad = { onEvent(FilterEvent.OnPlaceLoad) },
+                    onBackToInitialPositionClick = { onEvent(MapControlEvent.OnBackToInitialPositionClick) },
+                )
+
+                if (uiState.isPlacePreviewVisible) {
+                    PlaceDetailPreviewScreen(
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(
+                                    vertical = festabookSpacing.paddingBody4,
+                                    horizontal = festabookSpacing.paddingScreenGutter,
+                                ),
+                        selectedPlace = uiState.selectedPlace,
+                        visible = true,
+                        onClick = { onEvent(SelectEvent.OnPlacePreviewClick(it)) },
+                        onBackPress = { onEvent(SelectEvent.OnBackPress) },
+                    )
+                }
+
+                if (uiState.isPlaceSecondaryPreviewVisible) {
+                    PlaceDetailPreviewSecondaryScreen(
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(
+                                    vertical = festabookSpacing.paddingBody4,
+                                    horizontal = festabookSpacing.paddingScreenGutter,
+                                ),
+                        selectedPlace = uiState.selectedPlace,
+                        visible = true,
+                        onBackPress = { onEvent(SelectEvent.OnBackPress) },
+                    )
+                }
+            }
+        }
     }
 }

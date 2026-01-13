@@ -1,6 +1,6 @@
 package com.daedan.festabook.presentation.placeMap.mapManager
 
-import com.daedan.festabook.presentation.placeMap.OnCameraChangeListener
+import com.daedan.festabook.presentation.placeMap.listener.OnCameraChangeListener
 import com.naver.maps.geometry.LatLng
 
 interface MapCameraManager {

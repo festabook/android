@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,28 +18,31 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
 import com.naver.maps.map.MapView
 import com.naver.maps.map.NaverMap
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 @Composable
 fun NaverMapContent(
     modifier: Modifier = Modifier,
+    mapDelegate: MapDelegate = MapDelegate(),
     onMapDrag: () -> Unit = {},
     onMapReady: (NaverMap) -> Unit = {},
-    content: @Composable () -> Unit,
+    content: @Composable (NaverMap?) -> Unit,
 ) {
     val context = LocalContext.current
     val mapView = remember { MapView(context) }
+    LaunchedEffect(mapView) {
+        val naverMap = mapView.getMapAndRunCallback(onMapReady)
+        mapDelegate.initMap(naverMap)
+    }
     AndroidView(
-        factory = {
-            mapView.apply {
-                getMapAsync(onMapReady)
-            }
-        },
+        factory = { mapView },
         modifier = modifier.dragInterceptor(onMapDrag),
     )
     RegisterMapLifeCycle(mapView)
-    content()
+    content(mapDelegate.value)
 }
 
 private fun Modifier.dragInterceptor(onMapDrag: () -> Unit): Modifier =
@@ -151,4 +155,14 @@ private fun MapView.lifecycleObserver(
             else -> throw IllegalStateException()
         }
         previousState.value = event
+    }
+
+private suspend fun MapView.getMapAndRunCallback(onMapReady: (NaverMap) -> Unit = {}): NaverMap =
+    suspendCancellableCoroutine { continuation ->
+        getMapAsync { map ->
+            onMapReady(map)
+            continuation.resumeWith(
+                Result.success(map),
+            )
+        }
     }
