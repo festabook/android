@@ -6,5 +6,5 @@ interface EventHandler<ACTION, STATE> {
     val uiState: StateFlow<STATE>
     val onUpdateState: ((before: STATE) -> STATE) -> Unit
 
-    suspend operator fun invoke(event: ACTION)
+    operator fun invoke(event: ACTION)
 }

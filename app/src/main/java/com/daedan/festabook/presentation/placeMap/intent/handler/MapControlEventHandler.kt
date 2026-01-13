@@ -13,6 +13,7 @@ import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 @Inject
 @ContributesBinding(PlaceMapViewModelScope::class)
@@ -23,37 +24,45 @@ class MapControlEventHandler(
     override val uiState: StateFlow<PlaceMapUiState> = context.uiState
     override val onUpdateState = context.onUpdateState
 
-    override suspend operator fun invoke(event: MapControlEvent) {
+    override operator fun invoke(event: MapControlEvent) {
         when (event) {
             is MapControlEvent.OnMapReady -> {
-                context.mapControlSideEffect.send(MapControlSideEffect.InitMap)
-                val setting =
-                    uiState.await<LoadState.Success<InitialMapSettingUiModel>> { it.initialMapSetting }
-                context.mapControlSideEffect.send(MapControlSideEffect.InitMapManager(setting.value))
+                context.scope.launch {
+                    context.mapControlSideEffect.send(MapControlSideEffect.InitMap)
+                    val setting =
+                        uiState.await<LoadState.Success<InitialMapSettingUiModel>> { it.initialMapSetting }
+                    context.mapControlSideEffect.send(MapControlSideEffect.InitMapManager(setting.value))
+                }
             }
 
             is MapControlEvent.OnPlaceLoadFinish ->
-                context.placeMapSideEffect.send(
-                    PlaceMapSideEffect.PreloadImages(
-                        event.places,
-                    ),
-                )
+                context.scope.launch {
+                    context.placeMapSideEffect.send(
+                        PlaceMapSideEffect.PreloadImages(
+                            event.places,
+                        ),
+                    )
+                }
 
             is MapControlEvent.OnBackToInitialPositionClick -> {
-                logger.log(
-                    PlaceBackToSchoolClick(
-                        baseLogData = logger.getBaseLogData(),
-                    ),
-                )
-                context.mapControlSideEffect.send(MapControlSideEffect.BackToInitialPosition)
+                context.scope.launch {
+                    logger.log(
+                        PlaceBackToSchoolClick(
+                            baseLogData = logger.getBaseLogData(),
+                        ),
+                    )
+                    context.mapControlSideEffect.send(MapControlSideEffect.BackToInitialPosition)
+                }
             }
 
             is MapControlEvent.OnMapDrag -> {
-                context.placeMapSideEffect.send(
-                    PlaceMapSideEffect.MapViewDrag(
-                        uiState.value.isPlacePreviewVisible || uiState.value.isPlaceSecondaryPreviewVisible,
-                    ),
-                )
+                context.scope.launch {
+                    context.placeMapSideEffect.send(
+                        PlaceMapSideEffect.MapViewDrag(
+                            uiState.value.isPlacePreviewVisible || uiState.value.isPlaceSecondaryPreviewVisible,
+                        ),
+                    )
+                }
             }
         }
     }

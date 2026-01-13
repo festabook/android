@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 @Inject
 @ContributesBinding(PlaceMapViewModelScope::class)
@@ -30,44 +31,48 @@ class FilterEventHandler(
     override val uiState: StateFlow<PlaceMapUiState> = context.uiState
     override val onUpdateState = context.onUpdateState
 
-    override suspend operator fun invoke(event: FilterEvent) {
+    override operator fun invoke(event: FilterEvent) {
         when (event) {
             is FilterEvent.OnCategoryClick -> {
-                uiState.await<ListLoadState.Success<PlaceUiModel>> { it.places }
-                unselectPlace()
-                updatePlacesByCategories(event.categories.toList())
+                context.scope.launch {
+                    uiState.await<ListLoadState.Success<PlaceUiModel>> { it.places }
+                    unselectPlace()
+                    updatePlacesByCategories(event.categories.toList())
 
-                onUpdateState.invoke {
-                    it.copy(selectedCategories = event.categories)
+                    onUpdateState.invoke {
+                        it.copy(selectedCategories = event.categories)
+                    }
+
+                    context.mapControlSideEffect.send(MapControlSideEffect.FilterMapByCategory(event.categories.toList()))
+
+                    logger.log(
+                        PlaceCategoryClick(
+                            baseLogData = logger.getBaseLogData(),
+                            currentCategories = event.categories.joinToString(",") { it.toString() },
+                        ),
+                    )
                 }
-
-                context.mapControlSideEffect.send(MapControlSideEffect.FilterMapByCategory(event.categories.toList()))
-
-                logger.log(
-                    PlaceCategoryClick(
-                        baseLogData = logger.getBaseLogData(),
-                        currentCategories = event.categories.joinToString(",") { it.toString() },
-                    ),
-                )
             }
 
             is FilterEvent.OnPlaceLoad -> {
-                val selectedTimeTag =
-                    uiState
-                        .map { it.selectedTimeTag }
-                        .distinctUntilChanged()
-                        .first()
+                context.scope.launch {
+                    val selectedTimeTag =
+                        uiState
+                            .map { it.selectedTimeTag }
+                            .distinctUntilChanged()
+                            .first()
 
-                when (selectedTimeTag) {
-                    is LoadState.Success -> {
-                        updatePlacesByTimeTag(selectedTimeTag.value.timeTagId)
+                    when (selectedTimeTag) {
+                        is LoadState.Success -> {
+                            updatePlacesByTimeTag(selectedTimeTag.value.timeTagId)
+                        }
+
+                        is LoadState.Empty -> {
+                            updatePlacesByTimeTag(TimeTag.EMTPY_TIME_TAG_ID)
+                        }
+
+                        else -> Unit
                     }
-
-                    is LoadState.Empty -> {
-                        updatePlacesByTimeTag(TimeTag.EMTPY_TIME_TAG_ID)
-                    }
-
-                    else -> Unit
                 }
             }
         }

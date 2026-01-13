@@ -16,6 +16,7 @@ import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
@@ -69,7 +70,7 @@ class FilterActionHandlerTest {
                     onUpdateCachedPlace = { cachedPlaceByTimeTag.tryEmit(it) },
                     cachedPlaces = cachedPlaces,
                     cachedPlaceByTimeTag = cachedPlaceByTimeTag,
-                    scope = mockk(relaxed = true),
+                    scope = CoroutineScope(testDispatcher),
                     placeMapSideEffect = mockk(relaxed = true),
                 ),
                 logger = mockk(relaxed = true),

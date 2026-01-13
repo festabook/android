@@ -12,6 +12,7 @@ import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSide
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
@@ -60,7 +61,7 @@ class MapEventActionHandlerTest {
                     onUpdateState = { uiState.update(it) },
                     mapControlSideEffect = mapControlUiEvent,
                     placeMapSideEffect = placeMapUiEvent,
-                    scope = mockk(relaxed = true),
+                    scope = CoroutineScope(testDispatcher),
                     cachedPlaces = mockk(relaxed = true),
                     cachedPlaceByTimeTag = mockk(relaxed = true),
                     onUpdateCachedPlace = mockk(relaxed = true),

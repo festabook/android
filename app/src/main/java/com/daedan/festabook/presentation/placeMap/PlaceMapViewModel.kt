@@ -78,12 +78,10 @@ class PlaceMapViewModel(
     }
 
     fun onPlaceMapEvent(event: PlaceMapEvent) {
-        viewModelScope.launch {
-            when (event) {
-                is FilterEvent -> handlerGraph.filterEventHandler(event)
-                is MapControlEvent -> handlerGraph.mapControlEventHandler(event)
-                is SelectEvent -> handlerGraph.selectEventHandler(event)
-            }
+        when (event) {
+            is FilterEvent -> handlerGraph.filterEventHandler(event)
+            is MapControlEvent -> handlerGraph.mapControlEventHandler(event)
+            is SelectEvent -> handlerGraph.selectEventHandler(event)
         }
     }
 

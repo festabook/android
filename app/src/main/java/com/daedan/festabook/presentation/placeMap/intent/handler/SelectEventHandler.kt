@@ -31,7 +31,7 @@ class SelectEventHandler(
     override val uiState: StateFlow<PlaceMapUiState> = context.uiState
     override val onUpdateState = context.onUpdateState
 
-    override suspend operator fun invoke(event: SelectEvent) {
+    override operator fun invoke(event: SelectEvent) {
         when (event) {
             is SelectEvent.OnPlaceClick -> {
                 selectPlace(event.placeId)
@@ -66,17 +66,19 @@ class SelectEventHandler(
                 if (selectedPlace is LoadState.Success &&
                     selectedTimeTag is LoadState.Success
                 ) {
-                    context.placeMapSideEffect.send(PlaceMapSideEffect.StartPlaceDetail(event.place))
-                    logger.log(
-                        PlacePreviewClick(
-                            baseLogData = logger.getBaseLogData(),
-                            placeName =
-                                selectedPlace.value.place.title
-                                    ?: "undefined",
-                            timeTag = selectedTimeTag.value.name,
-                            category = selectedPlace.value.place.category.name,
-                        ),
-                    )
+                    context.scope.launch {
+                        context.placeMapSideEffect.send(PlaceMapSideEffect.StartPlaceDetail(event.place))
+                        logger.log(
+                            PlacePreviewClick(
+                                baseLogData = logger.getBaseLogData(),
+                                placeName =
+                                    selectedPlace.value.place.title
+                                        ?: "undefined",
+                                timeTag = selectedTimeTag.value.name,
+                                category = selectedPlace.value.place.category.name,
+                            ),
+                        )
+                    }
                 }
             }
 
