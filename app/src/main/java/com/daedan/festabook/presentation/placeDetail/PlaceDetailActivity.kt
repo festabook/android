@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.di.appGraph
@@ -14,6 +16,7 @@ import com.daedan.festabook.presentation.common.getObject
 import com.daedan.festabook.presentation.placeDetail.component.PlaceDetailScreen
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
+import com.daedan.festabook.presentation.theme.FestabookColor
 import dev.zacsweers.metro.Inject
 import timber.log.Timber
 
@@ -33,6 +36,7 @@ class PlaceDetailActivity : ComponentActivity() {
             finish()
             return
         }
+
         viewModel =
             ViewModelProvider(
                 this,
@@ -43,8 +47,14 @@ class PlaceDetailActivity : ComponentActivity() {
                 ),
             )[PlaceDetailViewModel::class.java]
 
-        enableEdgeToEdge()
         setContent {
+            enableEdgeToEdge(
+                statusBarStyle =
+                    SystemBarStyle.light(
+                        scrim = FestabookColor.white.toArgb(),
+                        darkScrim = FestabookColor.white.toArgb(),
+                    ),
+            )
             val placeDetailUiState by viewModel.placeDetail.collectAsStateWithLifecycle()
             PlaceDetailScreen(
                 uiState = placeDetailUiState,
