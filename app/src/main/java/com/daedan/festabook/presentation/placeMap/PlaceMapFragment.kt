@@ -114,11 +114,11 @@ class PlaceMapFragment(
                         )
                     }
 
-                ObserveAsEvents(flow = placeMapViewModel.mapControlUiEvent) { event ->
+                ObserveAsEvents(flow = placeMapViewModel.mapControlSideEffect) { event ->
                     mapControlEventHandler(event)
                 }
 
-                ObserveAsEvents(flow = placeMapViewModel.placeMapUiEvent) { event ->
+                ObserveAsEvents(flow = placeMapViewModel.placeMapSideEffect) { event ->
                     placeMapEventHandler(event)
                 }
 

@@ -7,28 +7,28 @@ import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceCoordinateUiModel
 
-sealed interface MapControlEvent {
-    data object InitMap : MapControlEvent
+sealed interface MapControlSideEffect {
+    data object InitMap : MapControlSideEffect
 
     data class InitMapManager(
         val initialMapSetting: InitialMapSettingUiModel,
-    ) : MapControlEvent
+    ) : MapControlSideEffect
 
-    data object BackToInitialPosition : MapControlEvent
+    data object BackToInitialPosition : MapControlSideEffect
 
     data class SetMarkerByTimeTag(
         val placeGeographies: List<PlaceCoordinateUiModel>,
         val selectedTimeTag: LoadState<TimeTag>,
         val isInitial: Boolean,
-    ) : MapControlEvent
+    ) : MapControlSideEffect
 
     data class FilterMapByCategory(
         val selectedCategories: List<PlaceCategoryUiModel>,
-    ) : MapControlEvent
+    ) : MapControlSideEffect
 
     data class SelectMarker(
         val placeDetail: LoadState<PlaceDetailUiModel>,
-    ) : MapControlEvent
+    ) : MapControlSideEffect
 
-    data object UnselectMarker : MapControlEvent
+    data object UnselectMarker : MapControlSideEffect
 }

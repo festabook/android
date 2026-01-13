@@ -6,8 +6,8 @@ import com.daedan.festabook.domain.repository.PlaceDetailRepository
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeDetail.model.toUiModel
 import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import com.daedan.festabook.presentation.placeMap.intent.state.await
@@ -28,8 +28,8 @@ class SelectActionHandler(
     override val uiState: StateFlow<PlaceMapUiState>,
     override val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
     private val filterActionHandler: FilterActionHandler,
-    private val _placeMapUiEvent: Channel<PlaceMapEvent>,
-    private val _mapControlUiEvent: Channel<MapControlEvent>,
+    private val _placeMapSideEffect: Channel<PlaceMapSideEffect>,
+    private val _mapControlSideEffect: Channel<MapControlSideEffect>,
     private val logger: DefaultFirebaseLogger,
     private val placeDetailRepository: PlaceDetailRepository,
     private val scope: CoroutineScope,
@@ -69,7 +69,7 @@ class SelectActionHandler(
                 if (selectedPlace is LoadState.Success &&
                     selectedTimeTag is LoadState.Success
                 ) {
-                    _placeMapUiEvent.send(PlaceMapEvent.StartPlaceDetail(action.place))
+                    _placeMapSideEffect.send(PlaceMapSideEffect.StartPlaceDetail(action.place))
                     logger.log(
                         PlacePreviewClick(
                             baseLogData = logger.getBaseLogData(),
@@ -100,7 +100,7 @@ class SelectActionHandler(
                     onUpdateState.invoke {
                         it.copy(selectedPlace = newSelectedPlace)
                     }
-                    _mapControlUiEvent.send(MapControlEvent.SelectMarker(newSelectedPlace))
+                    _mapControlSideEffect.send(MapControlSideEffect.SelectMarker(newSelectedPlace))
                     val selectedTimeTag = uiState.value.selectedTimeTag
                     val timeTagName =
                         if (selectedTimeTag is LoadState.Success) selectedTimeTag.value.name else "undefined"
@@ -122,7 +122,7 @@ class SelectActionHandler(
 
     private fun unselectPlace() {
         onUpdateState.invoke { it.copy(selectedPlace = LoadState.Empty) }
-        _mapControlUiEvent.trySend(MapControlEvent.UnselectMarker)
+        _mapControlSideEffect.trySend(MapControlSideEffect.UnselectMarker)
     }
 
     private fun onDaySelected(item: TimeTag) {
@@ -133,8 +133,8 @@ class SelectActionHandler(
         scope.launch {
             val placeGeographies =
                 uiState.await<LoadState.Success<List<PlaceCoordinateUiModel>>> { it.placeGeographies }
-            _mapControlUiEvent.send(
-                MapControlEvent.SetMarkerByTimeTag(
+            _mapControlSideEffect.send(
+                MapControlSideEffect.SetMarkerByTimeTag(
                     placeGeographies = placeGeographies.value,
                     selectedTimeTag = LoadState.Success(item),
                     isInitial = false,

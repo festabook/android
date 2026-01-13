@@ -6,7 +6,7 @@ import com.daedan.festabook.observeMultipleEvent
 import com.daedan.festabook.placeMap.FAKE_PLACES_CATEGORY_FIXTURE
 import com.daedan.festabook.placeMap.FAKE_TIME_TAG
 import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.handler.FilterActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
@@ -48,7 +48,7 @@ class FilterActionHandlerTest {
     private val cachedPlaceByTimeTag =
         MutableStateFlow(FAKE_PLACES_CATEGORY_FIXTURE.map { it.toUiModel() })
 
-    private val mapControlUiEvent: Channel<MapControlEvent> =
+    private val mapControlUiEvent: Channel<MapControlSideEffect> =
         Channel(
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
@@ -62,7 +62,7 @@ class FilterActionHandlerTest {
         filterActionHandler =
             FilterActionHandler(
                 uiState = uiState,
-                _mapControlUiEvent = mapControlUiEvent,
+                _mapControlSideEffect = mapControlUiEvent,
                 onUpdateState = { uiState.update(it) },
                 onUpdateCachedPlace = { cachedPlaceByTimeTag.tryEmit(it) },
                 cachedPlaces = cachedPlaces,
@@ -81,7 +81,7 @@ class FilterActionHandlerTest {
         runTest {
             // given
             val categories = setOf(PlaceCategoryUiModel.BOOTH)
-            val eventResult = mutableListOf<MapControlEvent>()
+            val eventResult = mutableListOf<MapControlSideEffect>()
             observeMultipleEvent(mapControlUiEvent.consumeAsFlow(), eventResult)
             val places = ListLoadState.Success(FAKE_PLACES_CATEGORY_FIXTURE.map { it.toUiModel() })
             uiState.update { it.copy(places = places) }
@@ -99,8 +99,8 @@ class FilterActionHandlerTest {
             )
 
             assertThat(eventResult).containsExactly(
-                MapControlEvent.UnselectMarker,
-                MapControlEvent.FilterMapByCategory(categories.toList()),
+                MapControlSideEffect.UnselectMarker,
+                MapControlSideEffect.FilterMapByCategory(categories.toList()),
             )
             assertThat(uiState.value.places).isEqualTo(
                 ListLoadState.Success(emptyList<PlaceUiModel>()),

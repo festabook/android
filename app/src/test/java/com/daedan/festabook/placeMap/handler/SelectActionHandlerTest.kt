@@ -9,8 +9,8 @@ import com.daedan.festabook.placeDetail.FAKE_PLACE_DETAIL
 import com.daedan.festabook.placeMap.FAKE_TIME_TAG
 import com.daedan.festabook.presentation.placeDetail.model.toUiModel
 import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.handler.SelectActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
@@ -47,12 +47,12 @@ class SelectActionHandlerTest {
 
     private lateinit var placeDetailRepository: PlaceDetailRepository
 
-    private val mapControlUiEvent: Channel<MapControlEvent> =
+    private val mapControlUiEvent: Channel<MapControlSideEffect> =
         Channel(
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
 
-    private val placeMapUiEvent: Channel<PlaceMapEvent> =
+    private val placeMapUiEvent: Channel<PlaceMapSideEffect> =
         Channel(
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
@@ -65,8 +65,8 @@ class SelectActionHandlerTest {
 
         selectActionHandler =
             SelectActionHandler(
-                _mapControlUiEvent = mapControlUiEvent,
-                _placeMapUiEvent = placeMapUiEvent,
+                _mapControlSideEffect = mapControlUiEvent,
+                _placeMapSideEffect = placeMapUiEvent,
                 filterActionHandler = mockk(relaxed = true),
                 logger = mockk(relaxed = true),
                 uiState = uiState,
@@ -104,7 +104,7 @@ class SelectActionHandlerTest {
             val expected = LoadState.Success(FAKE_PLACE_DETAIL.toUiModel())
             val actual = uiState.value.selectedPlace
             assertThat(actual).isEqualTo(expected)
-            assertThat(event).isEqualTo(MapControlEvent.SelectMarker(expected))
+            assertThat(event).isEqualTo(MapControlSideEffect.SelectMarker(expected))
         }
 
     @Test
@@ -128,7 +128,7 @@ class SelectActionHandlerTest {
             val expected = LoadState.Success(FAKE_ETC_PLACE_DETAIL.toUiModel())
             val actual = uiState.value.selectedPlace
             assertThat(actual).isEqualTo(expected)
-            assertThat(event).isEqualTo(MapControlEvent.SelectMarker(expected))
+            assertThat(event).isEqualTo(MapControlSideEffect.SelectMarker(expected))
         }
 
     @Test
@@ -154,7 +154,7 @@ class SelectActionHandlerTest {
             val expected = LoadState.Empty
             val actual = uiState.value.selectedPlace
             assertThat(actual).isEqualTo(expected)
-            assertThat(event).isEqualTo(MapControlEvent.UnselectMarker)
+            assertThat(event).isEqualTo(MapControlSideEffect.UnselectMarker)
         }
 
     @Test
@@ -199,7 +199,7 @@ class SelectActionHandlerTest {
             advanceUntilIdle()
 
             assertThat(event).isEqualTo(
-                PlaceMapEvent.StartPlaceDetail(expected),
+                PlaceMapSideEffect.StartPlaceDetail(expected),
             )
         }
 
@@ -233,6 +233,6 @@ class SelectActionHandlerTest {
             val event = eventResult.await()
             advanceUntilIdle()
 
-            assertThat(event).isEqualTo(MapControlEvent.UnselectMarker)
+            assertThat(event).isEqualTo(MapControlSideEffect.UnselectMarker)
         }
 }

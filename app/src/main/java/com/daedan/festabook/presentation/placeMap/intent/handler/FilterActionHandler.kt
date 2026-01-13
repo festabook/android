@@ -7,7 +7,7 @@ import com.daedan.festabook.domain.model.PlaceCategory
 import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.map
 class FilterActionHandler(
     override val uiState: StateFlow<PlaceMapUiState>,
     override val onUpdateState: ((PlaceMapUiState) -> PlaceMapUiState) -> Unit,
-    private val _mapControlUiEvent: Channel<MapControlEvent>,
+    private val _mapControlSideEffect: Channel<MapControlSideEffect>,
     private val logger: DefaultFirebaseLogger,
     private val onUpdateCachedPlace: (List<PlaceUiModel>) -> Unit,
     @param:CachedPlaces private val cachedPlaces: StateFlow<List<PlaceUiModel>>,
@@ -46,7 +46,7 @@ class FilterActionHandler(
                     it.copy(selectedCategories = action.categories)
                 }
 
-                _mapControlUiEvent.send(MapControlEvent.FilterMapByCategory(action.categories.toList()))
+                _mapControlSideEffect.send(MapControlSideEffect.FilterMapByCategory(action.categories.toList()))
 
                 logger.log(
                     PlaceCategoryClick(
@@ -80,7 +80,7 @@ class FilterActionHandler(
 
     private fun unselectPlace() {
         onUpdateState.invoke { it.copy(selectedPlace = LoadState.Empty) }
-        _mapControlUiEvent.trySend(MapControlEvent.UnselectMarker)
+        _mapControlSideEffect.trySend(MapControlSideEffect.UnselectMarker)
     }
 
     fun updatePlacesByTimeTag(timeTagId: Long) {

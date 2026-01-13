@@ -5,7 +5,7 @@ import com.daedan.festabook.domain.model.TimeTag
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
 import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
@@ -22,13 +22,13 @@ class MapControlEventHandler(
     private val viewModel: PlaceMapViewModel,
     private val mapDelegate: MapDelegate,
     private val mapManagerDelegate: MapManagerDelegate,
-) : EventHandler<MapControlEvent> {
+) : EventHandler<MapControlSideEffect> {
     private val uiState get() = viewModel.uiState.value
     private val mapManager: MapManager? get() = mapManagerDelegate.value
 
-    override suspend operator fun invoke(event: MapControlEvent) {
+    override suspend operator fun invoke(event: MapControlSideEffect) {
         when (event) {
-            is MapControlEvent.InitMap -> {
+            is MapControlSideEffect.InitMap -> {
                 val naverMap = mapDelegate.await()
                 naverMap.addOnLocationChangeListener {
                     logger.log(
@@ -40,7 +40,7 @@ class MapControlEventHandler(
                 naverMap.locationSource = locationSource
             }
 
-            is MapControlEvent.InitMapManager -> {
+            is MapControlSideEffect.InitMapManager -> {
                 val naverMap = mapDelegate.await()
                 if (mapManager == null) {
                     val graph =
@@ -59,11 +59,11 @@ class MapControlEventHandler(
                 }
             }
 
-            is MapControlEvent.BackToInitialPosition -> {
+            is MapControlSideEffect.BackToInitialPosition -> {
                 mapManager?.moveToPosition()
             }
 
-            is MapControlEvent.SetMarkerByTimeTag -> {
+            is MapControlSideEffect.SetMarkerByTimeTag -> {
                 if (event.isInitial) {
                     mapManager?.setupMarker(event.placeGeographies)
                 }
@@ -83,7 +83,7 @@ class MapControlEventHandler(
                 }
             }
 
-            is MapControlEvent.FilterMapByCategory -> {
+            is MapControlSideEffect.FilterMapByCategory -> {
                 val selectedCategories = event.selectedCategories
                 if (selectedCategories.isEmpty()) {
                     mapManager?.clearFilter()
@@ -92,7 +92,7 @@ class MapControlEventHandler(
                 }
             }
 
-            is MapControlEvent.SelectMarker -> {
+            is MapControlSideEffect.SelectMarker -> {
                 when (val place = event.placeDetail) {
                     is LoadState.Success -> {
                         mapManager?.selectMarker(place.value.place.id)
@@ -118,7 +118,7 @@ class MapControlEventHandler(
                 }
             }
 
-            is MapControlEvent.UnselectMarker -> {
+            is MapControlSideEffect.UnselectMarker -> {
                 mapManager?.unselectMarker()
             }
         }

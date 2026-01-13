@@ -9,8 +9,8 @@ import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
 import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
 import com.daedan.festabook.presentation.placeMap.intent.action.PlaceMapAction
 import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
@@ -48,17 +48,17 @@ class PlaceMapViewModel(
     private val _uiState = MutableStateFlow(PlaceMapUiState())
     val uiState: StateFlow<PlaceMapUiState> = _uiState.asStateFlow()
 
-    private val _placeMapUiEvent = Channel<PlaceMapEvent>()
-    val placeMapUiEvent: Flow<PlaceMapEvent> = _placeMapUiEvent.receiveAsFlow()
+    private val _placeMapSideEffect = Channel<PlaceMapSideEffect>()
+    val placeMapSideEffect: Flow<PlaceMapSideEffect> = _placeMapSideEffect.receiveAsFlow()
 
-    private val _mapControlUiEvent = Channel<MapControlEvent>()
-    val mapControlUiEvent: Flow<MapControlEvent> = _mapControlUiEvent.receiveAsFlow()
+    private val _mapControlSideEffect = Channel<MapControlSideEffect>()
+    val mapControlSideEffect: Flow<MapControlSideEffect> = _mapControlSideEffect.receiveAsFlow()
 
     private val handlerGraph =
         handlerGraphFactory
             .create(
-                mapControlUiEvent = _mapControlUiEvent,
-                placeMapUiEvent = _placeMapUiEvent,
+                mapControlSideEffect = _mapControlSideEffect,
+                placeMapSideEffect = _placeMapSideEffect,
                 uiState = uiState,
                 cachedPlaces = cachedPlaces,
                 cachedPlaceByTimeTag = cachedPlaceByTimeTag,
@@ -85,8 +85,8 @@ class PlaceMapViewModel(
     }
 
     fun onMenuItemReClicked() {
-        _placeMapUiEvent.trySend(
-            PlaceMapEvent.MenuItemReClicked(
+        _placeMapSideEffect.trySend(
+            PlaceMapSideEffect.MenuItemReClicked(
                 uiState.value.isPlacePreviewVisible || uiState.value.isPlaceSecondaryPreviewVisible,
             ),
         )
@@ -126,8 +126,8 @@ class PlaceMapViewModel(
 
             val placeGeographies =
                 uiState.await<LoadState.Success<List<PlaceCoordinateUiModel>>> { it.placeGeographies }
-            _mapControlUiEvent.send(
-                MapControlEvent.SetMarkerByTimeTag(
+            _mapControlSideEffect.send(
+                MapControlSideEffect.SetMarkerByTimeTag(
                     placeGeographies = placeGeographies.value,
                     selectedTimeTag = selectedTimeTag,
                     isInitial = true,
@@ -186,7 +186,7 @@ class PlaceMapViewModel(
                     .filterIsInstance<LoadState.Error>()
                     .debounce(1000)
                     .collect {
-                        _placeMapUiEvent.send(PlaceMapEvent.ShowErrorSnackBar(it))
+                        _placeMapSideEffect.send(PlaceMapSideEffect.ShowErrorSnackBar(it))
                     }
             }
         }

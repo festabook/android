@@ -1,7 +1,7 @@
 package com.daedan.festabook.di.placeMapHandler
 
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.handler.FilterActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.handler.MapEventActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.handler.SelectActionHandler
@@ -25,8 +25,8 @@ interface PlaceMapHandlerGraph {
     @GraphExtension.Factory
     interface Factory {
         fun create(
-            @Provides mapControlUiEvent: Channel<MapControlEvent>,
-            @Provides placeMapUiEvent: Channel<PlaceMapEvent>,
+            @Provides mapControlSideEffect: Channel<MapControlSideEffect>,
+            @Provides placeMapSideEffect: Channel<PlaceMapSideEffect>,
             @Provides uiState: StateFlow<PlaceMapUiState>,
             @Provides @CachedPlaces cachedPlaces: StateFlow<List<PlaceUiModel>>,
             @Provides @CachedPlaceByTimeTag cachedPlaceByTimeTag: StateFlow<List<PlaceUiModel>>,

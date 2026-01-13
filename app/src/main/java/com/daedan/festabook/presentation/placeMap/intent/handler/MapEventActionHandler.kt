@@ -3,8 +3,8 @@ package com.daedan.festabook.presentation.placeMap.intent.handler
 import com.daedan.festabook.di.placeMapHandler.PlaceMapViewModelScope
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import com.daedan.festabook.presentation.placeMap.intent.state.await
@@ -20,22 +20,22 @@ import kotlinx.coroutines.flow.StateFlow
 class MapEventActionHandler(
     override val uiState: StateFlow<PlaceMapUiState>,
     override val onUpdateState: ((before: PlaceMapUiState) -> PlaceMapUiState) -> Unit,
-    private val _mapControlUiEvent: Channel<MapControlEvent>,
-    private val _placeMapUiEvent: Channel<PlaceMapEvent>,
+    private val _mapControlSideEffect: Channel<MapControlSideEffect>,
+    private val _placeMapSideEffect: Channel<PlaceMapSideEffect>,
     private val logger: DefaultFirebaseLogger,
 ) : ActionHandler<MapEventAction, PlaceMapUiState> {
     override suspend operator fun invoke(action: MapEventAction) {
         when (action) {
             is MapEventAction.OnMapReady -> {
-                _mapControlUiEvent.send(MapControlEvent.InitMap)
+                _mapControlSideEffect.send(MapControlSideEffect.InitMap)
                 val setting =
                     uiState.await<LoadState.Success<InitialMapSettingUiModel>> { it.initialMapSetting }
-                _mapControlUiEvent.send(MapControlEvent.InitMapManager(setting.value))
+                _mapControlSideEffect.send(MapControlSideEffect.InitMapManager(setting.value))
             }
 
             is MapEventAction.OnPlaceLoadFinish ->
-                _placeMapUiEvent.send(
-                    PlaceMapEvent.PreloadImages(
+                _placeMapSideEffect.send(
+                    PlaceMapSideEffect.PreloadImages(
                         action.places,
                     ),
                 )
@@ -46,12 +46,12 @@ class MapEventActionHandler(
                         baseLogData = logger.getBaseLogData(),
                     ),
                 )
-                _mapControlUiEvent.send(MapControlEvent.BackToInitialPosition)
+                _mapControlSideEffect.send(MapControlSideEffect.BackToInitialPosition)
             }
 
             is MapEventAction.OnMapDrag -> {
-                _placeMapUiEvent.send(
-                    PlaceMapEvent.MapViewDrag(
+                _placeMapSideEffect.send(
+                    PlaceMapSideEffect.MapViewDrag(
                         uiState.value.isPlacePreviewVisible || uiState.value.isPlaceSecondaryPreviewVisible,
                     ),
                 )

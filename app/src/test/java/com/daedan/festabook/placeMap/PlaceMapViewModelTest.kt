@@ -9,7 +9,7 @@ import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.intent.action.FilterAction
 import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
 import com.daedan.festabook.presentation.placeMap.intent.action.SelectAction
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
@@ -240,7 +240,7 @@ class PlaceMapViewModelTest {
     fun `메뉴 아이템 재클릭 이벤트를 발송할 수 있다`() =
         runTest {
             // given
-            val event = observeEvent(placeMapViewModel.placeMapUiEvent)
+            val event = observeEvent(placeMapViewModel.placeMapSideEffect)
 
             // when
             placeMapViewModel.onMenuItemReClicked()
@@ -248,7 +248,7 @@ class PlaceMapViewModelTest {
             advanceUntilIdle()
 
             // then
-            assertThat(result).isInstanceOf(PlaceMapEvent.MenuItemReClicked::class.java)
+            assertThat(result).isInstanceOf(PlaceMapSideEffect.MenuItemReClicked::class.java)
         }
 
     @Test
@@ -260,7 +260,7 @@ class PlaceMapViewModelTest {
 
             // when
             placeMapViewModel = PlaceMapViewModel(placeListRepository, handlerGraphFactory)
-            val event = observeEvent(placeMapViewModel.placeMapUiEvent)
+            val event = observeEvent(placeMapViewModel.placeMapSideEffect)
             advanceUntilIdle()
 
             // then
@@ -268,7 +268,7 @@ class PlaceMapViewModelTest {
             advanceUntilIdle()
 
             assertThat(result).isEqualTo(
-                PlaceMapEvent.ShowErrorSnackBar(
+                PlaceMapSideEffect.ShowErrorSnackBar(
                     LoadState.Error(throwable),
                 ),
             )
@@ -283,7 +283,7 @@ class PlaceMapViewModelTest {
 
             // when
             placeMapViewModel = PlaceMapViewModel(placeListRepository, handlerGraphFactory)
-            val event = observeEvent(placeMapViewModel.placeMapUiEvent)
+            val event = observeEvent(placeMapViewModel.placeMapSideEffect)
             advanceUntilIdle()
 
             // then
@@ -291,7 +291,7 @@ class PlaceMapViewModelTest {
             advanceUntilIdle()
 
             assertThat(result).isEqualTo(
-                PlaceMapEvent.ShowErrorSnackBar(
+                PlaceMapSideEffect.ShowErrorSnackBar(
                     LoadState.Error(throwable),
                 ),
             )

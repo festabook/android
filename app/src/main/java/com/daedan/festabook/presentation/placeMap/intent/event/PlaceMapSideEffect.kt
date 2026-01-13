@@ -4,24 +4,24 @@ import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 
-sealed interface PlaceMapEvent {
+sealed interface PlaceMapSideEffect {
     data class StartPlaceDetail(
         val placeDetail: LoadState.Success<PlaceDetailUiModel>,
-    ) : PlaceMapEvent
+    ) : PlaceMapSideEffect
 
     data class PreloadImages(
         val places: List<PlaceUiModel>,
-    ) : PlaceMapEvent
+    ) : PlaceMapSideEffect
 
     data class ShowErrorSnackBar(
         val error: LoadState.Error,
-    ) : PlaceMapEvent
+    ) : PlaceMapSideEffect
 
     data class MenuItemReClicked(
         val isPreviewVisible: Boolean,
-    ) : PlaceMapEvent
+    ) : PlaceMapSideEffect
 
     data class MapViewDrag(
         val isPreviewVisible: Boolean,
-    ) : PlaceMapEvent
+    ) : PlaceMapSideEffect
 }

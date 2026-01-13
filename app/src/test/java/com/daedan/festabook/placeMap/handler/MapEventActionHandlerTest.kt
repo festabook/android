@@ -5,8 +5,8 @@ import com.daedan.festabook.observeEvent
 import com.daedan.festabook.observeMultipleEvent
 import com.daedan.festabook.placeMap.FAKE_INITIAL_MAP_SETTING
 import com.daedan.festabook.presentation.placeMap.intent.action.MapEventAction
-import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
-import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.handler.MapEventActionHandler
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
@@ -38,12 +38,12 @@ class MapEventActionHandlerTest {
 
     private lateinit var uiState: MutableStateFlow<PlaceMapUiState>
 
-    private val mapControlUiEvent: Channel<MapControlEvent> =
+    private val mapControlUiEvent: Channel<MapControlSideEffect> =
         Channel(
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
 
-    private val placeMapUiEvent: Channel<PlaceMapEvent> =
+    private val placeMapUiEvent: Channel<PlaceMapSideEffect> =
         Channel(
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
@@ -56,8 +56,8 @@ class MapEventActionHandlerTest {
             MapEventActionHandler(
                 uiState = uiState,
                 onUpdateState = { uiState.update(it) },
-                _mapControlUiEvent = mapControlUiEvent,
-                _placeMapUiEvent = placeMapUiEvent,
+                _mapControlSideEffect = mapControlUiEvent,
+                _placeMapSideEffect = placeMapUiEvent,
                 logger = mockk(relaxed = true),
             )
     }
@@ -81,14 +81,14 @@ class MapEventActionHandlerTest {
             advanceUntilIdle()
 
             // then
-            assertThat(event).isEqualTo(MapControlEvent.BackToInitialPosition)
+            assertThat(event).isEqualTo(MapControlSideEffect.BackToInitialPosition)
         }
 
     @Test
     fun `지도가 준비되었을 때 지도 관련 로직 초기화 이벤트를 방출할 수 있다`() =
         runTest {
             // given
-            val eventResult = mutableListOf<MapControlEvent>()
+            val eventResult = mutableListOf<MapControlSideEffect>()
             observeMultipleEvent(mapControlUiEvent.receiveAsFlow(), eventResult)
 
             val initialSetting = FAKE_INITIAL_MAP_SETTING
@@ -102,8 +102,8 @@ class MapEventActionHandlerTest {
 
             // then
             assertThat(eventResult).containsExactly(
-                MapControlEvent.InitMap,
-                MapControlEvent.InitMapManager(initialSetting),
+                MapControlSideEffect.InitMap,
+                MapControlSideEffect.InitMapManager(initialSetting),
             )
         }
 
@@ -120,7 +120,7 @@ class MapEventActionHandlerTest {
             // then
             val event = eventResult.await()
             advanceUntilIdle()
-            assertThat(event).isEqualTo(PlaceMapEvent.PreloadImages(emptyList()))
+            assertThat(event).isEqualTo(PlaceMapSideEffect.PreloadImages(emptyList()))
         }
 
     @Test
@@ -136,7 +136,7 @@ class MapEventActionHandlerTest {
             advanceUntilIdle()
 
             // then
-            assertThat(event).isEqualTo(MapControlEvent.BackToInitialPosition)
+            assertThat(event).isEqualTo(MapControlSideEffect.BackToInitialPosition)
         }
 
     @Test
@@ -153,6 +153,6 @@ class MapEventActionHandlerTest {
             val event = eventResult.await()
             advanceUntilIdle()
 
-            assertThat(event).isEqualTo(PlaceMapEvent.MapViewDrag(false))
+            assertThat(event).isEqualTo(PlaceMapSideEffect.MapViewDrag(false))
         }
 }
