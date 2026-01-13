@@ -37,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -222,7 +223,7 @@ private fun PlaceDetailContent(
     placeDetail: PlaceDetailUiModel,
     modifier: Modifier = Modifier,
 ) {
-    var isDescriptionExpand by remember { mutableStateOf(false) }
+    var isDescriptionExpand by remember { mutableStateOf(true) }
 
     Column(
         modifier = modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
@@ -276,57 +277,54 @@ private fun PlaceDetailInfo(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        Row(
+        PlaceDetailInfoItem(
             modifier = Modifier.padding(top = festabookSpacing.paddingBody4),
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_place_detail_clock),
-                contentDescription = stringResource(R.string.content_description_iv_clock),
-            )
+            painter = painterResource(R.drawable.ic_place_detail_clock),
+            contentDescription = stringResource(R.string.content_description_iv_clock),
+            text = formattedDate(placeDetail.startTime, placeDetail.endTime),
+        )
 
-            Text(
-                modifier = Modifier.padding(start = festabookSpacing.paddingBody1),
-                text = formattedDate(placeDetail.startTime, placeDetail.endTime),
-                style = FestabookTypography.bodySmall,
-                color = FestabookColor.gray500,
-            )
-        }
-
-        Row(
+        PlaceDetailInfoItem(
             modifier = Modifier.padding(top = festabookSpacing.paddingBody1),
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_location),
-                contentDescription = stringResource(R.string.content_description_iv_location),
-            )
+            painter = painterResource(R.drawable.ic_location),
+            contentDescription = stringResource(R.string.content_description_iv_location),
+            text =
+                placeDetail.place.location
+                    ?: stringResource(R.string.place_list_default_location),
+        )
 
-            Text(
-                modifier = Modifier.padding(start = festabookSpacing.paddingBody1),
-                text =
-                    placeDetail.place.location
-                        ?: stringResource(R.string.place_list_default_location),
-                style = FestabookTypography.bodySmall,
-                color = FestabookColor.gray500,
-            )
-        }
-
-        Row(
+        PlaceDetailInfoItem(
             modifier = Modifier.padding(top = festabookSpacing.paddingBody1),
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_place_detail_host),
-                contentDescription = stringResource(R.string.content_description_iv_host),
-            )
+            painter = painterResource(R.drawable.ic_place_detail_host),
+            contentDescription = stringResource(R.string.content_description_iv_host),
+            text =
+                placeDetail.host
+                    ?: stringResource(R.string.place_detail_default_host),
+        )
+    }
+}
 
-            Text(
-                modifier = Modifier.padding(start = festabookSpacing.paddingBody1),
-                text =
-                    placeDetail.host
-                        ?: stringResource(R.string.place_detail_default_host),
-                style = FestabookTypography.bodySmall,
-                color = FestabookColor.gray500,
-            )
-        }
+@Composable
+private fun PlaceDetailInfoItem(
+    painter: Painter,
+    contentDescription: String,
+    text: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+    ) {
+        Icon(
+            painter = painter,
+            contentDescription = contentDescription,
+        )
+
+        Text(
+            modifier = Modifier.padding(start = festabookSpacing.paddingBody1),
+            text = text,
+            style = FestabookTypography.bodySmall,
+            color = FestabookColor.gray500,
+        )
     }
 }
 
