@@ -183,6 +183,9 @@ dependencies {
     implementation(libs.ui.tooling)
     implementation(libs.androidx.material3)
     implementation(libs.photoview.dialog)
+    implementation(libs.landscapist.coil3)
+    implementation(libs.landscapist.placeholder)
+    implementation(libs.landscapist.zoomable)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.androidx.core.testing)
@@ -191,4 +194,13 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.logging.interceptor)
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.junit.jupiter.params)
+    testImplementation(libs.junit.platform.launcher)
+    testRuntimeOnly(libs.junit.vintage.engine)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }

@@ -4,7 +4,7 @@ sealed interface LineupUiState {
     data object Loading : LineupUiState
 
     data class Success(
-        val lineups: LineUpItemGroupUiModel,
+        val lineups: List<LineUpItemOfDayUiModel>,
     ) : LineupUiState
 
     data class Error(

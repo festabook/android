@@ -11,7 +11,7 @@ import com.daedan.festabook.presentation.theme.FestabookTypography
 import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
-fun Header(
+fun FestabookTopAppBar(
     title: String,
     modifier: Modifier = Modifier,
     style: TextStyle = FestabookTypography.displayLarge,
@@ -32,6 +32,6 @@ fun Header(
 
 @Composable
 @Preview(showBackground = true)
-private fun HeaderPreview() {
-    Header(title = "FestaBook")
+private fun FestabookTopAppBarPreview() {
+    FestabookTopAppBar(title = "FestaBook")
 }

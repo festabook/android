@@ -113,7 +113,7 @@
                 android:background="@color/transparent"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="4dp"
-                android:text="@string/home_check_schedule_text"
+                android:text="@string/home_navigate_to_schedule_text"
                 android:textColor="@color/gray400"
                 app:icon="@drawable/ic_arrow_forward_right"
                 app:iconGravity="end"

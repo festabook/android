@@ -1,16 +1,19 @@
 package com.daedan.festabook.presentation.home
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
 import com.daedan.festabook.domain.repository.FestivalRepository
-import com.daedan.festabook.presentation.common.SingleLiveData
 import com.daedan.festabook.presentation.home.adapter.FestivalUiState
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
@@ -19,14 +22,15 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val festivalRepository: FestivalRepository,
 ) : ViewModel() {
-    private val _festivalUiState = MutableLiveData<FestivalUiState>()
-    val festivalUiState: LiveData<FestivalUiState> get() = _festivalUiState
+    private val _festivalUiState = MutableStateFlow<FestivalUiState>(FestivalUiState.Loading)
+    val festivalUiState: StateFlow<FestivalUiState> = _festivalUiState.asStateFlow()
 
-    private val _lineupUiState = MutableLiveData<LineupUiState>()
-    val lineupUiState: LiveData<LineupUiState> get() = _lineupUiState
+    private val _lineupUiState = MutableStateFlow<LineupUiState>(LineupUiState.Loading)
+    val lineupUiState: StateFlow<LineupUiState> = _lineupUiState.asStateFlow()
 
-    private val _navigateToScheduleEvent: SingleLiveData<Unit> = SingleLiveData()
-    val navigateToScheduleEvent: LiveData<Unit> get() = _navigateToScheduleEvent
+    private val _navigateToScheduleEvent =
+        MutableSharedFlow<Unit>(replay = 0, extraBufferCapacity = 1)
+    val navigateToScheduleEvent: SharedFlow<Unit> = _navigateToScheduleEvent.asSharedFlow()
 
     init {
         loadFestival()
@@ -48,7 +52,7 @@ class HomeViewModel(
     }
 
     fun navigateToScheduleClick() {
-        _navigateToScheduleEvent.setValue(Unit)
+        _navigateToScheduleEvent.tryEmit(Unit)
     }
 
     private fun loadLineup() {
@@ -58,10 +62,8 @@ class HomeViewModel(
             val result = festivalRepository.getLineUpGroupByDate()
             result
                 .onSuccess { lineups ->
-                    _lineupUiState.value =
-                        LineupUiState.Success(
-                            lineups.toUiModel(),
-                        )
+                    val lineupItems = lineups.toUiModel().getLineupItems()
+                    _lineupUiState.value = LineupUiState.Success(lineupItems)
                 }.onFailure {
                     _lineupUiState.value = LineupUiState.Error(it)
                 }

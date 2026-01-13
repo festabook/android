@@ -8,7 +8,6 @@ import com.daedan.festabook.di.viewmodel.MetroViewModelFactory
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.main.MainActivity
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
-import com.daedan.festabook.presentation.schedule.ScheduleViewModel
 import com.daedan.festabook.presentation.splash.SplashActivity
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -41,8 +40,6 @@ interface FestaBookAppGraph {
     val defaultFirebaseLogger: DefaultFirebaseLogger
 
     val metroViewModelFactory: MetroViewModelFactory
-
-    val scheduleViewModelFactory: ScheduleViewModel.Factory
 }
 
 val Context.appGraph get() = (applicationContext as FestaBookApp).festaBookGraph

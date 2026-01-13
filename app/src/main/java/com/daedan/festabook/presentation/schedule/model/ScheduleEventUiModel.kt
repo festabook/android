@@ -10,7 +10,6 @@ data class ScheduleEventUiModel(
     val endTime: String,
     val title: String,
     val location: String,
-    val isBookmarked: Boolean = false,
 )
 
 fun ScheduleEvent.toUiModel(): ScheduleEventUiModel =

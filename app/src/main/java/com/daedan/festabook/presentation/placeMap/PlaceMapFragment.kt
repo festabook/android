@@ -11,14 +11,12 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import coil3.ImageLoader
-import coil3.asImage
+import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import com.daedan.festabook.R
@@ -29,6 +27,7 @@ import com.daedan.festabook.logging.logger
 import com.daedan.festabook.presentation.common.BaseFragment
 import com.daedan.festabook.presentation.common.ObserveAsEvents
 import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
+import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailActivity
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
@@ -48,6 +47,7 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -151,16 +151,10 @@ class PlaceMapFragment(
         places: List<PlaceUiModel?>,
         maxSize: Int = 20,
     ) {
-        val imageLoader = ImageLoader(context)
+        val imageLoader = context.imageLoader
         val deferredList = mutableListOf<Deferred<ImageResult?>>()
-        val defaultImage =
-            ContextCompat
-                .getDrawable(
-                    context,
-                    R.drawable.img_fallback,
-                )?.asImage()
 
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             places
                 .take(maxSize)
                 .filterNotNull()
@@ -170,19 +164,15 @@ class PlaceMapFragment(
                             val request =
                                 ImageRequest
                                     .Builder(context)
-                                    .data(place.imageUrl)
-                                    .error {
-                                        defaultImage
-                                    }.fallback {
-                                        defaultImage
-                                    }.build()
+                                    .data(place.imageUrl.convertImageUrl())
+                                    .build()
 
                             runCatching {
                                 withTimeout(2000) {
                                     imageLoader.execute(request)
                                 }
                             }.onFailure {
-                                imageLoader.shutdown()
+                                Timber.d("preload 실패")
                             }.getOrNull()
                         }
                     deferredList.add(deferred)
