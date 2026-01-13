@@ -110,4 +110,4 @@ fun URLText(
 }
 
 private val WEB_REGEX =
-    """(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;\uAC00-\uD7AF]*[-a-zA-Z0-9+&@#/%=~_|\uAC00-\uD7AF]""".toRegex()
+    """(https?|ftp|file)://[a-zA-Z0-9+&@#/%?=~_|!:,.;]+(?<![.,:;])""".toRegex()
