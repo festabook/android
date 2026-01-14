@@ -23,7 +23,7 @@ import com.daedan.festabook.di.fragment.FragmentKey
 import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.NotificationPermissionRequester
 import com.daedan.festabook.presentation.common.BaseFragment
-import com.daedan.festabook.presentation.common.component.ObserveAsEvents
+import com.daedan.festabook.presentation.common.ObserveAsEvents
 import com.daedan.festabook.presentation.common.showErrorSnackBar
 import com.daedan.festabook.presentation.common.showNotificationDeniedSnackbar
 import com.daedan.festabook.presentation.common.showSnackBar
