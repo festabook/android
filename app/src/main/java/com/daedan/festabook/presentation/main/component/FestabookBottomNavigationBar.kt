@@ -126,10 +126,10 @@ private fun PlaceMapNavigationItem(
                         onClick(FestabookMainTab.PLACE_MAP)
                     },
                     indication = null,
-                    interactionSource = null,
+                    interactionSource = remember { MutableInteractionSource() },
                 ),
         painter = painterResource(id = R.drawable.btn_fab_manu),
-        contentDescription = null,
+        contentDescription = FestabookMainTab.PLACE_MAP.contentDescription,
     )
 }
 
