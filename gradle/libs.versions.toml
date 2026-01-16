@@ -28,6 +28,7 @@ material = "1.12.0"
 activity = "1.10.1"
 constraintlayout = "2.2.1"
 mockk = "1.14.5"
+navigationCompose = "2.9.6"
 photoviewDialog = "1.0.3"
 playServicesLocation = "21.3.0"
 retrofit = "3.0.0"
@@ -48,6 +49,7 @@ activityCompose = "1.11.0"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 app-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "appUpdateKtx" }
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertjCore" }
