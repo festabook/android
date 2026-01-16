@@ -20,10 +20,12 @@ fun MainScreen(
     Scaffold(
         // TODO: 스낵바 구현 및 하위 프래그먼트에 해당 SnackBar 적용
         bottomBar = {
-            FestabookBottomNavigationBar(
-                currentTab = navigator.currentTab,
-                onTabSelect = { navigator.navigateToMainTab(it.route) },
-            )
+            if (navigator.shouldShowBottomBar) {
+                FestabookBottomNavigationBar(
+                    currentTab = navigator.currentTab,
+                    onTabSelect = { navigator.navigateToMainTab(it.route) },
+                )
+            }
         },
         modifier = modifier,
     ) { innerPadding ->
