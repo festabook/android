@@ -40,7 +40,7 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
 fun FestabookBottomNavigationBar(
-    currentTab: FestabookMainTab,
+    currentTab: FestabookMainTab?,
     onTabSelect: (FestabookMainTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {

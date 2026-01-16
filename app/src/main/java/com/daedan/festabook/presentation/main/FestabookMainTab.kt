@@ -46,6 +46,12 @@ enum class FestabookMainTab(
     ;
 
     companion object Defaults {
+        @Composable
+        fun find(predicate: @Composable (FestabookRoute) -> Boolean) =
+            entries.find {
+                predicate(it.route)
+            }
+
         val selectedColor
             @Composable
             @ReadOnlyComposable
