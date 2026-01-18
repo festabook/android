@@ -56,8 +56,8 @@ private fun SplashInfoDialog(
     title: String,
     message: String,
     buttonText: String,
-    @DrawableRes iconResId: Int? = null,
     confirmButtonColor: Color,
+    @DrawableRes iconResId: Int? = null,
     onConfirm: () -> Unit,
 ) {
     Dialog(onDismissRequest = {}) {
