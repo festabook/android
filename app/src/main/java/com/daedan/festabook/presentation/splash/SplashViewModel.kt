@@ -1,14 +1,14 @@
 package com.daedan.festabook.presentation.splash
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.daedan.festabook.data.datasource.local.FestivalLocalDataSource
 import com.daedan.festabook.di.viewmodel.ViewModelKey
-import com.daedan.festabook.presentation.common.SingleLiveData
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import timber.log.Timber
 
 @ContributesIntoMap(AppScope::class)
@@ -17,25 +17,30 @@ import timber.log.Timber
 class SplashViewModel(
     private val festivalLocalDataSource: FestivalLocalDataSource,
 ) : ViewModel() {
-    private val _navigationState = SingleLiveData<NavigationState>()
-    val navigationState: LiveData<NavigationState> = _navigationState
+    private val _uiState = MutableStateFlow<SplashUiState>(SplashUiState.Loading)
+    val uiState: StateFlow<SplashUiState> = _uiState.asStateFlow()
 
-    private val _isValidationComplete = MutableLiveData(false)
-    val isValidationComplete: LiveData<Boolean> = _isValidationComplete
-
-    init {
-        checkFestivalId()
+    fun handleVersionCheckResult(result: Result<Boolean>) {
+        result
+            .onSuccess { isUpdateAvailable ->
+                if (isUpdateAvailable) {
+                    _uiState.value = SplashUiState.ShowUpdateDialog
+                } else {
+                    checkFestivalId()
+                }
+            }.onFailure {
+                _uiState.value = SplashUiState.ShowNetworkErrorDialog
+            }
     }
 
     private fun checkFestivalId() {
         val festivalId = festivalLocalDataSource.getFestivalId()
-        Timber.d("festival ID : $festivalId")
+        Timber.d("현재 접속중인 festival ID : $festivalId")
 
         if (festivalId == null) {
-            _navigationState.setValue(NavigationState.NavigateToExplore)
+            _uiState.value = SplashUiState.NavigateToExplore
         } else {
-            _navigationState.setValue(NavigationState.NavigateToMain(festivalId))
+            _uiState.value = SplashUiState.NavigateToMain(festivalId)
         }
-        _isValidationComplete.value = true
     }
 }
