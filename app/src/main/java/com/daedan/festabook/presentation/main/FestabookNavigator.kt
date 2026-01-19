@@ -62,6 +62,17 @@ class FestabookNavigator(
             navOptions,
         )
     }
+
+    fun popBackStack() {
+        navController.popBackStack()
+    }
+
+    fun popBackStack(
+        route: FestabookRoute,
+        inclusive: Boolean = false,
+    ) {
+        navController.popBackStack(route, inclusive)
+    }
 }
 
 @Composable
