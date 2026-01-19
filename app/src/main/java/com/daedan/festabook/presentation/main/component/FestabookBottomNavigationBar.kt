@@ -99,7 +99,7 @@ private fun RowScope.FestabookNavigationItem(
         ) {
             Icon(
                 painter = painterResource(id = tab.iconResId),
-                contentDescription = tab.contentDescription,
+                contentDescription = stringResource(tab.labelResId),
                 tint = if (selected) selectedColor else unselectedColor,
             )
             Spacer(modifier = Modifier.height(festabookSpacing.paddingBody1))
@@ -129,7 +129,7 @@ private fun PlaceMapNavigationItem(
                     interactionSource = remember { MutableInteractionSource() },
                 ),
         painter = painterResource(id = R.drawable.btn_fab_manu),
-        contentDescription = FestabookMainTab.PLACE_MAP.contentDescription,
+        contentDescription = stringResource(FestabookMainTab.PLACE_MAP.labelResId),
     )
 }
 
