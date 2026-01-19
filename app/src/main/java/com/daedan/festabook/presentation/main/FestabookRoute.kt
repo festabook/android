@@ -16,19 +16,19 @@ sealed interface FestabookRoute {
 }
 
 @Serializable
-sealed interface FestabookMainRoute : FestabookRoute {
+sealed interface MainTabRoute : FestabookRoute {
     @Serializable
-    data object Home : FestabookMainRoute
+    data object Home : MainTabRoute
 
     @Serializable
-    data object Schedule : FestabookMainRoute
+    data object Schedule : MainTabRoute
 
     @Serializable
-    data object PlaceMap : FestabookMainRoute
+    data object PlaceMap : MainTabRoute
 
     @Serializable
-    data object News : FestabookMainRoute
+    data object News : MainTabRoute
 
     @Serializable
-    data object Setting : FestabookMainRoute
+    data object Setting : MainTabRoute
 }

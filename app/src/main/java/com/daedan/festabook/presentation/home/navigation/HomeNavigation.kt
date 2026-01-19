@@ -7,14 +7,14 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.component.HomeScreen
-import com.daedan.festabook.presentation.main.FestabookMainRoute
+import com.daedan.festabook.presentation.main.MainTabRoute
 
 fun NavGraphBuilder.homeNavGraph(
     padding: PaddingValues,
     viewModel: HomeViewModel,
     onNavigateToExplore: () -> Unit,
 ) {
-    composable<FestabookMainRoute.Home> {
+    composable<MainTabRoute.Home> {
         HomeScreen(
             modifier = Modifier.padding(padding),
             viewModel = viewModel,
