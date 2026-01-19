@@ -34,14 +34,14 @@ class FestabookNavigator(
         @Composable
         get() =
             FestabookMainTab.find {
-                currentDestination?.hasRoute(it::class) == true
+                currentDestination?.hasRoute(it::class) ?: false
             }
 
     val shouldShowBottomBar
         @Composable
         get() =
             FestabookMainTab.find {
-                currentDestination?.hasRoute(it::class) == true
+                currentDestination?.hasRoute(it::class) ?: false
             } != null
 
     val startRoute = FestabookMainRoute.Home // TODO: Splash와 Explore 연동 시 변경
