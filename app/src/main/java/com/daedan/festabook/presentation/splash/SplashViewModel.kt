@@ -1,14 +1,17 @@
 package com.daedan.festabook.presentation.splash
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.data.datasource.local.FestivalLocalDataSource
 import com.daedan.festabook.di.viewmodel.ViewModelKey
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @ContributesIntoMap(AppScope::class)
@@ -34,13 +37,15 @@ class SplashViewModel(
     }
 
     private fun checkFestivalId() {
-        val festivalId = festivalLocalDataSource.getFestivalId()
-        Timber.d("현재 접속중인 festival ID : $festivalId")
-
-        if (festivalId == null) {
-            _uiState.value = SplashUiState.NavigateToExplore
-        } else {
-            _uiState.value = SplashUiState.NavigateToMain(festivalId)
+        viewModelScope.launch(Dispatchers.IO) {
+            val festivalId = festivalLocalDataSource.getFestivalId()
+            Timber.d("현재 접속중인 festival ID : $festivalId")
+            _uiState.value =
+                if (festivalId == null) {
+                    SplashUiState.NavigateToExplore
+                } else {
+                    SplashUiState.NavigateToMain(festivalId)
+                }
         }
     }
 }
