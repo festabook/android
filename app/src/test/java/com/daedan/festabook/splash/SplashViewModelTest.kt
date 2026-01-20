@@ -9,7 +9,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -23,8 +23,7 @@ import org.junit.Test
 class SplashViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
-    private val testDispatcher = StandardTestDispatcher()
-
+    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var festivalLocalDataSource: FestivalLocalDataSource
     private lateinit var splashViewModel: SplashViewModel
 
@@ -32,7 +31,7 @@ class SplashViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         festivalLocalDataSource = mockk(relaxed = true)
-        splashViewModel = SplashViewModel(festivalLocalDataSource)
+        splashViewModel = SplashViewModel(festivalLocalDataSource, iODispatcher = testDispatcher)
     }
 
     @After
@@ -69,7 +68,6 @@ class SplashViewModelTest {
     @Test
     fun `앱 업데이트가 없고 접속한 대학교가 있다면 MainActivity로 이동한다`() =
         runTest {
-            // given
             every { festivalLocalDataSource.getFestivalId() } returns 1L
             val updateResult = Result.success(false)
 

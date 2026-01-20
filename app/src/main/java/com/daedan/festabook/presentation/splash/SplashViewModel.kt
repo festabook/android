@@ -7,6 +7,7 @@ import com.daedan.festabook.di.viewmodel.ViewModelKey
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ import timber.log.Timber
 @Inject
 class SplashViewModel(
     private val festivalLocalDataSource: FestivalLocalDataSource,
+    private val iODispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<SplashUiState>(SplashUiState.Loading)
     val uiState: StateFlow<SplashUiState> = _uiState.asStateFlow()
@@ -37,7 +39,7 @@ class SplashViewModel(
     }
 
     private fun checkFestivalId() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(iODispatcher) {
             val festivalId = festivalLocalDataSource.getFestivalId()
             Timber.d("현재 접속중인 festival ID : $festivalId")
             _uiState.value =
