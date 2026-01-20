@@ -6,6 +6,7 @@ import com.daedan.festabook.presentation.splash.SplashUiState
 import com.daedan.festabook.presentation.splash.SplashViewModel
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -77,6 +78,7 @@ class SplashViewModelTest {
 
             // then
             assertThat(splashViewModel.uiState.value).isEqualTo(SplashUiState.NavigateToMain(1L))
+            verify(exactly = 1) { festivalLocalDataSource.getFestivalId() }
         }
 
     @Test
@@ -91,5 +93,6 @@ class SplashViewModelTest {
 
             // then
             assertThat(splashViewModel.uiState.value).isEqualTo(SplashUiState.NavigateToExplore)
+            verify(exactly = 1) { festivalLocalDataSource.getFestivalId() }
         }
 }
