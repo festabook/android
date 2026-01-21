@@ -24,24 +24,84 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.daedan.festabook.BuildConfig
 import com.daedan.festabook.R
 import com.daedan.festabook.domain.model.Festival
 import com.daedan.festabook.domain.model.Organization
+import com.daedan.festabook.presentation.NotificationPermissionManager
+import com.daedan.festabook.presentation.common.ObserveAsEvents
 import com.daedan.festabook.presentation.common.component.FestabookSwitch
 import com.daedan.festabook.presentation.common.component.FestabookTopAppBar
+import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.adapter.FestivalUiState
+import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.daedan.festabook.presentation.theme.FestabookTypography
 import com.daedan.festabook.presentation.theme.festabookSpacing
+import timber.log.Timber
 import java.time.LocalDate
+
+private const val POLICY_URL: String =
+    "https://www.notion.so/244a540dc0b780638e56e31c4bdb3c9f"
+
+private const val CONTACT_US_URL =
+    "https://forms.gle/XjqJFfQrTPgkZzGZ9"
+
+@Composable
+fun SettingRoute(
+    homeViewModel: HomeViewModel,
+    settingViewModel: SettingViewModel,
+    notificationPermissionManager: NotificationPermissionManager,
+    onShowSnackBar: (String) -> Unit,
+    onShowErrorSnackBar: (Throwable) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val festival by homeViewModel.festivalUiState.collectAsStateWithLifecycle()
+    val isUniversitySubscribed by settingViewModel.isAllowed.collectAsStateWithLifecycle()
+    val isSubscribedLoading by settingViewModel.isLoading.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
+
+    ObserveAsEvents(flow = settingViewModel.permissionCheckEvent) {
+        notificationPermissionManager.requestNotificationPermission(context)
+    }
+
+    ObserveAsEvents(flow = settingViewModel.successFlow) {
+        onShowSnackBar(context.getString(R.string.setting_notice_enabled))
+    }
+
+    ObserveAsEvents(flow = settingViewModel.error) {
+        onShowErrorSnackBar(it)
+    }
+    SettingScreen(
+        modifier = modifier,
+        festivalUiState = festival,
+        isUniversitySubscribed = isUniversitySubscribed,
+        appVersion = BuildConfig.VERSION_NAME,
+        isSubscribeEnabled = !isSubscribedLoading,
+        onSubscribeClick = { settingViewModel.notificationAllowClick() },
+        onPolicyClick = { uriHandler.openUri(POLICY_URL) },
+        onContactUsClick = { uriHandler.openUri(CONTACT_US_URL) },
+        onError = {
+            onShowErrorSnackBar(it.throwable)
+            Timber.w(
+                it.throwable,
+                "${"SettingRoute"}: ${it.throwable.message}",
+            )
+        },
+    )
+}
 
 @Composable
 fun SettingScreen(
@@ -99,7 +159,9 @@ fun SettingScreen(
                     )
                 }
 
-                else -> Unit
+                else -> {
+                    Unit
+                }
             }
 
             HorizontalDivider(

@@ -7,18 +7,52 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.daedan.festabook.presentation.common.ObserveAsEvents
+import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.MapControlSideEffectHandler
+import com.daedan.festabook.presentation.placeMap.intent.handler.PlaceMapSideEffectHandler
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.festabookSpacing
+
+@Composable
+fun PlaceMapRoute(
+    placeMapViewModel: PlaceMapViewModel,
+    mapDelegate: MapDelegate,
+    mapControlSideEffectHandler: MapControlSideEffectHandler,
+    placeMapSideEffectHandler: PlaceMapSideEffectHandler,
+    modifier: Modifier = Modifier,
+) {
+    val uiState by placeMapViewModel.uiState.collectAsStateWithLifecycle()
+    val bottomSheetState = rememberPlaceListBottomSheetState()
+
+    ObserveAsEvents(flow = placeMapViewModel.mapControlSideEffect) { event ->
+        mapControlSideEffectHandler(event)
+    }
+
+    ObserveAsEvents(flow = placeMapViewModel.placeMapSideEffect) { event ->
+        placeMapSideEffectHandler(event)
+    }
+
+    PlaceMapScreen(
+        uiState = uiState,
+        modifier = modifier,
+        onEvent = { placeMapViewModel.onPlaceMapEvent(it) },
+        bottomSheetState = bottomSheetState,
+        mapDelegate = mapDelegate,
+    )
+}
 
 @Composable
 fun PlaceMapScreen(
