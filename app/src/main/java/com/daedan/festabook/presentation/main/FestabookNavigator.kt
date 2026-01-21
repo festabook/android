@@ -1,12 +1,12 @@
 package com.daedan.festabook.presentation.main
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 
@@ -17,19 +17,11 @@ class FestabookNavigator(
         @Composable
         get() =
             navController
-                .currentBackStackEntryAsState()
+                .visibleEntries
+                .collectAsState()
                 .value
+                .lastOrNull { it.destination.route != null }
                 ?.destination
-
-    private val defaultNavOptions =
-        navOptions {
-            popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
-            }
-            launchSingleTop = true
-            restoreState = true
-        }
-
     val currentTab
         @Composable
         get() =
@@ -49,7 +41,13 @@ class FestabookNavigator(
     fun navigateToMainTab(route: FestabookRoute) {
         navController.navigate(
             route,
-            defaultNavOptions,
+            navOptions {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            },
         )
     }
 
