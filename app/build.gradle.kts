@@ -150,6 +150,7 @@ android {
 dependencies {
     ktlintRuleset(libs.ktlint)
     implementation(libs.map.sdk)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.play.services.location)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.fragment.ktx)
