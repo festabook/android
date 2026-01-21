@@ -1,19 +1,40 @@
 package com.daedan.festabook.presentation.main.component
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
+import com.daedan.festabook.logging.DefaultFirebaseLogger
+import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.navigation.homeNavGraph
 import com.daedan.festabook.presentation.main.FestabookRoute
 import com.daedan.festabook.presentation.main.rememberFestabookNavigator
+import com.daedan.festabook.presentation.news.NewsViewModel
+import com.daedan.festabook.presentation.news.navigation.newsNavGraph
+import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
+import com.daedan.festabook.presentation.placeMap.navigation.placeMapNavGraph
+import com.daedan.festabook.presentation.schedule.ScheduleViewModel
+import com.daedan.festabook.presentation.schedule.navigation.scheduleNavGraph
+import com.daedan.festabook.presentation.setting.SettingViewModel
+import com.daedan.festabook.presentation.setting.navigation.settingNavGraph
+import com.naver.maps.map.util.FusedLocationSource
 
 @Composable
 fun MainScreen(
-    homeViewModel: HomeViewModel,
+    notificationPermissionManager: NotificationPermissionManager,
+    logger: DefaultFirebaseLogger,
+    locationSource: FusedLocationSource,
+    onPreloadImages: (PlaceMapSideEffect.PreloadImages) -> Unit, // TODO: 추후 Context에 의존적이지 않게 변경
+    onNavigateToExplore: () -> Unit, // TODO 검색화면 마이그레이션 시 제거
     modifier: Modifier = Modifier,
+    homeViewModel: HomeViewModel = viewModel(),
+    scheduleViewModel: ScheduleViewModel = viewModel(),
+    placeMapViewModel: PlaceMapViewModel = viewModel(),
+    newsViewModel: NewsViewModel = viewModel(),
+    settingViewModel: SettingViewModel = viewModel(),
 ) {
     val navigator = rememberFestabookNavigator()
 
@@ -30,19 +51,39 @@ fun MainScreen(
         modifier = modifier,
     ) { innerPadding ->
         NavHost(
-            modifier = Modifier.fillMaxSize(),
             startDestination = navigator.startRoute,
             navController = navigator.navController,
         ) {
             homeNavGraph(
                 padding = innerPadding,
                 viewModel = homeViewModel,
-                onNavigateToExplore = { navigator.navigate(FestabookRoute.Explore) },
+                onNavigateToExplore = onNavigateToExplore,
             )
-
-            // TODO: 각 화면에서 나머지 graph들 정의
-            // 만약 Fragment에서 Screen에 넣어줄 부가적인 작업 시 각 화면에서 Route 컴포저블로 감싸서 전달 요망
-            // 참고:https://github.com/Project-Unifest/unifest-android/blob/develop/feature/home/src/main/kotlin/com/unifest/android/feature/home/HomeScreen.kt
+            scheduleNavGraph(
+                padding = innerPadding,
+                viewModel = scheduleViewModel,
+            )
+            placeMapNavGraph(
+                padding = innerPadding,
+                placeMapViewModel = placeMapViewModel,
+                logger = logger,
+                locationSource = locationSource,
+                onStartPlaceDetail = { navigator.navigate(FestabookRoute.PlaceDetail) },
+                onPreloadImages = onPreloadImages,
+                onShowErrorSnackBar = { },
+            )
+            newsNavGraph(
+                padding = innerPadding,
+                viewModel = newsViewModel,
+            )
+            settingNavGraph(
+                padding = innerPadding,
+                homeViewModel = homeViewModel,
+                settingViewModel = settingViewModel,
+                notificationPermissionManager = notificationPermissionManager,
+                onShowSnackBar = { },
+                onShowErrorSnackBar = { },
+            )
         }
     }
 }

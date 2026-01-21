@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,8 +15,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.add
@@ -25,29 +24,36 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.ImageResult
 import com.daedan.festabook.R
 import com.daedan.festabook.databinding.ActivityMainBinding
 import com.daedan.festabook.di.appGraph
 import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.NotificationPermissionRequester
-import com.daedan.festabook.presentation.common.OnMenuItemReClickListener
+import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.common.isGranted
 import com.daedan.festabook.presentation.common.showNotificationDeniedSnackbar
 import com.daedan.festabook.presentation.common.showSnackBar
 import com.daedan.festabook.presentation.common.showToast
+import com.daedan.festabook.presentation.explore.ExploreActivity
 import com.daedan.festabook.presentation.home.HomeFragment
 import com.daedan.festabook.presentation.home.HomeViewModel
-import com.daedan.festabook.presentation.main.component.FestabookBottomNavigationBar
-import com.daedan.festabook.presentation.news.NewsFragment
+import com.daedan.festabook.presentation.main.component.MainScreen
 import com.daedan.festabook.presentation.news.NewsViewModel
-import com.daedan.festabook.presentation.placeMap.PlaceMapFragment
-import com.daedan.festabook.presentation.schedule.ScheduleFragment
-import com.daedan.festabook.presentation.setting.SettingFragment
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.naver.maps.map.util.FusedLocationSource
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 
 class MainActivity :
@@ -80,6 +86,10 @@ class MainActivity :
         )
     }
 
+    private val locationSource by lazy {
+        FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
+    }
+
     override val permissionLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission(),
@@ -105,72 +115,81 @@ class MainActivity :
         setupFragmentFactory()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setupBinding()
+//        setupBinding()
 
-        binding.cvMain.setContent {
+        setContent {
             currentTabState = remember { mutableStateOf(FestabookMainTab.HOME) }
             LaunchedEffect(Unit) {
                 handleNavigation(intent)
             }
             FestabookTheme {
-                FestabookBottomNavigationBar(
-                    currentTab = currentTabState.value,
-                    onTabSelect = { tab ->
-                        when (tab) {
-                            FestabookMainTab.HOME -> {
-                                currentTabState.value = FestabookMainTab.HOME
-                                switchFragment(HomeFragment::class.java, TAG_HOME_FRAGMENT)
-                            }
-
-                            FestabookMainTab.SCHEDULE -> {
-                                currentTabState.value = FestabookMainTab.SCHEDULE
-                                val fragment =
-                                    supportFragmentManager.findFragmentByTag(TAG_SCHEDULE_FRAGMENT)
-                                if (fragment is OnMenuItemReClickListener && !fragment.isHidden) fragment.onMenuItemReClick()
-                                switchFragment(
-                                    ScheduleFragment::class.java,
-                                    TAG_SCHEDULE_FRAGMENT,
-                                )
-                            }
-
-                            FestabookMainTab.PLACE_MAP -> {
-                                currentTabState.value = FestabookMainTab.PLACE_MAP
-                                val fragment =
-                                    supportFragmentManager.findFragmentByTag(TAG_PLACE_MAP_FRAGMENT)
-                                if (fragment is OnMenuItemReClickListener && !fragment.isHidden) fragment.onMenuItemReClick()
-                                switchFragment(PlaceMapFragment::class.java, TAG_PLACE_MAP_FRAGMENT)
-                            }
-
-                            FestabookMainTab.NEWS -> {
-                                currentTabState.value = FestabookMainTab.NEWS
-                                switchFragment(NewsFragment::class.java, TAG_NEWS_FRAGMENT)
-                            }
-
-                            FestabookMainTab.SETTING -> {
-                                currentTabState.value = FestabookMainTab.SETTING
-                                switchFragment(
-                                    SettingFragment::class.java,
-                                    TAG_SETTING_FRAGMENT,
-                                )
-                            }
-                        }
+                MainScreen(
+                    notificationPermissionManager = notificationPermissionManager,
+                    logger = appGraph.defaultFirebaseLogger,
+                    locationSource = locationSource,
+                    onNavigateToExplore = {
+                        startActivity(ExploreActivity.newIntent(this))
                     },
+                    onPreloadImages = { preloadImages(this, it.places) },
                 )
+//                FestabookBottomNavigationBar(
+//                    currentTab = currentTabState.value,
+//                    onTabSelect = { tab ->
+//                        when (tab) {
+//                            FestabookMainTab.HOME -> {
+//                                currentTabState.value = FestabookMainTab.HOME
+//                                switchFragment(HomeFragment::class.java, TAG_HOME_FRAGMENT)
+//                            }
+//
+//                            FestabookMainTab.SCHEDULE -> {
+//                                currentTabState.value = FestabookMainTab.SCHEDULE
+//                                val fragment =
+//                                    supportFragmentManager.findFragmentByTag(TAG_SCHEDULE_FRAGMENT)
+//                                if (fragment is OnMenuItemReClickListener && !fragment.isHidden) fragment.onMenuItemReClick()
+//                                switchFragment(
+//                                    ScheduleFragment::class.java,
+//                                    TAG_SCHEDULE_FRAGMENT,
+//                                )
+//                            }
+//
+//                            FestabookMainTab.PLACE_MAP -> {
+//                                currentTabState.value = FestabookMainTab.PLACE_MAP
+//                                val fragment =
+//                                    supportFragmentManager.findFragmentByTag(TAG_PLACE_MAP_FRAGMENT)
+//                                if (fragment is OnMenuItemReClickListener && !fragment.isHidden) fragment.onMenuItemReClick()
+//                                switchFragment(PlaceMapFragment::class.java, TAG_PLACE_MAP_FRAGMENT)
+//                            }
+//
+//                            FestabookMainTab.NEWS -> {
+//                                currentTabState.value = FestabookMainTab.NEWS
+//                                switchFragment(NewsFragment::class.java, TAG_NEWS_FRAGMENT)
+//                            }
+//
+//                            FestabookMainTab.SETTING -> {
+//                                currentTabState.value = FestabookMainTab.SETTING
+//                                switchFragment(
+//                                    SettingFragment::class.java,
+//                                    TAG_SETTING_FRAGMENT,
+//                                )
+//                            }
+//                        }
+//                    },
+//                )
             }
         }
         mainViewModel.registerDeviceAndFcmToken()
-        setupHomeFragment(savedInstanceState)
+//        setupHomeFragment(savedInstanceState)
         setupObservers()
         onBackPress()
     }
 
     private fun setupBinding() {
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+//        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+//            insets
+//        }
     }
 
     private fun setupFragmentFactory() {
@@ -280,6 +299,42 @@ class MainActivity :
         }
     }
 
+    // OOM 주의 !! 추후 페이징 처리 및 chunk 단위로 나눠서 로드합니다
+    private fun preloadImages(
+        context: Context,
+        places: List<PlaceUiModel?>,
+        maxSize: Int = 20,
+    ) {
+        val imageLoader = context.imageLoader
+        val deferredList = mutableListOf<Deferred<ImageResult?>>()
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            places
+                .take(maxSize)
+                .filterNotNull()
+                .forEach { place ->
+                    val deferred =
+                        async {
+                            val request =
+                                ImageRequest
+                                    .Builder(context)
+                                    .data(place.imageUrl.convertImageUrl())
+                                    .build()
+
+                            runCatching {
+                                withTimeout(2000) {
+                                    imageLoader.execute(request)
+                                }
+                            }.onFailure {
+                                Timber.d("preload 실패")
+                            }.getOrNull()
+                        }
+                    deferredList.add(deferred)
+                }
+            deferredList.awaitAll()
+        }
+    }
+
     private fun showAlarmDialog() {
         val dialog =
             MaterialAlertDialogBuilder(this, R.style.MainAlarmDialogTheme)
@@ -295,11 +350,8 @@ class MainActivity :
     companion object {
         const val KEY_NOTICE_ID_TO_EXPAND = "noticeIdToExpand"
         const val KEY_CAN_NAVIGATE_TO_NEWS = "canNavigateToNews"
-        private const val TAG_HOME_FRAGMENT = "homeFragment"
-        private const val TAG_SCHEDULE_FRAGMENT = "scheduleFragment"
-        private const val TAG_PLACE_MAP_FRAGMENT = "placeMapFragment"
-        private const val TAG_NEWS_FRAGMENT = "newsFragment"
-        private const val TAG_SETTING_FRAGMENT = "settingFragment"
+        const val LOCATION_PERMISSION_REQUEST_CODE = 1234
+
         private const val INITIALIZED_ID = -1L
 
         fun newIntent(context: Context) =
