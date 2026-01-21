@@ -8,11 +8,11 @@ import android.os.Parcelable
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.daedan.festabook.R
 import com.daedan.festabook.data.util.ApiResultException
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import java.io.Serializable
 
@@ -63,7 +63,7 @@ fun Activity.showErrorSnackBar(msg: String) {
             Snackbar.LENGTH_SHORT,
         )
     snackBar.setAnchorView(
-        findViewById<FloatingActionButton>(R.id.bab_menu),
+        findViewById<ComposeView>(R.id.cv_main),
     )
     snackBar
         .setAction(
@@ -116,7 +116,7 @@ fun Activity.showSnackBar(msg: String) {
             Snackbar.LENGTH_SHORT,
         )
     snackBar.setAnchorView(
-        findViewById<FloatingActionButton>(R.id.bab_menu),
+        findViewById<ComposeView>(R.id.cv_main),
     )
     snackBar
         .setAction(

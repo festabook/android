@@ -10,10 +10,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.marginBottom
-import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.add
@@ -35,12 +37,14 @@ import com.daedan.festabook.presentation.common.showSnackBar
 import com.daedan.festabook.presentation.common.showToast
 import com.daedan.festabook.presentation.home.HomeFragment
 import com.daedan.festabook.presentation.home.HomeViewModel
+import com.daedan.festabook.presentation.main.component.FestabookBottomNavigationBar
 import com.daedan.festabook.presentation.news.NewsFragment
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.placeMap.PlaceMapFragment
 import com.daedan.festabook.presentation.schedule.ScheduleFragment
 import com.daedan.festabook.presentation.setting.SettingFragment
 import com.daedan.festabook.presentation.setting.SettingViewModel
+import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.launch
@@ -60,6 +64,8 @@ class MainActivity :
     private val binding: ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
+
+    private lateinit var currentTabState: MutableState<FestabookMainTab>
 
     private val mainViewModel: MainViewModel by viewModels()
     private val homeViewModel: HomeViewModel by viewModels()
@@ -100,14 +106,71 @@ class MainActivity :
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setupBinding()
+
+        binding.cvMain.setContent {
+            currentTabState = remember { mutableStateOf(FestabookMainTab.HOME) }
+            LaunchedEffect(Unit) {
+                handleNavigation(intent)
+            }
+            FestabookTheme {
+                FestabookBottomNavigationBar(
+                    currentTab = currentTabState.value,
+                    onTabSelect = { tab ->
+                        when (tab) {
+                            FestabookMainTab.HOME -> {
+                                currentTabState.value = FestabookMainTab.HOME
+                                switchFragment(HomeFragment::class.java, TAG_HOME_FRAGMENT)
+                            }
+
+                            FestabookMainTab.SCHEDULE -> {
+                                currentTabState.value = FestabookMainTab.SCHEDULE
+                                val fragment =
+                                    supportFragmentManager.findFragmentByTag(TAG_SCHEDULE_FRAGMENT)
+                                if (fragment is OnMenuItemReClickListener && !fragment.isHidden) fragment.onMenuItemReClick()
+                                switchFragment(
+                                    ScheduleFragment::class.java,
+                                    TAG_SCHEDULE_FRAGMENT,
+                                )
+                            }
+
+                            FestabookMainTab.PLACE_MAP -> {
+                                currentTabState.value = FestabookMainTab.PLACE_MAP
+                                val fragment =
+                                    supportFragmentManager.findFragmentByTag(TAG_PLACE_MAP_FRAGMENT)
+                                if (fragment is OnMenuItemReClickListener && !fragment.isHidden) fragment.onMenuItemReClick()
+                                switchFragment(PlaceMapFragment::class.java, TAG_PLACE_MAP_FRAGMENT)
+                            }
+
+                            FestabookMainTab.NEWS -> {
+                                currentTabState.value = FestabookMainTab.NEWS
+                                switchFragment(NewsFragment::class.java, TAG_NEWS_FRAGMENT)
+                            }
+
+                            FestabookMainTab.SETTING -> {
+                                currentTabState.value = FestabookMainTab.SETTING
+                                switchFragment(
+                                    SettingFragment::class.java,
+                                    TAG_SETTING_FRAGMENT,
+                                )
+                            }
+                        }
+                    },
+                )
+            }
+        }
         mainViewModel.registerDeviceAndFcmToken()
         setupHomeFragment(savedInstanceState)
-        setUpBottomNavigation()
         setupObservers()
-        onMenuItemClick()
-        onMenuItemReClick()
         onBackPress()
-        handleNavigation(intent)
+    }
+
+    private fun setupBinding() {
+        setContentView(binding.root)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
     }
 
     private fun setupFragmentFactory() {
@@ -152,7 +215,7 @@ class MainActivity :
         if (noticeIdToExpand != INITIALIZED_ID) newsViewModel.expandNotice(noticeIdToExpand)
 
         if (canNavigateToNewsScreen) {
-            binding.bnvMenu.selectedItemId = R.id.item_menu_news
+            currentTabState.value = FestabookMainTab.NEWS
         }
     }
 
@@ -166,9 +229,7 @@ class MainActivity :
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 homeViewModel.navigateToScheduleEvent.collect {
-                    if (binding.bnvMenu.selectedItemId != R.id.item_menu_schedule) {
-                        binding.bnvMenu.selectedItemId = R.id.item_menu_schedule
-                    }
+                    currentTabState.value = FestabookMainTab.SCHEDULE
                 }
             }
         }
@@ -181,27 +242,6 @@ class MainActivity :
         settingViewModel.success.observe(this) {
             showSnackBar(getString(R.string.setting_notice_enabled))
         }
-    }
-
-    private fun setupBinding() {
-        setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-    }
-
-    private fun setUpBottomNavigation() {
-        binding.fabMap.post {
-            binding.fcvFragmentContainer.updatePadding(
-                bottom = binding.babMenu.height + binding.babMenu.marginBottom,
-            )
-        }
-        binding.babMenu.setOnApplyWindowInsetsListener(null)
-        binding.babMenu.setPadding(0, 0, 0, 0)
-        binding.bnvMenu.setOnApplyWindowInsetsListener(null)
-        binding.bnvMenu.setPadding(0, 0, 0, 0)
     }
 
     private fun setupHomeFragment(savedInstanceState: Bundle?) {
@@ -221,64 +261,6 @@ class MainActivity :
                 }
             },
         )
-    }
-
-    private fun onMenuItemClick() {
-        binding.bnvMenu.setOnItemSelectedListener { icon ->
-            when (icon.itemId) {
-                R.id.item_menu_home -> {
-                    switchFragment(HomeFragment::class.java, TAG_HOME_FRAGMENT)
-                }
-
-                R.id.item_menu_schedule -> {
-                    switchFragment(
-                        ScheduleFragment::class.java,
-                        TAG_SCHEDULE_FRAGMENT,
-                    )
-                }
-
-                R.id.item_menu_news -> {
-                    switchFragment(NewsFragment::class.java, TAG_NEWS_FRAGMENT)
-                }
-
-                R.id.item_menu_setting -> {
-                    switchFragment(
-                        SettingFragment::class.java,
-                        TAG_SETTING_FRAGMENT,
-                    )
-                }
-            }
-            true
-        }
-        binding.fabMap.setOnClickListener {
-            binding.bnvMenu.selectedItemId = R.id.item_menu_map
-            val fragment = supportFragmentManager.findFragmentByTag(TAG_PLACE_MAP_FRAGMENT)
-            if (fragment is OnMenuItemReClickListener && !fragment.isHidden) fragment.onMenuItemReClick()
-            switchFragment(PlaceMapFragment::class.java, TAG_PLACE_MAP_FRAGMENT)
-        }
-    }
-
-    private fun onMenuItemReClick() {
-        binding.bnvMenu.setOnItemReselectedListener { icon ->
-            when (icon.itemId) {
-                R.id.item_menu_home -> {
-                    Unit
-                }
-
-                R.id.item_menu_schedule -> {
-                    val fragment = supportFragmentManager.findFragmentByTag(TAG_SCHEDULE_FRAGMENT)
-                    if (fragment is OnMenuItemReClickListener) fragment.onMenuItemReClick()
-                }
-
-                R.id.item_menu_news -> {
-                    Unit
-                }
-
-                R.id.item_menu_setting -> {
-                    Unit
-                }
-            }
-        }
     }
 
     private fun switchFragment(
