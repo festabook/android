@@ -43,6 +43,9 @@ fun NaverMapContent(
         AndroidView(
             factory = { mapView },
             modifier = Modifier.dragInterceptor(onMapDrag),
+            onRelease = {
+                mapView.onDestroy()
+            },
         )
         content(mapDelegate.value)
     }
