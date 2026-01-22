@@ -1,6 +1,7 @@
 name: Slack Notification (Review Reminder)
 
 on:
+  # 테스트용 트리거 추가
   push:
   schedule:
     # 매일 한국 시간 오후 2시 (KST 14:00 == UTC 05:00)
