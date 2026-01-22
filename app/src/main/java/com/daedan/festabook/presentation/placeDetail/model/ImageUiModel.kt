@@ -3,8 +3,10 @@ package com.daedan.festabook.presentation.placeDetail.model
 import android.os.Parcelable
 import com.daedan.festabook.domain.model.PlaceDetailImage
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 @Parcelize
+@Serializable
 data class ImageUiModel(
     val url: String? = null,
     val id: Long = -1,

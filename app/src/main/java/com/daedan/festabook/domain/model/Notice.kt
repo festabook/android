@@ -1,6 +1,6 @@
 package com.daedan.festabook.domain.model
 
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 
 data class Notice(
     val id: Long,

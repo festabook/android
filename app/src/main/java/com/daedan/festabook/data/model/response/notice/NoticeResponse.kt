@@ -1,9 +1,9 @@
 package com.daedan.festabook.data.model.response.notice
 
 import com.daedan.festabook.domain.model.Notice
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.LocalDateTime
 
 @Serializable
 data class NoticeResponse(
