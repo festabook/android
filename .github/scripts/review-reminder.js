@@ -1,7 +1,7 @@
 module.exports = async ({github, context, core}) => {
 
     // 최소 PR 생성 시간
-    const LIMIT_HOURS = 0;
+    const LIMIT_HOURS = 12;
     const LIMIT_MS = LIMIT_HOURS * 60 * 60 * 1000;
 
     const WEBHOOK_URL = process.env.SLACK_WEBHOOK_REVIEW;
