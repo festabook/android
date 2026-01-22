@@ -8,10 +8,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.common.ObserveAsEvents
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
@@ -20,22 +24,54 @@ import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
 import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
 import com.daedan.festabook.presentation.placeMap.intent.handler.MapControlSideEffectHandler
 import com.daedan.festabook.presentation.placeMap.intent.handler.PlaceMapSideEffectHandler
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
 import com.daedan.festabook.presentation.placeMap.intent.state.MapDelegate
+import com.daedan.festabook.presentation.placeMap.intent.state.MapManagerDelegate
 import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.daedan.festabook.presentation.theme.festabookSpacing
+import com.naver.maps.map.util.FusedLocationSource
 
 @Composable
+@Suppress("ktlint:compose:vm-forwarding-check")
 fun PlaceMapRoute(
     placeMapViewModel: PlaceMapViewModel,
-    mapDelegate: MapDelegate,
-    mapControlSideEffectHandler: MapControlSideEffectHandler,
-    placeMapSideEffectHandler: PlaceMapSideEffectHandler,
+    onStartPlaceDetail: (PlaceMapSideEffect.StartPlaceDetail) -> Unit,
+    onPreloadImages: (PlaceMapSideEffect.PreloadImages) -> Unit,
+    locationSource: FusedLocationSource,
+    logger: DefaultFirebaseLogger,
     modifier: Modifier = Modifier,
 ) {
     val uiState by placeMapViewModel.uiState.collectAsStateWithLifecycle()
+    val density = LocalDensity.current
     val bottomSheetState = rememberPlaceListBottomSheetState()
+    val mapDelegate = remember { MapDelegate() }
+    val mapManagerDelegate = remember { MapManagerDelegate() }
+
+    val mapControlSideEffectHandler =
+        remember {
+            MapControlSideEffectHandler(
+                initialPadding = with(density) { 254.dp.toPx() }.toInt(),
+                logger = logger,
+                locationSource = locationSource,
+                viewModel = placeMapViewModel,
+                mapDelegate = mapDelegate,
+                mapManagerDelegate = mapManagerDelegate,
+            )
+        }
+    val placeMapSideEffectHandler =
+        remember {
+            PlaceMapSideEffectHandler(
+                mapManagerDelegate = mapManagerDelegate,
+                bottomSheetState = bottomSheetState,
+                viewModel = placeMapViewModel,
+                logger = logger,
+                onStartPlaceDetail = onStartPlaceDetail,
+                onPreloadImages = onPreloadImages,
+                onShowErrorSnackBar = { },
+            )
+        }
 
     ObserveAsEvents(flow = placeMapViewModel.mapControlSideEffect) { event ->
         mapControlSideEffectHandler(event)

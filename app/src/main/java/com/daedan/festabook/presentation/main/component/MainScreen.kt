@@ -1,8 +1,12 @@
 package com.daedan.festabook.presentation.main.component
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import com.daedan.festabook.logging.DefaultFirebaseLogger
@@ -15,6 +19,7 @@ import com.daedan.festabook.presentation.main.rememberFestabookNavigator
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.navigation.newsNavGraph
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
+import com.daedan.festabook.presentation.placeMap.component.PlaceMapRoute
 import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
 import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.navigation.placeMapNavGraph
@@ -25,6 +30,7 @@ import com.daedan.festabook.presentation.setting.navigation.settingNavGraph
 import com.naver.maps.map.util.FusedLocationSource
 
 @Composable
+@Suppress("ktlint:compose:vm-forwarding-check")
 fun MainScreen(
     notificationPermissionManager: NotificationPermissionManager,
     logger: DefaultFirebaseLogger,
@@ -68,6 +74,22 @@ fun MainScreen(
         },
         modifier = modifier,
     ) { innerPadding ->
+        val shouldShowPlaceMap = remember { mutableStateOf(false) }
+        PlaceMapRoute(
+            modifier =
+                Modifier
+                    .alpha(
+                        if (shouldShowPlaceMap.value) 1f else 0f,
+                    ).padding(innerPadding),
+            placeMapViewModel = placeMapViewModel,
+            locationSource = locationSource,
+            logger = logger,
+            onStartPlaceDetail = {
+                navigator.navigateToMainTab(FestabookRoute.PlaceDetail)
+            },
+            onPreloadImages = onPreloadImages,
+        )
+
         NavHost(
             startDestination = navigator.startRoute,
             navController = navigator.navController,
@@ -82,13 +104,7 @@ fun MainScreen(
                 viewModel = scheduleViewModel,
             )
             placeMapNavGraph(
-                padding = innerPadding,
-                placeMapViewModel = placeMapViewModel,
-                logger = logger,
-                locationSource = locationSource,
-                onStartPlaceDetail = { navigator.navigate(FestabookRoute.PlaceDetail) },
-                onPreloadImages = onPreloadImages,
-                onShowErrorSnackBar = { },
+                mapScreenVisibilityState = shouldShowPlaceMap,
             )
             newsNavGraph(
                 padding = innerPadding,
