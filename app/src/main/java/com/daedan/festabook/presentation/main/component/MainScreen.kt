@@ -3,8 +3,6 @@ package com.daedan.festabook.presentation.main.component
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -14,10 +12,12 @@ import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.navigation.homeNavGraph
 import com.daedan.festabook.presentation.main.FestabookMainTab
+import com.daedan.festabook.presentation.main.FestabookNavigator
 import com.daedan.festabook.presentation.main.FestabookRoute
 import com.daedan.festabook.presentation.main.rememberFestabookNavigator
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.navigation.newsNavGraph
+import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceMapRoute
 import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
@@ -35,6 +35,7 @@ fun MainScreen(
     notificationPermissionManager: NotificationPermissionManager,
     logger: DefaultFirebaseLogger,
     locationSource: FusedLocationSource,
+    placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
     onPreloadImages: (PlaceMapSideEffect.PreloadImages) -> Unit, // TODO: 추후 Context에 의존적이지 않게 변경
     onNavigateToExplore: () -> Unit, // TODO 검색화면 마이그레이션 시 제거
     modifier: Modifier = Modifier,
@@ -52,7 +53,7 @@ fun MainScreen(
             if (navigator.shouldShowBottomBar) {
                 FestabookBottomNavigationBar(
                     currentTab = navigator.currentTab,
-                    onTabSelect = { navigator.navigateToMainTab(it.route) },
+                    onTabSelect = { navigator.navigateToMainTab(it) },
                     onTabReSelect = { tab ->
                         when (tab) {
                             FestabookMainTab.SCHEDULE -> {
@@ -74,50 +75,75 @@ fun MainScreen(
         },
         modifier = modifier,
     ) { innerPadding ->
-        val shouldShowPlaceMap = remember { mutableStateOf(false) }
         PlaceMapRoute(
             modifier =
                 Modifier
                     .alpha(
-                        if (shouldShowPlaceMap.value) 1f else 0f,
+                        if (navigator.currentTab == FestabookMainTab.PLACE_MAP) 1f else 0f,
                     ).padding(innerPadding),
             placeMapViewModel = placeMapViewModel,
             locationSource = locationSource,
             logger = logger,
             onStartPlaceDetail = {
-                navigator.navigateToMainTab(FestabookRoute.PlaceDetail)
+                navigator.navigate(
+                    FestabookRoute.PlaceDetail(
+                        placeDetailUiModel = it.placeDetail.value,
+                    ),
+                )
             },
             onPreloadImages = onPreloadImages,
         )
+        FestabookNavHost(
+            modifier = Modifier.padding(innerPadding),
+            navigator = navigator,
+            homeViewModel = homeViewModel,
+            scheduleViewModel = scheduleViewModel,
+            placeDetailViewModelFactory = placeDetailViewModelFactory,
+            newsViewModel = newsViewModel,
+            settingViewModel = settingViewModel,
+            notificationPermissionManager = notificationPermissionManager,
+            onNavigateToExplore = onNavigateToExplore,
+        )
+    }
+}
 
-        NavHost(
-            startDestination = navigator.startRoute,
-            navController = navigator.navController,
-        ) {
-            homeNavGraph(
-                padding = innerPadding,
-                viewModel = homeViewModel,
-                onNavigateToExplore = onNavigateToExplore,
-            )
-            scheduleNavGraph(
-                padding = innerPadding,
-                viewModel = scheduleViewModel,
-            )
-            placeMapNavGraph(
-                mapScreenVisibilityState = shouldShowPlaceMap,
-            )
-            newsNavGraph(
-                padding = innerPadding,
-                viewModel = newsViewModel,
-            )
-            settingNavGraph(
-                padding = innerPadding,
-                homeViewModel = homeViewModel,
-                settingViewModel = settingViewModel,
-                notificationPermissionManager = notificationPermissionManager,
-                onShowSnackBar = { },
-                onShowErrorSnackBar = { },
-            )
-        }
+@Composable
+private fun FestabookNavHost(
+    navigator: FestabookNavigator,
+    homeViewModel: HomeViewModel,
+    scheduleViewModel: ScheduleViewModel,
+    placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
+    newsViewModel: NewsViewModel,
+    settingViewModel: SettingViewModel,
+    notificationPermissionManager: NotificationPermissionManager,
+    onNavigateToExplore: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    NavHost(
+        modifier = modifier,
+        startDestination = navigator.startRoute,
+        navController = navigator.navController,
+    ) {
+        homeNavGraph(
+            viewModel = homeViewModel,
+            onNavigateToExplore = onNavigateToExplore,
+        )
+        scheduleNavGraph(
+            viewModel = scheduleViewModel,
+        )
+        placeMapNavGraph(
+            placeDetailViewModelFactory = placeDetailViewModelFactory,
+            onBackToPreviousClick = { navigator.popBackStack() },
+        )
+        newsNavGraph(
+            viewModel = newsViewModel,
+        )
+        settingNavGraph(
+            homeViewModel = homeViewModel,
+            settingViewModel = settingViewModel,
+            notificationPermissionManager = notificationPermissionManager,
+            onShowSnackBar = { },
+            onShowErrorSnackBar = { },
+        )
     }
 }

@@ -1,5 +1,7 @@
 package com.daedan.festabook.presentation.main
 
+import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -7,9 +9,11 @@ sealed interface FestabookRoute {
     @Serializable
     data object Splash : FestabookRoute
 
-    // TODO: PlaceUiModel, PlaceDetailUiModel 생성자에 추가 후 UiModel에 @Serializable 어노테이션 필요
     @Serializable
-    data object PlaceDetail : FestabookRoute
+    data class PlaceDetail(
+        val placeUiModel: PlaceUiModel? = null,
+        val placeDetailUiModel: PlaceDetailUiModel? = null,
+    ) : FestabookRoute
 
     @Serializable
     data object Explore : FestabookRoute

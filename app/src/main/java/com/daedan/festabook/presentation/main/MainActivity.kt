@@ -13,8 +13,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.add
@@ -42,6 +40,7 @@ import com.daedan.festabook.presentation.home.HomeFragment
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.main.component.MainScreen
 import com.daedan.festabook.presentation.news.NewsViewModel
+import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.daedan.festabook.presentation.theme.FestabookTheme
@@ -61,6 +60,9 @@ class MainActivity :
     NotificationPermissionRequester {
     @Inject
     override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
+
+    @Inject
+    private lateinit var viewModelFactory: PlaceDetailViewModel.Factory
 
     @Inject
     private lateinit var fragmentFactory: FragmentFactory
@@ -118,7 +120,6 @@ class MainActivity :
 //        setupBinding()
 
         setContent {
-            currentTabState = remember { mutableStateOf(FestabookMainTab.HOME) }
             LaunchedEffect(Unit) {
                 handleNavigation(intent)
             }
@@ -127,6 +128,7 @@ class MainActivity :
                     notificationPermissionManager = notificationPermissionManager,
                     logger = appGraph.defaultFirebaseLogger,
                     locationSource = locationSource,
+                    placeDetailViewModelFactory = viewModelFactory,
                     onNavigateToExplore = {
                         startActivity(ExploreActivity.newIntent(this))
                     },
