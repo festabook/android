@@ -38,9 +38,9 @@ class FestabookNavigator(
 
     val startRoute = MainTabRoute.Home // TODO: Splash와 Explore 연동 시 변경
 
-    fun navigateToMainTab(route: FestabookRoute) {
+    fun navigateToMainTab(tab: FestabookMainTab) {
         navController.navigate(
-            route,
+            tab.route,
             navOptions {
                 popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
