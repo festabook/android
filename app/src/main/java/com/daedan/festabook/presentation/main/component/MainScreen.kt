@@ -9,11 +9,13 @@ import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.navigation.homeNavGraph
+import com.daedan.festabook.presentation.main.FestabookMainTab
 import com.daedan.festabook.presentation.main.FestabookRoute
 import com.daedan.festabook.presentation.main.rememberFestabookNavigator
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.navigation.newsNavGraph
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
 import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.navigation.placeMapNavGraph
 import com.daedan.festabook.presentation.schedule.ScheduleViewModel
@@ -45,6 +47,22 @@ fun MainScreen(
                 FestabookBottomNavigationBar(
                     currentTab = navigator.currentTab,
                     onTabSelect = { navigator.navigateToMainTab(it.route) },
+                    onTabReSelect = { tab ->
+                        when (tab) {
+                            FestabookMainTab.SCHEDULE -> {
+                                scheduleViewModel.loadSchedules()
+                            }
+
+                            FestabookMainTab.PLACE_MAP -> {
+                                placeMapViewModel.onPlaceMapEvent(SelectEvent.UnSelectPlace)
+                                placeMapViewModel.onMenuItemReClicked()
+                            }
+
+                            else -> {
+                                Unit
+                            }
+                        }
+                    },
                 )
             }
         },

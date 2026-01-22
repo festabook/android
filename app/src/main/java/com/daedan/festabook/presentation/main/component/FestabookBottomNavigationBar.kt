@@ -43,6 +43,7 @@ fun FestabookBottomNavigationBar(
     currentTab: FestabookMainTab?,
     onTabSelect: (FestabookMainTab) -> Unit,
     modifier: Modifier = Modifier,
+    onTabReSelect: (FestabookMainTab) -> Unit = {},
 ) {
     Box(
         contentAlignment = Alignment.BottomCenter,
@@ -57,18 +58,27 @@ fun FestabookBottomNavigationBar(
         ) {
             FestabookMainTab.entries.forEach { item ->
                 when (item) {
-                    FestabookMainTab.PLACE_MAP -> Spacer(modifier = Modifier.weight(1f))
+                    FestabookMainTab.PLACE_MAP -> {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+
                     else -> {
                         FestabookNavigationItem(
                             tab = item,
                             selected = item == currentTab,
-                            onClick = onTabSelect,
+                            onClick = {
+                                if (it == currentTab) onTabReSelect(it)
+                                onTabSelect(it)
+                            },
                         )
                     }
                 }
             }
         }
-        PlaceMapNavigationItem(onClick = onTabSelect)
+        PlaceMapNavigationItem(onClick = {
+            if (it == currentTab) onTabReSelect(it)
+            onTabSelect(it)
+        })
     }
 }
 
