@@ -1,5 +1,6 @@
 package com.daedan.festabook.presentation.placeDetail.component
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -72,6 +73,9 @@ fun PlaceDetailRoute(
     modifier: Modifier = Modifier,
 ) {
     val placeDetailUiState by viewModel.placeDetail.collectAsStateWithLifecycle()
+    BackHandler {
+        onBackToPreviousClick()
+    }
     PlaceDetailScreen(
         modifier = modifier,
         uiState = placeDetailUiState,

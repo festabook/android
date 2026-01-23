@@ -1,5 +1,6 @@
 package com.daedan.festabook.presentation.main.component
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -9,11 +10,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.NotificationPermissionManager
+import com.daedan.festabook.presentation.common.ObserveAsEvents
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.navigation.homeNavGraph
 import com.daedan.festabook.presentation.main.FestabookMainTab
 import com.daedan.festabook.presentation.main.FestabookNavigator
 import com.daedan.festabook.presentation.main.FestabookRoute
+import com.daedan.festabook.presentation.main.MainViewModel
 import com.daedan.festabook.presentation.main.rememberFestabookNavigator
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.news.navigation.newsNavGraph
@@ -21,7 +24,6 @@ import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
 import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceMapRoute
 import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
-import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
 import com.daedan.festabook.presentation.placeMap.navigation.placeMapNavGraph
 import com.daedan.festabook.presentation.schedule.ScheduleViewModel
 import com.daedan.festabook.presentation.schedule.navigation.scheduleNavGraph
@@ -36,9 +38,10 @@ fun MainScreen(
     logger: DefaultFirebaseLogger,
     locationSource: FusedLocationSource,
     placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
-    onPreloadImages: (PlaceMapSideEffect.PreloadImages) -> Unit, // TODO: 추후 Context에 의존적이지 않게 변경
+    onAppFinish: () -> Unit,
     onNavigateToExplore: () -> Unit, // TODO 검색화면 마이그레이션 시 제거
     modifier: Modifier = Modifier,
+    mainViewModel: MainViewModel = viewModel(),
     homeViewModel: HomeViewModel = viewModel(),
     scheduleViewModel: ScheduleViewModel = viewModel(),
     placeMapViewModel: PlaceMapViewModel = viewModel(),
@@ -47,6 +50,28 @@ fun MainScreen(
 ) {
     val navigator = rememberFestabookNavigator()
 
+    ObserveAsEvents(flow = mainViewModel.navigateNewsEvent) {
+        navigator.navigateToMainTab(FestabookMainTab.NEWS)
+    }
+    ObserveAsEvents(flow = mainViewModel.backPressEvent) { isDoublePress ->
+        if (isDoublePress) {
+            onAppFinish()
+        } else {
+            // TODO: SnackBarHost로 변경
+//            showToast(getString(R.string.back_press_exit_message))
+        }
+    }
+    ObserveAsEvents(flow = homeViewModel.navigateToScheduleEvent) {
+        navigator.navigateToMainTab(FestabookMainTab.SCHEDULE)
+    }
+    ObserveAsEvents(flow = settingViewModel.success) {
+        // TODO: SnackBarHost로 변경
+//        showSnackBar(getString(R.string.setting_notice_enabled))
+    }
+
+    BackHandler {
+        mainViewModel.onBackPressed()
+    }
     Scaffold(
         // TODO: 스낵바 구현 및 하위 프래그먼트에 해당 SnackBar 적용
         bottomBar = {
@@ -91,11 +116,11 @@ fun MainScreen(
                     ),
                 )
             },
-            onPreloadImages = onPreloadImages,
         )
         FestabookNavHost(
             modifier = Modifier.padding(innerPadding),
             navigator = navigator,
+            mainViewModel = mainViewModel,
             homeViewModel = homeViewModel,
             scheduleViewModel = scheduleViewModel,
             placeDetailViewModelFactory = placeDetailViewModelFactory,
@@ -110,6 +135,7 @@ fun MainScreen(
 @Composable
 private fun FestabookNavHost(
     navigator: FestabookNavigator,
+    mainViewModel: MainViewModel,
     homeViewModel: HomeViewModel,
     scheduleViewModel: ScheduleViewModel,
     placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
@@ -126,7 +152,11 @@ private fun FestabookNavHost(
     ) {
         homeNavGraph(
             viewModel = homeViewModel,
+            mainViewModel = mainViewModel,
             onNavigateToExplore = onNavigateToExplore,
+            onSubscriptionConfirm = {
+                notificationPermissionManager.requestNotificationPermission(navigator.navController.context)
+            },
         )
         scheduleNavGraph(
             viewModel = scheduleViewModel,

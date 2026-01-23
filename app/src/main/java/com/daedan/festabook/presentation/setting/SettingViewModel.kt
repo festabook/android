@@ -1,8 +1,6 @@
 package com.daedan.festabook.presentation.setting
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
 import com.daedan.festabook.domain.repository.FestivalNotificationRepository
@@ -43,7 +41,8 @@ class SettingViewModel(
 
     private val _success: MutableSharedFlow<Unit> =
         MutableSharedFlow()
-    val success: LiveData<Unit> = _success.asLiveData()
+
+    val success = _success.asSharedFlow()
     val successFlow = _success.asSharedFlow()
 
     fun notificationAllowClick() {
