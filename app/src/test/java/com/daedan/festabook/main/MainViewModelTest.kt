@@ -4,7 +4,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.domain.repository.DeviceRepository
 import com.daedan.festabook.domain.repository.FestivalNotificationRepository
 import com.daedan.festabook.domain.repository.FestivalRepository
-import com.daedan.festabook.getOrAwaitValue
+import com.daedan.festabook.observeEvent
 import com.daedan.festabook.presentation.main.MainViewModel
 import com.google.firebase.messaging.FirebaseMessaging
 import io.mockk.coEvery
@@ -18,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.assertj.core.api.Assertions.assertThat
@@ -97,23 +98,29 @@ class MainViewModelTest {
     fun `뒤로 가기를 두 번 빠르게 두 번 클릭했을 때, 종료 이벤트가 발생한다`() =
         runTest {
             // given - when
+            val event = observeEvent(mainViewModel.backPressEvent)
             mainViewModel.onBackPressed()
+            runCurrent()
             mainViewModel.onBackPressed()
 
             // then
-            val actual = mainViewModel.backPressEvent.getOrAwaitValue()
-            assertThat(actual.peekContent()).isTrue()
+            val actual = event.await()
+            advanceUntilIdle()
+            assertThat(actual).isTrue()
         }
 
     @Test
     fun `뒤로 가기를 한 번만 클릭했을 때 종료 이벤트가 발생하지 않는다`() =
         runTest {
             // given - when
+            val event = observeEvent(mainViewModel.backPressEvent)
+            runCurrent()
             mainViewModel.onBackPressed()
 
             // then
-            val actual = mainViewModel.backPressEvent.getOrAwaitValue()
-            assertThat(actual.peekContent()).isFalse()
+            val actual = event.await()
+            advanceUntilIdle()
+            assertThat(actual).isFalse()
         }
 
     @Test

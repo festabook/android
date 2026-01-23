@@ -31,7 +31,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.time.LocalDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class NewsViewModelTest {
@@ -179,7 +178,7 @@ class NewsViewModelTest {
                         title = "테스트 2",
                         content = "테스트 2",
                         isPinned = true,
-                        createdAt = LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+                        createdAt = kotlinx.datetime.LocalDateTime(2025, 1, 1, 0, 0, 0),
                     ),
                 )
             val actual = newsViewModel.noticeUiState.value

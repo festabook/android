@@ -6,7 +6,7 @@ import com.daedan.festabook.domain.model.LostItemStatus
 import com.daedan.festabook.domain.model.Notice
 import com.daedan.festabook.presentation.news.lost.model.toLostGuideItemUiModel
 import com.daedan.festabook.presentation.news.lost.model.toLostItemUiModel
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 
 val FAKE_NOTICES =
     listOf(
@@ -15,14 +15,14 @@ val FAKE_NOTICES =
             title = "테스트 1",
             content = "테스트 1",
             isPinned = false,
-            createdAt = LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+            createdAt = LocalDateTime(2025, 1, 1, 0, 0, 0),
         ),
         Notice(
             id = 2,
             title = "테스트 2",
             content = "테스트 2",
             isPinned = true,
-            createdAt = LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+            createdAt = LocalDateTime(2025, 1, 1, 0, 0, 0),
         ),
     )
 
@@ -46,7 +46,7 @@ val FAKE_LOST_ITEM =
             imageUrl = "테스트 이미지 주소",
             storageLocation = "테스트 장소",
             status = LostItemStatus.PENDING,
-            createdAt = LocalDateTime.of(2025, 1, 1, 0, 0, 0),
+            createdAt = java.time.LocalDateTime.of(2025, 1, 1, 0, 0, 0),
         ),
     )
 
