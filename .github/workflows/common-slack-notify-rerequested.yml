@@ -2,7 +2,7 @@ name: Slack Notification (Review Requested)
 
 on:
   pull_request:
-    types: [review_requested]
+    types: [ review_requested ]
 
 permissions:
   contents: read
@@ -32,6 +32,8 @@ jobs:
           PR_REVIEWER: ${{ github.event.requested_reviewer.login }}
           REPOSITORY: ${{ github.repository }}
         run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          
           declare -A GITHUB_TO_SLACK
           GITHUB_TO_SLACK["soeun2537"]="U09A0LM0CRW"
           GITHUB_TO_SLACK["taek2222"]="U099ARRH3D3"
@@ -59,7 +61,7 @@ jobs:
             echo "매핑 없는 사용자(${PR_REVIEWER})는 생략"
             exit 0
           fi
-      
+          
           if [[ -n "${GITHUB_TO_SLACK[$PR_AUTHOR]}" ]]; then
             SLACK_AUTHOR_MENTION="<@${GITHUB_TO_SLACK[$PR_AUTHOR]}>"
           else
@@ -67,7 +69,20 @@ jobs:
           fi
 
           SLACK_REVIEWER_MENTION="<@$slack_id>"
-
-          curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"🏸 *재리뷰 요청 알림*\n*PR 제목:* ${PR_TITLE} (#${PR_NUMBER})\n*작성자:* ${SLACK_AUTHOR_MENTION}\n*리뷰어:* ${SLACK_REVIEWER_MENTION}\n*링크:* ${PR_URL}\"}" \
-            $SLACK_WEBHOOK_URL
+          
+          PAYLOAD=$(jq -n \
+            --arg repo "$REPO_NAME" \
+            --arg title "$PR_TITLE" \
+            --arg number "$PR_NUMBER" \
+            --arg author "$SLACK_AUTHOR_MENTION" \
+            --arg reviewer "$SLACK_REVIEWER_MENTION" \
+            --arg url "$PR_URL" \
+            '{
+              text: "🏸 (\($repo)) 재리뷰 요청 알림",
+              blocks: [
+                {type: "header", text: {type: "plain_text", text: "🏸 (\($repo)) 재리뷰 요청 알림", emoji: true}},
+                {type: "section", text: {type: "mrkdwn", text: "*PR 제목:* \($title) (#\($number))\n*작성자:* \($author)\n*리뷰어:* \($reviewer)\n*링크:* \($url)"}}
+              ]
+            }')
+          
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $SLACK_WEBHOOK_URL
