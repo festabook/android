@@ -2,9 +2,9 @@ name: Slack Notification (Submitted)
 
 on:
   pull_request_review:
-    types: [submitted]
+    types: [ submitted ]
 
-permissions: {}
+permissions: { }
 
 concurrency:
   group: pr-${{ github.event.pull_request.number }}-slack-submitted
@@ -15,6 +15,9 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Notify Review Submitted
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -29,6 +32,8 @@ jobs:
             echo "단순 코멘트 리뷰는 알림 생략"
             exit 0
           fi
+          
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
 
           declare -A GITHUB_TO_SLACK
           GITHUB_TO_SLACK["soeun2537"]="U09A0LM0CRW"
@@ -54,7 +59,21 @@ jobs:
             approved) ICON="✅" ;;
             changes_requested) ICON="🔴" ;;
           esac
-
-          curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\": \"${ICON} *리뷰 완료 알림*\n*PR 제목:* ${PR_TITLE} (#${PR_NUMBER})\n*작성자:* ${SLACK_AUTHOR_MENTION}\n*상태:* ${REVIEW_STATE}\n*링크:* ${PR_URL}\"}" \
-            $SLACK_WEBHOOK_URL
+          
+          PAYLOAD=$(jq -n \
+            --arg icon "$ICON" \
+            --arg repo "$REPO_NAME" \
+            --arg title "$PR_TITLE" \
+            --arg number "$PR_NUMBER" \
+            --arg author "$SLACK_AUTHOR_MENTION" \
+            --arg state "$REVIEW_STATE" \
+            --arg url "$PR_URL" \
+            '{
+              text: "\($icon) (\($repo)) 리뷰 완료 알림",
+              blocks: [
+                {type: "header", text: {type: "plain_text", text: "\($icon) (\($repo)) 리뷰 완료 알림", emoji: true}},
+                {type: "section", text: {type: "mrkdwn", text: "*PR 제목:* \($title) (#\($number))\n*작성자:* \($author)\n*상태:* \($state)\n*링크:* \($url)"}}
+              ]
+            }')
+          
+          curl -X POST -H 'Content-type: application/json' --data "$PAYLOAD" $SLACK_WEBHOOK_URL
