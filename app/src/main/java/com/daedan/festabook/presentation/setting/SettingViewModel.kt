@@ -43,7 +43,6 @@ class SettingViewModel(
         MutableSharedFlow()
 
     val success = _success.asSharedFlow()
-    val successFlow = _success.asSharedFlow()
 
     fun notificationAllowClick() {
         if (!_isAllowed.value) {

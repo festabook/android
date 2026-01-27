@@ -96,7 +96,7 @@ class SettingFragment(
                     notificationPermissionManager.requestNotificationPermission(context)
                 }
 
-                ObserveAsEvents(flow = settingViewModel.successFlow) {
+                ObserveAsEvents(flow = settingViewModel.success) {
                     requireActivity().showSnackBar(getString(R.string.setting_notice_enabled))
                 }
 

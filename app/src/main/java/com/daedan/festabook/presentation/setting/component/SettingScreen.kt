@@ -77,7 +77,7 @@ fun SettingRoute(
         notificationPermissionManager.requestNotificationPermission(context)
     }
 
-    ObserveAsEvents(flow = settingViewModel.successFlow) {
+    ObserveAsEvents(flow = settingViewModel.success) {
         onShowSnackBar(context.getString(R.string.setting_notice_enabled))
     }
 
