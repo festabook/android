@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import com.daedan.festabook.logging.DefaultFirebaseLogger
@@ -100,12 +102,24 @@ fun MainScreen(
         },
         modifier = modifier,
     ) { innerPadding ->
+        val isVisible = navigator.currentTab == FestabookMainTab.PLACE_MAP
         PlaceMapRoute(
             modifier =
                 Modifier
-                    .alpha(
-                        if (navigator.currentTab == FestabookMainTab.PLACE_MAP) 1f else 0f,
-                    ).padding(innerPadding),
+                    .graphicsLayer {
+                        alpha = if (isVisible) 1f else 0f
+                    }.padding(innerPadding)
+                    .pointerInput(isVisible) {
+                        if (!isVisible) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    awaitPointerEvent(PointerEventPass.Initial)
+                                        .changes
+                                        .forEach { it.consume() }
+                                }
+                            }
+                        }
+                    },
             placeMapViewModel = placeMapViewModel,
             locationSource = locationSource,
             logger = logger,
