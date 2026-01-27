@@ -92,6 +92,9 @@ class MainActivity :
                     locationSource = locationSource,
                     placeDetailViewModelFactory = viewModelFactory,
                     onAppFinish = { finish() },
+                    onSubscriptionConfirm = {
+                        notificationPermissionManager.requestNotificationPermission(this)
+                    },
                     onNavigateToExplore = {
                         startActivity(ExploreActivity.newIntent(this))
                     },

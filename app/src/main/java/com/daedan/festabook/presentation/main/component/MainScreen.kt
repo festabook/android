@@ -41,6 +41,7 @@ fun MainScreen(
     locationSource: FusedLocationSource,
     placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
     onAppFinish: () -> Unit,
+    onSubscriptionConfirm: () -> Unit,
     onNavigateToExplore: () -> Unit, // TODO 검색화면 마이그레이션 시 제거
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel = viewModel(),
@@ -142,6 +143,7 @@ fun MainScreen(
             settingViewModel = settingViewModel,
             notificationPermissionManager = notificationPermissionManager,
             onNavigateToExplore = onNavigateToExplore,
+            onSubscriptionConfirm = onSubscriptionConfirm,
         )
     }
 }
@@ -157,6 +159,7 @@ private fun FestabookNavHost(
     settingViewModel: SettingViewModel,
     notificationPermissionManager: NotificationPermissionManager,
     onNavigateToExplore: () -> Unit,
+    onSubscriptionConfirm: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -168,9 +171,7 @@ private fun FestabookNavHost(
             viewModel = homeViewModel,
             mainViewModel = mainViewModel,
             onNavigateToExplore = onNavigateToExplore,
-            onSubscriptionConfirm = {
-                notificationPermissionManager.requestNotificationPermission(navigator.navController.context)
-            },
+            onSubscriptionConfirm = onSubscriptionConfirm,
         )
         scheduleNavGraph(
             viewModel = scheduleViewModel,
