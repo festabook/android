@@ -49,7 +49,9 @@ fun FestabookBottomNavigationBar(
     Box(
         contentAlignment = Alignment.BottomCenter,
         modifier =
-            modifier.navigationBarsPadding(),
+            modifier
+                .background(color = FestabookColor.white)
+                .navigationBarsPadding(),
     ) {
         Row(
             modifier =

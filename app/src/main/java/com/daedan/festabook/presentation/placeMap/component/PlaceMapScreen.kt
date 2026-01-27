@@ -67,7 +67,7 @@ fun PlaceMapRoute(
     val mapManagerDelegate = remember { MapManagerDelegate() }
 
     val mapControlSideEffectHandler =
-        remember {
+        remember(placeMapViewModel, logger, locationSource, mapDelegate, mapManagerDelegate) {
             MapControlSideEffectHandler(
                 initialPadding = with(density) { 254.dp.toPx() }.toInt(),
                 logger = logger,
@@ -78,7 +78,7 @@ fun PlaceMapRoute(
             )
         }
     val placeMapSideEffectHandler =
-        remember {
+        remember(placeMapViewModel, logger, mapManagerDelegate) {
             PlaceMapSideEffectHandler(
                 mapManagerDelegate = mapManagerDelegate,
                 bottomSheetState = bottomSheetState,
