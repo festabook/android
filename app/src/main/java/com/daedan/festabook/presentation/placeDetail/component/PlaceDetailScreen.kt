@@ -73,9 +73,6 @@ fun PlaceDetailRoute(
     modifier: Modifier = Modifier,
 ) {
     val placeDetailUiState by viewModel.placeDetail.collectAsStateWithLifecycle()
-    BackHandler {
-        onBackToPreviousClick()
-    }
     PlaceDetailScreen(
         modifier = modifier,
         uiState = placeDetailUiState,
@@ -91,6 +88,9 @@ fun PlaceDetailScreen(
 ) {
     val scrollState = rememberScrollState()
     var isDialogOpen by remember { mutableStateOf(false) }
+    BackHandler(enabled = !isDialogOpen) {
+        onBackToPreviousClick()
+    }
 
     when (uiState) {
         is PlaceDetailUiState.Success -> {
