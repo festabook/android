@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Icon
@@ -47,7 +48,8 @@ fun FestabookBottomNavigationBar(
 ) {
     Box(
         contentAlignment = Alignment.BottomCenter,
-        modifier = modifier,
+        modifier =
+            modifier.navigationBarsPadding(),
     ) {
         Row(
             modifier =
