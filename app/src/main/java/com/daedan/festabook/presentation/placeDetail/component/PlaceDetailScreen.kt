@@ -70,6 +70,7 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 fun PlaceDetailRoute(
     viewModel: PlaceDetailViewModel,
     onBackToPreviousClick: () -> Unit,
+    onShowErrorSnackbar: (Throwable) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val placeDetailUiState by viewModel.placeDetail.collectAsStateWithLifecycle()
@@ -77,19 +78,35 @@ fun PlaceDetailRoute(
         modifier = modifier,
         uiState = placeDetailUiState,
         onBackToPreviousClick = onBackToPreviousClick,
+        onShowErrorSnackbar = onShowErrorSnackbar,
     )
 }
 
 @Composable
 fun PlaceDetailScreen(
     uiState: PlaceDetailUiState,
+    onShowErrorSnackbar: (Throwable) -> Unit,
     onBackToPreviousClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
+    val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)
     var isDialogOpen by remember { mutableStateOf(false) }
+
     BackHandler(enabled = !isDialogOpen) {
         onBackToPreviousClick()
+    }
+
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is PlaceDetailUiState.Error -> {
+                currentOnShowErrorSnackbar(uiState.throwable)
+            }
+
+            else -> {
+                Unit
+            }
+        }
     }
 
     when (uiState) {
@@ -410,6 +427,7 @@ private fun PlaceDetailScreenPreview() {
     FestabookTheme {
         PlaceDetailScreen(
             onBackToPreviousClick = {},
+            onShowErrorSnackbar = {},
             uiState =
                 PlaceDetailUiState.Success(
                     placeDetail =

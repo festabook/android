@@ -195,6 +195,7 @@ private fun FestabookNavHost(
         placeMapNavGraph(
             placeDetailViewModelFactory = placeDetailViewModelFactory,
             onBackToPreviousClick = { navigator.popBackStack() },
+            onShowErrorSnackbar = snackbarManager::showError,
         )
         newsNavGraph(
             viewModel = newsViewModel,

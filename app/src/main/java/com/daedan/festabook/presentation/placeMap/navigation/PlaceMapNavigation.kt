@@ -26,6 +26,7 @@ import kotlin.reflect.typeOf
 fun NavGraphBuilder.placeMapNavGraph(
     onBackToPreviousClick: () -> Unit,
     placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
+    onShowErrorSnackbar: (Throwable) -> Unit,
 ) {
     composable<MainTabRoute.PlaceMap> {
     }
@@ -56,13 +57,12 @@ fun NavGraphBuilder.placeMapNavGraph(
         PlaceDetailRoute(
             modifier =
                 Modifier.graphicsLayer(
-                    // compositingStrategy를 사용해 자식들을 하나의 레이어로 강제 통합
                     compositingStrategy = CompositingStrategy.Offscreen,
-                    // 하드웨어 가속을 통해 애니메이션 도중 레이어가 쪼개지는 것을 방지
                     clip = true,
                 ),
             viewModel = viewModel,
             onBackToPreviousClick = onBackToPreviousClick,
+            onShowErrorSnackbar = onShowErrorSnackbar,
         )
     }
 }
