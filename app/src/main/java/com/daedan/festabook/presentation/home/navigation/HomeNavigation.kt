@@ -13,6 +13,7 @@ import com.daedan.festabook.presentation.main.component.FirstVisitDialog
 fun NavGraphBuilder.homeNavGraph(
     viewModel: HomeViewModel,
     mainViewModel: MainViewModel,
+    onShowErrorSnackbar: (Throwable) -> Unit,
     onSubscriptionConfirm: () -> Unit,
     onNavigateToExplore: () -> Unit,
 ) {
@@ -26,6 +27,7 @@ fun NavGraphBuilder.homeNavGraph(
         }
         HomeScreen(
             viewModel = viewModel,
+            onShowErrorSnackbar = onShowErrorSnackbar,
             onNavigateToExplore = onNavigateToExplore,
         )
     }

@@ -85,9 +85,9 @@ fun PlaceDetailRoute(
 @Composable
 fun PlaceDetailScreen(
     uiState: PlaceDetailUiState,
-    onShowErrorSnackbar: (Throwable) -> Unit,
     onBackToPreviousClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onShowErrorSnackbar: (Throwable) -> Unit = {}, // TODO Fragment 제거 시 필수 파라미터로 변경
 ) {
     val scrollState = rememberScrollState()
     val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)

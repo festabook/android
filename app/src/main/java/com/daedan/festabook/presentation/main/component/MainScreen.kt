@@ -188,9 +188,11 @@ private fun FestabookNavHost(
             mainViewModel = mainViewModel,
             onNavigateToExplore = onNavigateToExplore,
             onSubscriptionConfirm = onSubscriptionConfirm,
+            onShowErrorSnackbar = snackbarManager::showError,
         )
         scheduleNavGraph(
             viewModel = scheduleViewModel,
+            onShowErrorSnackbar = snackbarManager::showError,
         )
         placeMapNavGraph(
             placeDetailViewModelFactory = placeDetailViewModelFactory,
@@ -199,6 +201,7 @@ private fun FestabookNavHost(
         )
         newsNavGraph(
             viewModel = newsViewModel,
+            onShowErrorSnackbar = snackbarManager::showError,
         )
         settingNavGraph(
             homeViewModel = homeViewModel,

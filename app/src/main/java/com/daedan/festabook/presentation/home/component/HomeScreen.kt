@@ -11,7 +11,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,9 +39,22 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     onNavigateToExplore: () -> Unit,
     modifier: Modifier = Modifier,
+    onShowErrorSnackbar: (Throwable) -> Unit = {}, // TODO Fragment 제거 시 필수 파라미터로 변경
 ) {
     val festivalUiState by viewModel.festivalUiState.collectAsStateWithLifecycle()
     val lineupUiState by viewModel.lineupUiState.collectAsStateWithLifecycle()
+    val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)
+    LaunchedEffect(festivalUiState) {
+        when (val state = festivalUiState) {
+            is FestivalUiState.Error -> {
+                currentOnShowErrorSnackbar(state.throwable)
+            }
+
+            else -> {
+                Unit
+            }
+        }
+    }
 
     when (val state = festivalUiState) {
         is FestivalUiState.Loading -> {
