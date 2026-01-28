@@ -149,6 +149,7 @@ android {
 
 dependencies {
     ktlintRuleset(libs.ktlint)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.map.sdk)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.play.services.location)

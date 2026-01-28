@@ -5,9 +5,9 @@ import com.daedan.festabook.domain.model.Notice
 import com.daedan.festabook.domain.model.Place
 import com.daedan.festabook.domain.model.PlaceDetail
 import com.daedan.festabook.domain.model.PlaceDetailImage
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 

@@ -1,5 +1,6 @@
 package com.daedan.festabook.presentation.placeDetail.component
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -11,14 +12,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -50,11 +48,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
 import com.daedan.festabook.presentation.common.component.FestabookImage
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.component.URLText
+import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
 import com.daedan.festabook.presentation.placeDetail.model.ImageUiModel
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
 import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiState
@@ -67,6 +67,20 @@ import com.daedan.festabook.presentation.theme.FestabookTypography
 import com.daedan.festabook.presentation.theme.festabookSpacing
 
 @Composable
+fun PlaceDetailRoute(
+    viewModel: PlaceDetailViewModel,
+    onBackToPreviousClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val placeDetailUiState by viewModel.placeDetail.collectAsStateWithLifecycle()
+    PlaceDetailScreen(
+        modifier = modifier,
+        uiState = placeDetailUiState,
+        onBackToPreviousClick = onBackToPreviousClick,
+    )
+}
+
+@Composable
 fun PlaceDetailScreen(
     uiState: PlaceDetailUiState,
     onBackToPreviousClick: () -> Unit,
@@ -74,6 +88,9 @@ fun PlaceDetailScreen(
 ) {
     val scrollState = rememberScrollState()
     var isDialogOpen by remember { mutableStateOf(false) }
+    BackHandler(enabled = !isDialogOpen) {
+        onBackToPreviousClick()
+    }
 
     when (uiState) {
         is PlaceDetailUiState.Success -> {
@@ -91,7 +108,10 @@ fun PlaceDetailScreen(
 
             Column(
                 modifier =
-                    modifier.verticalScroll(scrollState),
+                    modifier
+                        .fillMaxSize()
+                        .background(color = FestabookColor.white)
+                        .verticalScroll(scrollState),
             ) {
                 PlaceDetailImageContent(
                     images = uiState.placeDetail.images,
@@ -189,7 +209,6 @@ private fun PlaceDetailImageContent(
         BackToPreviousButton(
             modifier =
                 Modifier
-                    .windowInsetsPadding(WindowInsets.statusBars)
                     .padding(
                         top = festabookSpacing.paddingBody4,
                         start = festabookSpacing.paddingScreenGutter,

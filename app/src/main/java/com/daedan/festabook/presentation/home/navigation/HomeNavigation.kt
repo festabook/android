@@ -1,22 +1,30 @@
 package com.daedan.festabook.presentation.home.navigation
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.component.HomeScreen
 import com.daedan.festabook.presentation.main.MainTabRoute
+import com.daedan.festabook.presentation.main.MainViewModel
+import com.daedan.festabook.presentation.main.component.FirstVisitDialog
 
 fun NavGraphBuilder.homeNavGraph(
-    padding: PaddingValues,
     viewModel: HomeViewModel,
+    mainViewModel: MainViewModel,
+    onSubscriptionConfirm: () -> Unit,
     onNavigateToExplore: () -> Unit,
 ) {
     composable<MainTabRoute.Home> {
+        val isFirstVisit by mainViewModel.isFirstVisit.collectAsStateWithLifecycle()
+        if (isFirstVisit) {
+            FirstVisitDialog(
+                onConfirm = { onSubscriptionConfirm() },
+                onDecline = { mainViewModel.declineAlert() },
+            )
+        }
         HomeScreen(
-            modifier = Modifier.padding(padding),
             viewModel = viewModel,
             onNavigateToExplore = onNavigateToExplore,
         )

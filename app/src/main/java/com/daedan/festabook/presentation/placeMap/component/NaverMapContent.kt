@@ -3,6 +3,7 @@ package com.daedan.festabook.presentation.placeMap.component
 import android.content.ComponentCallbacks2
 import android.content.res.Configuration
 import android.os.Bundle
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -37,12 +38,18 @@ fun NaverMapContent(
         val naverMap = mapView.getMapAndRunCallback(onMapReady)
         mapDelegate.initMap(naverMap)
     }
-    AndroidView(
-        factory = { mapView },
-        modifier = modifier.dragInterceptor(onMapDrag),
-    )
+    Box(modifier = modifier) {
+        // TODO AndroidView와 CMP 뷰의 혼용으로 컴파일러 경고 발생중 -> 추후 해결하겠습니다
+        AndroidView(
+            factory = { mapView },
+            modifier = Modifier.dragInterceptor(onMapDrag),
+            onRelease = {
+                mapView.onDestroy()
+            },
+        )
+        content(mapDelegate.value)
+    }
     RegisterMapLifeCycle(mapView)
-    content(mapDelegate.value)
 }
 
 private fun Modifier.dragInterceptor(onMapDrag: () -> Unit): Modifier =
@@ -115,27 +122,6 @@ private fun RegisterMapLifeCycle(mapView: MapView) {
             mapView.onSaveInstanceState(savedInstanceState)
             lifecycle.removeObserver(mapLifecycleObserver)
             context.unregisterComponentCallbacks(callbacks)
-
-            // dispose 시점에 Lifecycle.Event가 끝까지 진행되지 않아 발생되는
-            // MapView Memory Leak 수정합니다.
-            when (previousState.value) {
-                Lifecycle.Event.ON_CREATE, Lifecycle.Event.ON_STOP -> {
-                    mapView.onDestroy()
-                }
-
-                Lifecycle.Event.ON_START, Lifecycle.Event.ON_PAUSE -> {
-                    mapView.onStop()
-                    mapView.onDestroy()
-                }
-
-                Lifecycle.Event.ON_RESUME -> {
-                    mapView.onPause()
-                    mapView.onStop()
-                    mapView.onDestroy()
-                }
-
-                else -> Unit
-            }
         }
     }
 }

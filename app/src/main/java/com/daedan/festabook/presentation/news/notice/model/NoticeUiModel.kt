@@ -2,11 +2,14 @@ package com.daedan.festabook.presentation.news.notice.model
 
 import android.os.Parcelable
 import com.daedan.festabook.domain.model.Notice
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.parcelize.Parcelize
-import java.time.LocalDateTime
+import kotlinx.serialization.Serializable
 import java.time.format.DateTimeFormatter
 
 @Parcelize
+@Serializable
 data class NoticeUiModel(
     val id: Long,
     val title: String,
@@ -18,7 +21,7 @@ data class NoticeUiModel(
     val formattedCreatedAt: String
         get() =
             runCatching {
-                formatter.format(createdAt)
+                formatter.format(createdAt.toJavaLocalDateTime())
             }.getOrDefault("")
 
     companion object {
