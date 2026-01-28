@@ -78,9 +78,6 @@ fun MainScreen(
     ObserveAsEvents(flow = homeViewModel.navigateToScheduleEvent) {
         navigator.navigateToMainTab(FestabookMainTab.SCHEDULE)
     }
-    ObserveAsEvents(flow = settingViewModel.success) {
-        snackbarManager.show(noticeEnabledMessage)
-    }
 
     BackHandler {
         mainViewModel.onBackPressed()

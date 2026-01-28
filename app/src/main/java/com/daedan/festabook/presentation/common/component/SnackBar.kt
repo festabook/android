@@ -36,10 +36,10 @@ class SnackbarManager(
     private val defaultErrorMessage: String,
 ) {
     fun show(message: String) {
+        hostState.currentSnackbarData?.dismiss()
         scope.launch {
             hostState.showSnackbar(
                 message = message,
-                withDismissAction = true,
                 duration = SnackbarDuration.Short,
                 actionLabel = actionLabel,
             )
