@@ -135,6 +135,7 @@ fun MainScreen(
             placeMapViewModel = placeMapViewModel,
             locationSource = locationSource,
             logger = logger,
+            onShowErrorSnackBar = snackbarManager::showError,
             onStartPlaceDetail = {
                 navigator.navigate(
                     FestabookRoute.PlaceDetail(
