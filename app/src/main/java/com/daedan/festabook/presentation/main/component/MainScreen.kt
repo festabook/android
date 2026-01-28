@@ -3,16 +3,24 @@ package com.daedan.festabook.presentation.main.component
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
+import com.daedan.festabook.R
 import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.common.ObserveAsEvents
+import com.daedan.festabook.presentation.common.component.FestabookSnackbar
+import com.daedan.festabook.presentation.common.component.SnackbarManager
+import com.daedan.festabook.presentation.common.component.rememberAppSnackbarManager
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.navigation.homeNavGraph
 import com.daedan.festabook.presentation.main.FestabookMainTab
@@ -52,6 +60,10 @@ fun MainScreen(
     settingViewModel: SettingViewModel = viewModel(),
 ) {
     val navigator = rememberFestabookNavigator()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarManager = rememberAppSnackbarManager(snackbarHostState)
+    val backPressExitMessage = stringResource(R.string.back_press_exit_message)
+    val noticeEnabledMessage = stringResource(R.string.setting_notice_enabled)
 
     ObserveAsEvents(flow = mainViewModel.navigateNewsEvent) {
         navigator.navigateToMainTab(FestabookMainTab.NEWS)
@@ -60,23 +72,25 @@ fun MainScreen(
         if (isDoublePress) {
             onAppFinish()
         } else {
-            // TODO: SnackBarHost로 변경
-//            showToast(getString(R.string.back_press_exit_message))
+            snackbarManager.show(backPressExitMessage)
         }
     }
     ObserveAsEvents(flow = homeViewModel.navigateToScheduleEvent) {
         navigator.navigateToMainTab(FestabookMainTab.SCHEDULE)
     }
     ObserveAsEvents(flow = settingViewModel.success) {
-        // TODO: SnackBarHost로 변경
-//        showSnackBar(getString(R.string.setting_notice_enabled))
+        snackbarManager.show(noticeEnabledMessage)
     }
 
     BackHandler {
         mainViewModel.onBackPressed()
     }
     Scaffold(
-        // TODO: 스낵바 구현 및 하위 프래그먼트에 해당 SnackBar 적용
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                FestabookSnackbar(data)
+            }
+        },
         bottomBar = {
             if (navigator.shouldShowBottomBar) {
                 FestabookBottomNavigationBar(
@@ -144,6 +158,7 @@ fun MainScreen(
             notificationPermissionManager = notificationPermissionManager,
             onNavigateToExplore = onNavigateToExplore,
             onSubscriptionConfirm = onSubscriptionConfirm,
+            snackbarManager = snackbarManager,
         )
     }
 }
@@ -160,6 +175,7 @@ private fun FestabookNavHost(
     notificationPermissionManager: NotificationPermissionManager,
     onNavigateToExplore: () -> Unit,
     onSubscriptionConfirm: () -> Unit,
+    snackbarManager: SnackbarManager,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -187,8 +203,8 @@ private fun FestabookNavHost(
             homeViewModel = homeViewModel,
             settingViewModel = settingViewModel,
             notificationPermissionManager = notificationPermissionManager,
-            onShowSnackBar = { },
-            onShowErrorSnackBar = { },
+            onShowSnackBar = snackbarManager::show,
+            onShowErrorSnackBar = snackbarManager::showError,
         )
     }
 }
