@@ -5,6 +5,8 @@ interface FestivalNotificationRepository {
 
     suspend fun deleteFestivalNotification(): Result<Unit>
 
+    suspend fun syncFestivalNotificationIsAllow(): Result<Boolean>
+
     fun getFestivalNotificationIsAllow(): Boolean
 
     fun setFestivalNotificationIsAllow(isAllowed: Boolean)
