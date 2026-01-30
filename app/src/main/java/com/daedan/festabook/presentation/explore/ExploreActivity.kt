@@ -14,7 +14,6 @@ import com.daedan.festabook.presentation.main.MainActivity
 import com.daedan.festabook.presentation.theme.FestabookTheme
 
 class ExploreActivity : AppCompatActivity() {
-
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory
         get() = appGraph.metroViewModelFactory
 

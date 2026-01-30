@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -22,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,19 +39,22 @@ import com.daedan.festabook.presentation.theme.FestabookTheme
 
 @Composable
 fun ExploreScreen(
-    viewModel: ExploreViewModel,
     onNavigateToMain: (SearchResultUiModel) -> Unit,
     onBackClick: () -> Unit,
+    viewModel: ExploreViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    val latestNavigateToMain by rememberUpdatedState(onNavigateToMain)
+    val latestKeyboardController by rememberUpdatedState(keyboardController)
 
     LaunchedEffect(viewModel) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
                 is ExploreSideEffect.NavigateToMain -> {
-                    keyboardController?.hide()
-                    onNavigateToMain(effect.searchResult)
+                    latestKeyboardController?.hide()
+                    latestNavigateToMain(effect.searchResult)
                 }
             }
         }
@@ -62,7 +65,7 @@ fun ExploreScreen(
             query = uiState.query,
             searchState = uiState.searchState,
             onQueryChange = viewModel::onTextInputChanged,
-            onUniversitySelected = viewModel::onUniversitySelected,
+            onUniversitySelect = viewModel::onUniversitySelected,
             onBackClick = onBackClick,
         )
     } else {
@@ -70,7 +73,7 @@ fun ExploreScreen(
             query = uiState.query,
             searchState = uiState.searchState,
             onQueryChange = viewModel::onTextInputChanged,
-            onUniversitySelected = viewModel::onUniversitySelected,
+            onUniversitySelect = viewModel::onUniversitySelected,
         )
     }
 }
@@ -80,8 +83,9 @@ fun ExploreSearchScreen(
     query: String,
     searchState: SearchUiState,
     onQueryChange: (String) -> Unit,
-    onUniversitySelected: (SearchResultUiModel) -> Unit,
+    onUniversitySelect: (SearchResultUiModel) -> Unit,
     onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         containerColor = Color.White,
@@ -103,7 +107,7 @@ fun ExploreSearchScreen(
                 query = query,
                 searchState = searchState,
                 onQueryChange = onQueryChange,
-                onUniversitySelected = onUniversitySelected,
+                onUniversitySelect = onUniversitySelect,
             )
         }
     }
@@ -114,7 +118,8 @@ fun ExploreLandingScreen(
     query: String,
     searchState: SearchUiState,
     onQueryChange: (String) -> Unit,
-    onUniversitySelected: (SearchResultUiModel) -> Unit,
+    onUniversitySelect: (SearchResultUiModel) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val isSearchResultEmpty =
@@ -190,7 +195,7 @@ fun ExploreLandingScreen(
                                 query = query,
                                 searchState = searchState,
                                 onQueryChange = onQueryChange,
-                                onUniversitySelected = onUniversitySelected,
+                                onUniversitySelect = onUniversitySelect,
                             )
                         }
                     }
@@ -208,7 +213,7 @@ private fun ExploreSearchScreenPreview() {
             query = "서울",
             searchState = SearchUiState.Idle,
             onQueryChange = {},
-            onUniversitySelected = {},
+            onUniversitySelect = {},
             onBackClick = {},
         )
     }
@@ -222,7 +227,7 @@ private fun ExploreLandingScreenPreview() {
             query = "ㅇㄹㅇ",
             searchState = SearchUiState.Idle,
             onQueryChange = {},
-            onUniversitySelected = {},
+            onUniversitySelect = {},
         )
     }
 }

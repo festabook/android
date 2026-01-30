@@ -20,14 +20,14 @@ import com.daedan.festabook.presentation.theme.FestabookTheme
 @Composable
 fun ExploreSearchResultList(
     searchState: SearchUiState,
-    onUniversitySelected: (SearchResultUiModel) -> Unit,
+    onUniversitySelect: (SearchResultUiModel) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier =
             modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 20.dp),
     ) {
         when (searchState) {
             is SearchUiState.Loading -> {
@@ -45,7 +45,7 @@ fun ExploreSearchResultList(
                 items(searchState.universitiesFound) { university ->
                     ExploreResultItem(
                         university = university,
-                        onItemClick = onUniversitySelected,
+                        onItemClick = onUniversitySelect,
                     )
                 }
             }
@@ -63,7 +63,7 @@ private fun ExploreSearchResultListLoadingPreview() {
     FestabookTheme {
         ExploreSearchResultList(
             searchState = SearchUiState.Loading,
-            onUniversitySelected = {},
+            onUniversitySelect = {},
         )
     }
 }
@@ -82,7 +82,7 @@ private fun ExploreSearchResultListSuccessPreview() {
                 SearchUiState.Success(
                     universitiesFound = fakeUniversities,
                 ),
-            onUniversitySelected = {},
+            onUniversitySelect = {},
         )
     }
 }
