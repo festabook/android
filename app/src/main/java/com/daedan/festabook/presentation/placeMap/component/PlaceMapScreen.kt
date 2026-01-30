@@ -54,6 +54,7 @@ import timber.log.Timber
 fun PlaceMapRoute(
     placeMapViewModel: PlaceMapViewModel,
     onStartPlaceDetail: (PlaceMapSideEffect.StartPlaceDetail) -> Unit,
+    onShowErrorSnackBar: (Throwable) -> Unit,
     locationSource: FusedLocationSource,
     logger: DefaultFirebaseLogger,
     modifier: Modifier = Modifier,
@@ -92,7 +93,7 @@ fun PlaceMapRoute(
                         places = it.places,
                     )
                 },
-                onShowErrorSnackBar = { },
+                onShowErrorSnackBar = { onShowErrorSnackBar(it.error.throwable) },
             )
         }
 

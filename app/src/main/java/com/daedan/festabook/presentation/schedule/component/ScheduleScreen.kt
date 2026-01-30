@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -29,14 +30,28 @@ import timber.log.Timber
 fun ScheduleScreen(
     scheduleViewModel: ScheduleViewModel,
     modifier: Modifier = Modifier,
+    onShowErrorSnackbar: (Throwable) -> Unit = {}, // TODO Fragment 제거 시 필수 파라미터로 변경
 ) {
     val scheduleUiState by scheduleViewModel.scheduleUiState.collectAsStateWithLifecycle()
+    val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)
     val currentState =
         when (scheduleUiState) {
             is ScheduleUiState.Refreshing -> (scheduleUiState as ScheduleUiState.Refreshing).lastSuccessState
             is ScheduleUiState.Success -> scheduleUiState
             else -> scheduleUiState
         }
+
+    LaunchedEffect(currentState) {
+        when (currentState) {
+            is ScheduleUiState.Error -> {
+                currentOnShowErrorSnackbar(currentState.throwable)
+            }
+
+            else -> {
+                Unit
+            }
+        }
+    }
 
     Scaffold(
         topBar = { FestabookTopAppBar(title = stringResource(R.string.schedule_title)) },

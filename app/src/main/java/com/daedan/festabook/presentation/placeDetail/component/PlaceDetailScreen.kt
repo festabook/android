@@ -70,6 +70,7 @@ import com.daedan.festabook.presentation.theme.festabookSpacing
 fun PlaceDetailRoute(
     viewModel: PlaceDetailViewModel,
     onBackToPreviousClick: () -> Unit,
+    onShowErrorSnackbar: (Throwable) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val placeDetailUiState by viewModel.placeDetail.collectAsStateWithLifecycle()
@@ -77,6 +78,7 @@ fun PlaceDetailRoute(
         modifier = modifier,
         uiState = placeDetailUiState,
         onBackToPreviousClick = onBackToPreviousClick,
+        onShowErrorSnackbar = onShowErrorSnackbar,
     )
 }
 
@@ -85,11 +87,26 @@ fun PlaceDetailScreen(
     uiState: PlaceDetailUiState,
     onBackToPreviousClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onShowErrorSnackbar: (Throwable) -> Unit = {}, // TODO Fragment 제거 시 필수 파라미터로 변경
 ) {
     val scrollState = rememberScrollState()
+    val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)
     var isDialogOpen by remember { mutableStateOf(false) }
+
     BackHandler(enabled = !isDialogOpen) {
         onBackToPreviousClick()
+    }
+
+    LaunchedEffect(uiState) {
+        when (uiState) {
+            is PlaceDetailUiState.Error -> {
+                currentOnShowErrorSnackbar(uiState.throwable)
+            }
+
+            else -> {
+                Unit
+            }
+        }
     }
 
     when (uiState) {
@@ -410,6 +427,7 @@ private fun PlaceDetailScreenPreview() {
     FestabookTheme {
         PlaceDetailScreen(
             onBackToPreviousClick = {},
+            onShowErrorSnackbar = {},
             uiState =
                 PlaceDetailUiState.Success(
                     placeDetail =

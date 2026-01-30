@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -16,6 +17,7 @@ import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.FestabookTopAppBar
 import com.daedan.festabook.presentation.news.NewsTab
 import com.daedan.festabook.presentation.news.NewsViewModel
+import com.daedan.festabook.presentation.news.faq.FAQUiState
 import com.daedan.festabook.presentation.news.lost.LostUiState
 import com.daedan.festabook.presentation.news.notice.NoticeUiState
 
@@ -23,6 +25,7 @@ import com.daedan.festabook.presentation.news.notice.NoticeUiState
 fun NewsScreen(
     newsViewModel: NewsViewModel,
     modifier: Modifier = Modifier,
+    onShowErrorSnackbar: (Throwable) -> Unit = {}, // TODO Fragment 제거 시 필수 파라미터로 변경
 ) {
     val pageState = rememberPagerState { NewsTab.entries.size }
     val scope = rememberCoroutineScope()
@@ -30,15 +33,50 @@ fun NewsScreen(
     val noticeUiState by newsViewModel.noticeUiState.collectAsStateWithLifecycle()
     val lostUiState by newsViewModel.lostUiState.collectAsStateWithLifecycle()
     val faqUiState by newsViewModel.faqUiState.collectAsStateWithLifecycle()
+    val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)
 
     val isNoticeRefreshing = noticeUiState is NoticeUiState.Refreshing
     val isLostItemRefreshing = lostUiState is LostUiState.Refreshing
 
     LaunchedEffect(noticeUiState) {
-        if (noticeUiState is NoticeUiState.Success) {
-            pageState.animateScrollToPage(NewsTab.NOTICE.ordinal)
+        when (val uiState = noticeUiState) {
+            is NoticeUiState.Success -> {
+                pageState.animateScrollToPage(NewsTab.NOTICE.ordinal)
+            }
+
+            is NoticeUiState.Error -> {
+                currentOnShowErrorSnackbar(uiState.throwable)
+            }
+
+            else -> {
+                Unit
+            }
         }
     }
+    LaunchedEffect(lostUiState) {
+        when (val uiState = lostUiState) {
+            is LostUiState.Error -> {
+                currentOnShowErrorSnackbar(uiState.throwable)
+            }
+
+            else -> {
+                Unit
+            }
+        }
+    }
+
+    LaunchedEffect(faqUiState) {
+        when (val uiState = faqUiState) {
+            is FAQUiState.Error -> {
+                currentOnShowErrorSnackbar(uiState.throwable)
+            }
+
+            else -> {
+                Unit
+            }
+        }
+    }
+
     Scaffold(
         topBar = { FestabookTopAppBar(title = stringResource(R.string.news_title)) },
         modifier = modifier,
