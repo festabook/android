@@ -10,15 +10,15 @@ import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -33,8 +33,8 @@ class ExploreViewModel(
     private val _uiState = MutableStateFlow(ExploreUiState())
     val uiState: StateFlow<ExploreUiState> = _uiState.asStateFlow()
 
-    private val _sideEffect = Channel<ExploreSideEffect>(Channel.BUFFERED)
-    val sideEffect = _sideEffect.receiveAsFlow()
+    private val _sideEffect = MutableSharedFlow<ExploreSideEffect>(replay = 0, extraBufferCapacity = 1)
+    val sideEffect = _sideEffect.asSharedFlow()
 
     init {
         checkFestivalId()
@@ -84,7 +84,7 @@ class ExploreViewModel(
     fun onUniversitySelected(university: SearchResultUiModel) {
         exploreRepository.saveFestivalId(university.festivalId)
         viewModelScope.launch {
-            _sideEffect.send(ExploreSideEffect.NavigateToMain(university))
+            _sideEffect.tryEmit(ExploreSideEffect.NavigateToMain(university))
         }
     }
 
