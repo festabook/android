@@ -47,7 +47,7 @@ class SnackbarManager(
     }
 
     fun showError(throwable: Throwable) {
-        val message = errorMessages[throwable::class] ?: throwable.message ?: defaultErrorMessage
+        val message = errorMessages[throwable::class] ?: defaultErrorMessage
         show(message)
     }
 }
