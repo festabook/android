@@ -1,9 +1,10 @@
 package com.daedan.festabook.presentation.explore.component
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -34,7 +36,6 @@ import com.daedan.festabook.presentation.explore.ExploreViewModel
 import com.daedan.festabook.presentation.explore.SearchUiState
 import com.daedan.festabook.presentation.explore.model.SearchResultUiModel
 import com.daedan.festabook.presentation.theme.FestabookTheme
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun ExploreScreen(
@@ -45,8 +46,8 @@ fun ExploreScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    LaunchedEffect(viewModel.sideEffect) {
-        viewModel.sideEffect.collectLatest { effect ->
+    LaunchedEffect(viewModel) {
+        viewModel.sideEffect.collect { effect ->
             when (effect) {
                 is ExploreSideEffect.NavigateToMain -> {
                     keyboardController?.hide()
@@ -95,6 +96,7 @@ fun ExploreSearchScreen(
             modifier =
                 Modifier
                     .fillMaxSize()
+                    .padding(innerPadding)
                     .padding(20.dp),
         ) {
             ExploreSearchContent(
@@ -102,7 +104,6 @@ fun ExploreSearchScreen(
                 searchState = searchState,
                 onQueryChange = onQueryChange,
                 onUniversitySelected = onUniversitySelected,
-                modifier = Modifier.padding(innerPadding),
             )
         }
     }
@@ -121,6 +122,8 @@ fun ExploreLandingScreen(
     val isSearchError = searchState is SearchUiState.Error
     val isError = isSearchResultEmpty || isSearchError
 
+    val isSearchMode = query.isNotBlank()
+
     Scaffold(
         containerColor = Color.White,
     ) { innerPadding ->
@@ -131,51 +134,65 @@ fun ExploreLandingScreen(
                     .padding(innerPadding)
                     .imePadding(),
         ) {
-            val isSearchMode = query.isNotEmpty()
+            val topLandingPadding = maxHeight * 0.3f
 
-            val targetTopPadding = if (isSearchMode) 20.dp else maxHeight * 0.3f
-            val animatedTopPadding by animateDpAsState(
-                targetValue = targetTopPadding,
-                animationSpec = tween(durationMillis = 300),
-                label = "topPadding",
-            )
-
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Spacer(modifier = Modifier.height(animatedTopPadding))
-
-                Image(
-                    painter = painterResource(id = R.drawable.logo_title),
-                    contentDescription = "FestaBook Logo",
-                    modifier = Modifier.height(24.dp),
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                    ExploreSearchBar(
-                        query = query,
-                        onQueryChange = onQueryChange,
-                        onSearch = { keyboardController?.hide() },
-                        isError = isError,
+            AnimatedContent(
+                targetState = isSearchMode,
+                transitionSpec = {
+                    ContentTransform(
+                        targetContentEnter = fadeIn(tween(200)),
+                        initialContentExit = fadeOut(tween(200)),
                     )
-                }
-
-                AnimatedVisibility(
-                    visible = isSearchMode,
-                    enter = fadeIn(animationSpec = tween(durationMillis = 300)),
-                ) {
+                },
+                label = "LandingSearchTransition",
+            ) { searching ->
+                if (!searching) {
                     Column(
-                        modifier = Modifier.padding(horizontal = 20.dp),
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        ExploreSearchResultList(
-                            searchState = searchState,
-                            onUniversitySelected = onUniversitySelected,
-                            modifier = Modifier.weight(1f),
+                        Spacer(modifier = Modifier.height(topLandingPadding))
+
+                        Image(
+                            painter = painterResource(id = R.drawable.logo_title),
+                            contentDescription = "FestaBook Logo",
+                            modifier = Modifier.height(24.dp),
                         )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                            ExploreSearchBar(
+                                query = query,
+                                onQueryChange = onQueryChange,
+                                onSearch = { keyboardController?.hide() },
+                                isError = isError,
+                            )
+                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Image(
+                            painter = painterResource(id = R.drawable.logo_title),
+                            contentDescription = "FestaBook Logo",
+                            modifier = Modifier.height(24.dp),
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                            ExploreSearchContent(
+                                query = query,
+                                searchState = searchState,
+                                onQueryChange = onQueryChange,
+                                onUniversitySelected = onUniversitySelected,
+                            )
+                        }
                     }
                 }
             }
