@@ -1,15 +1,19 @@
 package com.daedan.festabook.presentation.explore.component
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
@@ -19,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,11 +43,15 @@ fun ExploreScreen(
     onBackClick: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(viewModel.sideEffect) {
         viewModel.sideEffect.collectLatest { effect ->
             when (effect) {
-                is ExploreSideEffect.NavigateToMain -> onNavigateToMain(effect.searchResult)
+                is ExploreSideEffect.NavigateToMain -> {
+                    keyboardController?.hide()
+                    onNavigateToMain(effect.searchResult)
+                }
             }
         }
     }
@@ -82,13 +91,20 @@ fun ExploreSearchScreen(
             )
         },
     ) { innerPadding ->
-        ExploreSearchContent(
-            query = query,
-            searchState = searchState,
-            onQueryChange = onQueryChange,
-            onUniversitySelected = onUniversitySelected,
-            modifier = Modifier.padding(innerPadding),
-        )
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
+        ) {
+            ExploreSearchContent(
+                query = query,
+                searchState = searchState,
+                onQueryChange = onQueryChange,
+                onUniversitySelected = onUniversitySelected,
+                modifier = Modifier.padding(innerPadding),
+            )
+        }
     }
 }
 
@@ -99,59 +115,69 @@ fun ExploreLandingScreen(
     onQueryChange: (String) -> Unit,
     onUniversitySelected: (SearchResultUiModel) -> Unit,
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val isSearchResultEmpty =
+        searchState is SearchUiState.Success && searchState.universitiesFound.isEmpty()
+    val isSearchError = searchState is SearchUiState.Error
+    val isError = isSearchResultEmpty || isSearchError
+
     Scaffold(
         containerColor = Color.White,
     ) { innerPadding ->
-        if (query.isEmpty()) {
-            // 검색어가 없을 때: 중앙 정렬 (로고 + 검색창)
+        BoxWithConstraints(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .imePadding(),
+        ) {
+            val isSearchMode = query.isNotEmpty()
+
+            val targetTopPadding = if (isSearchMode) 20.dp else maxHeight * 0.3f
+            val animatedTopPadding by animateDpAsState(
+                targetValue = targetTopPadding,
+                animationSpec = tween(durationMillis = 300),
+                label = "topPadding",
+            )
+
             Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(horizontal = 20.dp),
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
             ) {
+                Spacer(modifier = Modifier.height(animatedTopPadding))
+
                 Image(
                     painter = painterResource(id = R.drawable.logo_title),
                     contentDescription = "FestaBook Logo",
                     modifier = Modifier.height(24.dp),
                 )
-                Spacer(modifier = Modifier.height(24.dp))
-                ExploreSearchBar(
-                    query = query,
-                    onQueryChange = onQueryChange,
-                    onSearch = {},
-                    isError = false,
-                )
-                Spacer(modifier = Modifier.height(80.dp))
-            }
-        } else {
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(horizontal = 20.dp),
-            ) {
-                Spacer(modifier = Modifier.height(20.dp)) // 상단 여백
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Image(
-                        painter = painterResource(id = R.drawable.logo_title),
-                        contentDescription = "FestaBook Logo",
-                        modifier = Modifier.height(24.dp),
-                    )
-                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
-                ExploreSearchContent(
-                    query = query,
-                    searchState = searchState,
-                    onQueryChange = onQueryChange,
-                    onUniversitySelected = onUniversitySelected,
-                    modifier = Modifier.weight(1f),
-                )
+                Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                    ExploreSearchBar(
+                        query = query,
+                        onQueryChange = onQueryChange,
+                        onSearch = { keyboardController?.hide() },
+                        isError = isError,
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = isSearchMode,
+                    enter = fadeIn(animationSpec = tween(durationMillis = 300)),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                    ) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        ExploreSearchResultList(
+                            searchState = searchState,
+                            onUniversitySelected = onUniversitySelected,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
             }
         }
     }
@@ -176,20 +202,7 @@ private fun ExploreSearchScreenPreview() {
 private fun ExploreLandingScreenPreview() {
     FestabookTheme {
         ExploreLandingScreen(
-            query = "",
-            searchState = SearchUiState.Idle,
-            onQueryChange = {},
-            onUniversitySelected = {},
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ExploreLandingScreenPreview2() {
-    FestabookTheme {
-        ExploreLandingScreen(
-            query = "검색 내용이 있을 때",
+            query = "ㅇㄹㅇ",
             searchState = SearchUiState.Idle,
             onQueryChange = {},
             onUniversitySelected = {},

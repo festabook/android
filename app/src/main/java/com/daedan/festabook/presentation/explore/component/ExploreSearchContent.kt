@@ -1,6 +1,7 @@
 package com.daedan.festabook.presentation.explore.component
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,6 +11,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.daedan.festabook.presentation.explore.SearchUiState
@@ -25,52 +27,30 @@ fun ExploreSearchContent(
     onUniversitySelected: (SearchResultUiModel) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
     val isSearchResultEmpty =
         searchState is SearchUiState.Success && searchState.universitiesFound.isEmpty()
     val isSearchError = searchState is SearchUiState.Error
 
-    LazyColumn(
+    Column(
         modifier =
             modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
+                .fillMaxSize(),
     ) {
-        item {
-            Box(modifier = Modifier.padding(top = 20.dp, bottom = 16.dp)) {
-                ExploreSearchBar(
-                    query = query,
-                    onQueryChange = onQueryChange,
-                    onSearch = { /* Search is handled by query change */ },
-                    isError = isSearchResultEmpty || isSearchError,
-                )
-            }
+        Box(modifier = Modifier.padding(top = 20.dp, bottom = 16.dp)) {
+            ExploreSearchBar(
+                query = query,
+                onQueryChange = onQueryChange,
+                onSearch = { keyboardController?.hide() },
+                isError = isSearchResultEmpty || isSearchError,
+            )
         }
 
-        when (searchState) {
-            is SearchUiState.Loading -> {
-                item {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.padding(top = 20.dp),
-                            color = FestabookColor.accentBlue,
-                        )
-                    }
-                }
-            }
-
-            is SearchUiState.Success -> {
-                items(searchState.universitiesFound) { university ->
-                    ExploreResultItem(
-                        university = university,
-                        onItemClick = onUniversitySelected,
-                    )
-                }
-            }
-
-            is SearchUiState.Error -> {}
-
-            is SearchUiState.Idle -> {}
-        }
+        ExploreSearchResultList(
+            searchState = searchState,
+            onUniversitySelected = onUniversitySelected,
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 
