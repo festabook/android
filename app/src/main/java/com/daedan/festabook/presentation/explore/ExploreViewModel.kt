@@ -1,22 +1,25 @@
 package com.daedan.festabook.presentation.explore
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
 import com.daedan.festabook.domain.repository.ExploreRepository
-import com.daedan.festabook.presentation.common.SingleLiveData
 import com.daedan.festabook.presentation.explore.model.SearchResultUiModel
 import com.daedan.festabook.presentation.explore.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -27,78 +30,65 @@ import timber.log.Timber
 class ExploreViewModel(
     private val exploreRepository: ExploreRepository,
 ) : ViewModel() {
-    private val searchQuery = MutableStateFlow("")
+    private val _uiState = MutableStateFlow(ExploreUiState())
+    val uiState: StateFlow<ExploreUiState> = _uiState.asStateFlow()
 
-    private val _searchState = MutableLiveData<SearchUiState>()
-    val searchState: LiveData<SearchUiState> = _searchState
-
-    private val _navigateToMain = SingleLiveData<SearchResultUiModel?>()
-    val navigateToMain: LiveData<SearchResultUiModel?> = _navigateToMain
-
-    private val _hasFestivalId = MutableLiveData<Boolean>(false)
-    val hasFestivalId: LiveData<Boolean> = _hasFestivalId
-
-    private var selectedUniversity: SearchResultUiModel? = null
+    private val _sideEffect = Channel<ExploreSideEffect>(Channel.BUFFERED)
+    val sideEffect = _sideEffect.receiveAsFlow()
 
     init {
         checkFestivalId()
+        observeSearchQuery()
+    }
 
+    private fun checkFestivalId() {
+        val festivalId = exploreRepository.getFestivalId()
+        Timber.d("festival ID : $festivalId")
+        if (festivalId != null) {
+            _uiState.update { it.copy(hasFestivalId = true) }
+        }
+    }
+
+    private fun observeSearchQuery() {
         viewModelScope.launch {
-            searchQuery
-                .debounce(300L)
+            _uiState
+                .map { it.query }
                 .distinctUntilChanged()
+                .debounce(300L)
                 .collectLatest { query ->
-// 현재는 검색어가 없을 시, 전체 리스트를 보여주기 위해 아래의 코드를 주석처리해두었음.
-//                    if (query.isEmpty()) {
-//                        _searchState.value = SearchUiState.Idle
-//                        return@collectLatest
-//                    }
+                    if (query.isBlank()) {
+                        _uiState.update { it.copy(searchState = SearchUiState.Idle) }
+                        return@collectLatest
+                    }
 
-                    _searchState.value = SearchUiState.Loading
+                    _uiState.update { it.copy(searchState = SearchUiState.Loading) }
 
-                    val result = exploreRepository.search(query)
-                    result
+                    exploreRepository
+                        .search(query)
                         .onSuccess { universitiesFound ->
                             Timber.d("검색 성공 - received: $universitiesFound")
-                            _searchState.value =
-                                SearchUiState.Success(universitiesFound = universitiesFound.map { it.toUiModel() })
-                        }.onFailure {
-                            Timber.d(it, "검색 실패")
-                            _searchState.value = SearchUiState.Error(it)
+                            val uiModels = universitiesFound.map { it.toUiModel() }
+                            _uiState.update {
+                                it.copy(searchState = SearchUiState.Success(universitiesFound = uiModels))
+                            }
+                        }.onFailure { throwable ->
+                            Timber.d(throwable, "검색 실패")
+                            _uiState.update {
+                                it.copy(searchState = SearchUiState.Error(throwable))
+                            }
                         }
                 }
         }
     }
 
-    fun checkFestivalId() {
-        val festivalId = exploreRepository.getFestivalId()
-        Timber.d("festival ID : $festivalId")
-        if (festivalId != null) {
-            _hasFestivalId.value = true
-        }
-    }
-
     fun onUniversitySelected(university: SearchResultUiModel) {
-        selectedUniversity = university
-        _searchState.value =
-            SearchUiState.Success(
-                universitiesFound = listOf(university),
-//                selectedUniversity = university,
-            )
-        navigateToMainScreen()
+        exploreRepository.saveFestivalId(university.festivalId)
+        viewModelScope.launch {
+            _sideEffect.send(ExploreSideEffect.NavigateToMain(university))
+        }
     }
 
     fun onTextInputChanged(query: String) {
-        searchQuery.value = query
-    }
-
-    private fun navigateToMainScreen() {
-        val selectedUniversity = selectedUniversity
-
-        if (selectedUniversity != null) {
-            Timber.d("festivalId 로 화면 이동 - ${selectedUniversity.festivalId}")
-            _navigateToMain.setValue(selectedUniversity)
-            exploreRepository.saveFestivalId(selectedUniversity.festivalId)
-        }
+        _uiState.update { it.copy(query = query) }
     }
 }
