@@ -71,12 +71,12 @@ class FestivalNotificationRepositoryImpl(
             .mapCatching { response ->
                 val notificationId =
                     response.find { it.festivalId == festivalId }?.festivalNotificationId
-                val isSubscribed = notificationId != null
+                val isAllowed = notificationId != null
                 festivalNotificationLocalDataSource.saveFestivalNotificationIsAllowed(
                     festivalId,
-                    isSubscribed,
+                    isAllowed,
                 )
-                if (isSubscribed) {
+                if (isAllowed) {
                     festivalNotificationLocalDataSource.saveFestivalNotificationId(
                         festivalId,
                         notificationId,
@@ -84,7 +84,7 @@ class FestivalNotificationRepositoryImpl(
                 } else {
                     festivalNotificationLocalDataSource.deleteFestivalNotificationId(festivalId)
                 }
-                isSubscribed
+                isAllowed
             }
     }
 
