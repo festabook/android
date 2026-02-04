@@ -2,9 +2,11 @@ package com.daedan.festabook.data.service
 
 import com.daedan.festabook.data.model.request.FestivalNotificationRequest
 import com.daedan.festabook.data.model.response.festival.FestivalNotificationResponse
+import com.daedan.festabook.data.model.response.festival.RegisteredFestivalNotificationResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
+import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -19,4 +21,9 @@ interface FestivalNotificationService {
     suspend fun deleteFestivalNotification(
         @Path("festivalNotificationId") id: Long,
     ): Response<Unit>
+
+    @GET("festivals/notifications/{deviceId}")
+    suspend fun getFestivalNotification(
+        @Path("deviceId") id: Long,
+    ): Response<List<RegisteredFestivalNotificationResponse>>
 }

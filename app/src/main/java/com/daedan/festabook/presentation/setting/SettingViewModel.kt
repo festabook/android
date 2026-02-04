@@ -44,6 +44,16 @@ class SettingViewModel(
 
     val success = _success.asSharedFlow()
 
+    init {
+        viewModelScope.launch {
+            festivalNotificationRepository
+                .syncFestivalNotificationIsAllow()
+                .onSuccess {
+                    _isAllowed.emit(it)
+                }
+        }
+    }
+
     fun notificationAllowClick() {
         if (!_isAllowed.value) {
             viewModelScope.launch {

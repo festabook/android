@@ -9,7 +9,6 @@ import com.daedan.festabook.domain.repository.FestivalNotificationRepository
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
-import timber.log.Timber
 
 @ContributesBinding(AppScope::class)
 @Inject
@@ -20,43 +19,73 @@ class FestivalNotificationRepositoryImpl(
     private val festivalLocalDataSource: FestivalLocalDataSource,
 ) : FestivalNotificationRepository {
     override suspend fun saveFestivalNotification(): Result<Unit> {
-        val deviceId = deviceLocalDataSource.getDeviceId()
-        if (deviceId == null) {
-            Timber.e("${::FestivalNotificationRepositoryImpl.name}: DeviceId가 없습니다.")
-            return Result.failure(IllegalStateException())
-        }
-        val festivalId = festivalLocalDataSource.getFestivalId()
+        val deviceId =
+            deviceLocalDataSource.getDeviceId() ?: return Result.failure(
+                IllegalArgumentException(NO_DEVICE_ID_EXCEPTION),
+            )
+        val festivalId =
+            festivalLocalDataSource.getFestivalId() ?: return Result.failure(
+                IllegalArgumentException(NO_FESTIVAL_ID_EXCEPTION),
+            )
 
-        val result =
-            festivalId?.let {
-                festivalNotificationDataSource
-                    .saveFestivalNotification(
-                        festivalId = it,
-                        deviceId = deviceId,
-                    ).toResult()
-            }
-                ?: throw IllegalArgumentException("${::FestivalNotificationRepositoryImpl.javaClass.simpleName}festivalId가 null 입니다.")
-        return result
-            .mapCatching {
+        return festivalNotificationDataSource
+            .saveFestivalNotification(
+                festivalId = festivalId,
+                deviceId = deviceId,
+            ).toResult()
+            .mapCatching { response ->
                 festivalNotificationLocalDataSource.saveFestivalNotificationId(
                     festivalId,
-                    it.festivalNotificationId,
+                    response.festivalNotificationId,
                 )
             }
     }
 
     override suspend fun deleteFestivalNotification(): Result<Unit> {
         val festivalId =
-            festivalLocalDataSource.getFestivalId() ?: return Result.failure(
-                IllegalStateException(),
-            )
+            festivalLocalDataSource.getFestivalId()
+                ?: return Result.failure(IllegalStateException(NO_FESTIVAL_ID_EXCEPTION))
         val festivalNotificationId =
             festivalNotificationLocalDataSource.getFestivalNotificationId(festivalId)
-        val response =
-            festivalNotificationDataSource.deleteFestivalNotification(festivalNotificationId)
-        festivalNotificationLocalDataSource.deleteFestivalNotificationId(festivalId)
+        return festivalNotificationDataSource
+            .deleteFestivalNotification(festivalNotificationId)
+            .toResult()
+            .mapCatching {
+                festivalNotificationLocalDataSource.deleteFestivalNotificationId(festivalId)
+            }
+    }
 
-        return response.toResult()
+    override suspend fun syncFestivalNotificationIsAllow(): Result<Boolean> {
+        val deviceId =
+            deviceLocalDataSource.getDeviceId() ?: return Result.failure(
+                IllegalArgumentException(NO_DEVICE_ID_EXCEPTION),
+            )
+        val festivalId =
+            festivalLocalDataSource.getFestivalId() ?: return Result.failure(
+                IllegalArgumentException(NO_FESTIVAL_ID_EXCEPTION),
+            )
+
+        return festivalNotificationDataSource
+            .getFestivalNotification(deviceId)
+            .toResult()
+            .mapCatching { response ->
+                val notificationId =
+                    response.find { it.festivalId == festivalId }?.festivalNotificationId
+                val isAllowed = notificationId != null
+                festivalNotificationLocalDataSource.saveFestivalNotificationIsAllowed(
+                    festivalId,
+                    isAllowed,
+                )
+                if (isAllowed) {
+                    festivalNotificationLocalDataSource.saveFestivalNotificationId(
+                        festivalId,
+                        notificationId,
+                    )
+                } else {
+                    festivalNotificationLocalDataSource.deleteFestivalNotificationId(festivalId)
+                }
+                isAllowed
+            }
     }
 
     override fun getFestivalNotificationIsAllow(): Boolean {
@@ -71,5 +100,12 @@ class FestivalNotificationRepositoryImpl(
                 isAllowed,
             )
         }
+    }
+
+    companion object {
+        private val NO_FESTIVAL_ID_EXCEPTION =
+            "${::FestivalNotificationRepositoryImpl.name}: FestivalId가 없습니다."
+        private val NO_DEVICE_ID_EXCEPTION =
+            "${::FestivalNotificationRepositoryImpl.name}: DeviceId가 없습니다."
     }
 }

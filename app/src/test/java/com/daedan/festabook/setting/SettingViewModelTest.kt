@@ -31,6 +31,8 @@ class SettingViewModelTest {
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
         festivalNotificationRepository = mockk(relaxed = true)
+        coEvery { festivalNotificationRepository.syncFestivalNotificationIsAllow() } returns
+            Result.success(false)
         settingViewModel = SettingViewModel(festivalNotificationRepository)
     }
 
@@ -44,6 +46,9 @@ class SettingViewModelTest {
         runTest {
             // given
             coEvery { festivalNotificationRepository.getFestivalNotificationIsAllow() } returns false
+            coEvery { festivalNotificationRepository.syncFestivalNotificationIsAllow() } returns
+                Result.success(false)
+
             settingViewModel = SettingViewModel(festivalNotificationRepository) // 먼저 생성
             val event = observeEvent(settingViewModel.permissionCheckEvent)
 
@@ -62,9 +67,13 @@ class SettingViewModelTest {
         runTest {
             // given
             coEvery { festivalNotificationRepository.getFestivalNotificationIsAllow() } returns true
+            coEvery { festivalNotificationRepository.syncFestivalNotificationIsAllow() } returns
+                Result.success(true)
 
             // when
             settingViewModel = SettingViewModel(festivalNotificationRepository)
+            advanceUntilIdle()
+
             settingViewModel.notificationAllowClick()
             advanceUntilIdle()
 
@@ -82,6 +91,8 @@ class SettingViewModelTest {
         runTest {
             // given
             coEvery { festivalNotificationRepository.getFestivalNotificationIsAllow() } returns true
+            coEvery { festivalNotificationRepository.syncFestivalNotificationIsAllow() } returns
+                Result.success(true)
             coEvery { festivalNotificationRepository.deleteFestivalNotification() } returns
                 Result.failure(
                     Throwable(),
