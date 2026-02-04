@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import java.time.LocalDate
 
 @ContributesIntoMap(AppScope::class)
@@ -91,18 +90,16 @@ class ScheduleViewModel(
                     preloadCount = preloadCount,
                 )
             viewModelScope.launch {
-                supervisorScope {
-                    range.forEach { position ->
-                        if (isEventLoaded(position)) return@forEach
+                range.forEach { position ->
+                    if (isEventLoaded(position)) return@forEach
 
-                        val scheduleDateUiModel = scheduleDates[position]
-                        launch {
-                            loadEventsByPosition(
-                                position = position,
-                                scheduleDateUiModel = scheduleDateUiModel,
-                                scheduleEventsUiState = scheduleEventUiState,
-                            )
-                        }
+                    val scheduleDateUiModel = scheduleDates[position]
+                    launch {
+                        loadEventsByPosition(
+                            position = position,
+                            scheduleDateUiModel = scheduleDateUiModel,
+                            scheduleEventsUiState = scheduleEventUiState,
+                        )
                     }
                 }
             }
