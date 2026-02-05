@@ -114,6 +114,7 @@
     <string name="all_book_mark">북마크</string>
     <string name="schedule_circle">원</string>
     <string name="logo_splash">festabook</string>
+    <string name="content_description_iv_fail_load">로딩 실패 아이콘</string>
 
     <!--실패 시 출력 -->
     <string name="fail_snackbar_confirm">확인</string>

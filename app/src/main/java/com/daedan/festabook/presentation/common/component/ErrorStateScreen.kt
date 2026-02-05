@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,9 +27,8 @@ fun ErrorStateScreen(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
-            painter = painterResource(R.drawable.ic_error_loaded),
-            contentDescription = null,
-            tint = Color.Unspecified,
+            painter = painterResource(R.drawable.ic_fail_load),
+            contentDescription = stringResource(R.string.content_description_iv_fail_load),
             modifier = Modifier.size(48.dp),
         )
         Spacer(modifier = Modifier.height(festabookSpacing.paddingBody2))
