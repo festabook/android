@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
+import com.daedan.festabook.presentation.common.component.ErrorStateScreen
 import com.daedan.festabook.presentation.common.component.FestabookTopAppBar
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.schedule.ScheduleEventsUiState
@@ -64,6 +65,7 @@ fun ScheduleScreen(
 
             is ScheduleUiState.Error -> {
                 Timber.w(currentState.throwable.stackTraceToString())
+                ErrorStateScreen()
             }
 
             else -> {
@@ -90,10 +92,10 @@ fun ScheduleScreen(
                     ScheduleTabPage(
                         pagerState = pageState,
                         scheduleUiState = currentStateSuccess,
-                        onRefresh = { oldEvents ->
+                        onRefresh = { lastState ->
                             scheduleViewModel.loadSchedules(
                                 scheduleUiState = ScheduleUiState.Refreshing(currentStateSuccess),
-                                scheduleEventUiState = ScheduleEventsUiState.Refreshing(oldEvents),
+                                scheduleEventUiState = ScheduleEventsUiState.Refreshing(lastState),
                                 selectedDatePosition = pageState.currentPage,
                                 preloadCount = 0,
                             )

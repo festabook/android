@@ -6,7 +6,7 @@ sealed interface ScheduleEventsUiState {
     data object InitialLoading : ScheduleEventsUiState
 
     data class Refreshing(
-        val oldEvents: List<ScheduleEventUiModel>,
+        val lastState: ScheduleEventsUiState,
     ) : ScheduleEventsUiState
 
     data class Success(
@@ -15,6 +15,6 @@ sealed interface ScheduleEventsUiState {
     ) : ScheduleEventsUiState
 
     data class Error(
-        val throwable: Throwable,
+        val throwable: Throwable = Throwable("알수 없는 오류"),
     ) : ScheduleEventsUiState
 }

@@ -25,6 +25,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
+import com.daedan.festabook.presentation.common.component.ErrorStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
 import com.daedan.festabook.presentation.schedule.ScheduleEventsUiState
@@ -43,7 +44,7 @@ import timber.log.Timber
 fun ScheduleTabPage(
     pagerState: PagerState,
     scheduleUiState: ScheduleUiState.Success,
-    onRefresh: (List<ScheduleEventUiModel>) -> Unit,
+    onRefresh: (ScheduleEventsUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.pulse_circle))
@@ -52,18 +53,24 @@ fun ScheduleTabPage(
         modifier = modifier,
         beyondViewportPageCount = PRELOAD_PAGE_COUNT,
     ) { index ->
-        val scheduleEventsUiState = scheduleUiState.eventsUiStateByPosition[index]
-        val isRefreshing = scheduleEventsUiState is ScheduleEventsUiState.Refreshing
-        val oldEvents =
-            (scheduleEventsUiState as? ScheduleEventsUiState.Success)?.events ?: emptyList()
+        val scheduleEventsUiState =
+            scheduleUiState.eventsUiStateByPosition[index] ?: ScheduleEventsUiState.Error()
 
         PullToRefreshContainer(
-            isRefreshing = isRefreshing,
-            onRefresh = { onRefresh(oldEvents) },
+            isRefreshing = scheduleEventsUiState is ScheduleEventsUiState.Refreshing,
+            onRefresh = { onRefresh(scheduleEventsUiState) },
         ) { graphicsLayer ->
             when (scheduleEventsUiState) {
                 is ScheduleEventsUiState.Error -> {
                     Timber.w(scheduleEventsUiState.throwable.stackTraceToString())
+                    ErrorStateScreen(
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(end = festabookSpacing.paddingScreenGutter)
+                                .then(graphicsLayer)
+                                .verticalScroll(rememberScrollState()),
+                    )
                 }
 
                 ScheduleEventsUiState.InitialLoading -> {
@@ -71,14 +78,30 @@ fun ScheduleTabPage(
                 }
 
                 is ScheduleEventsUiState.Refreshing -> {
-                    ScheduleTabContent(
-                        composition = composition,
-                        scheduleEvents = scheduleEventsUiState.oldEvents,
-                        modifier =
-                            Modifier
-                                .padding(end = festabookSpacing.paddingScreenGutter)
-                                .then(graphicsLayer),
-                    )
+                    when (val lastState = scheduleEventsUiState.lastState) {
+                        is ScheduleEventsUiState.Success -> {
+                            ScheduleTabContent(
+                                composition = composition,
+                                scheduleEvents = lastState.events,
+                                modifier =
+                                    Modifier
+                                        .padding(end = festabookSpacing.paddingScreenGutter)
+                                        .then(graphicsLayer),
+                            )
+                        }
+
+                        is ScheduleEventsUiState.Error -> {
+                            ErrorStateScreen(
+                                modifier =
+                                    Modifier
+                                        .fillMaxSize()
+                                        .padding(end = festabookSpacing.paddingScreenGutter)
+                                        .then(graphicsLayer),
+                            )
+                        }
+
+                        else -> {}
+                    }
                 }
 
                 is ScheduleEventsUiState.Success -> {
@@ -92,8 +115,6 @@ fun ScheduleTabPage(
                                 .then(graphicsLayer),
                     )
                 }
-
-                null -> {}
             }
         }
     }
