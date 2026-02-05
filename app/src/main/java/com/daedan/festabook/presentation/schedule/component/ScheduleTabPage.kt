@@ -44,7 +44,7 @@ import timber.log.Timber
 fun ScheduleTabPage(
     pagerState: PagerState,
     scheduleUiState: ScheduleUiState.Success,
-    onRefresh: (ScheduleEventsUiState) -> Unit,
+    onRefresh: (ScheduleEventsUiState.Content) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.pulse_circle))
@@ -54,15 +54,17 @@ fun ScheduleTabPage(
         beyondViewportPageCount = PRELOAD_PAGE_COUNT,
     ) { index ->
         val scheduleEventsUiState =
-            scheduleUiState.eventsUiStateByPosition[index] ?: ScheduleEventsUiState.Error()
+            scheduleUiState.eventsUiStateByPosition[index] ?: ScheduleEventsUiState(
+                ScheduleEventsUiState.Content.Error(Throwable("잘못된 포지션 인덱스")),
+            )
 
         PullToRefreshContainer(
-            isRefreshing = scheduleEventsUiState is ScheduleEventsUiState.Refreshing,
-            onRefresh = { onRefresh(scheduleEventsUiState) },
+            isRefreshing = scheduleEventsUiState.isRefreshing,
+            onRefresh = { onRefresh(scheduleEventsUiState.content) },
         ) { graphicsLayer ->
-            when (scheduleEventsUiState) {
-                is ScheduleEventsUiState.Error -> {
-                    Timber.w(scheduleEventsUiState.throwable.stackTraceToString())
+            when (val content = scheduleEventsUiState.content) {
+                is ScheduleEventsUiState.Content.Error -> {
+                    Timber.w(content.throwable.stackTraceToString())
                     ErrorStateScreen(
                         modifier =
                             Modifier
@@ -73,42 +75,15 @@ fun ScheduleTabPage(
                     )
                 }
 
-                ScheduleEventsUiState.InitialLoading -> {
+                ScheduleEventsUiState.Content.InitialLoading -> {
                     LoadingStateScreen()
                 }
 
-                is ScheduleEventsUiState.Refreshing -> {
-                    when (val lastState = scheduleEventsUiState.lastState) {
-                        is ScheduleEventsUiState.Success -> {
-                            ScheduleTabContent(
-                                composition = composition,
-                                scheduleEvents = lastState.events,
-                                modifier =
-                                    Modifier
-                                        .padding(end = festabookSpacing.paddingScreenGutter)
-                                        .then(graphicsLayer),
-                            )
-                        }
-
-                        is ScheduleEventsUiState.Error -> {
-                            ErrorStateScreen(
-                                modifier =
-                                    Modifier
-                                        .fillMaxSize()
-                                        .padding(end = festabookSpacing.paddingScreenGutter)
-                                        .then(graphicsLayer),
-                            )
-                        }
-
-                        else -> {}
-                    }
-                }
-
-                is ScheduleEventsUiState.Success -> {
+                is ScheduleEventsUiState.Content.Success -> {
                     ScheduleTabContent(
                         composition = composition,
-                        scheduleEvents = scheduleEventsUiState.events,
-                        currentEventPosition = scheduleEventsUiState.currentEventPosition,
+                        successContent = content,
+                        currentEventPosition = content.currentEventPosition,
                         modifier =
                             Modifier
                                 .padding(end = festabookSpacing.paddingScreenGutter)
@@ -123,7 +98,7 @@ fun ScheduleTabPage(
 @Composable
 private fun ScheduleTabContent(
     composition: LottieComposition?,
-    scheduleEvents: List<ScheduleEventUiModel>,
+    successContent: ScheduleEventsUiState.Content.Success,
     modifier: Modifier = Modifier,
     currentEventPosition: Int = DEFAULT_POSITION,
 ) {
@@ -133,7 +108,7 @@ private fun ScheduleTabContent(
     LaunchedEffect(Unit) {
         listState.animateScrollToItem(currentEventPosition)
     }
-    if (scheduleEvents.isEmpty()) {
+    if (successContent.isEventsEmpty) {
         EmptyStateScreen(
             modifier =
                 modifier
@@ -154,7 +129,7 @@ private fun ScheduleTabContent(
                 contentPadding = PaddingValues(vertical = festabookSpacing.paddingBody5),
                 state = listState,
             ) {
-                items(items = scheduleEvents, key = { scheduleEvent -> scheduleEvent.id }) {
+                items(items = successContent.events, key = { scheduleEvent -> scheduleEvent.id }) {
                     ScheduleEventItem(
                         composition = composition,
                         scheduleEvent = it,
@@ -171,32 +146,36 @@ private fun ScheduleTabContentPreview() {
     FestabookTheme {
         ScheduleTabContent(
             composition = null,
-            scheduleEvents =
-                listOf(
-                    ScheduleEventUiModel(
-                        id = 1,
-                        status = ScheduleEventUiStatus.ONGOING,
-                        startTime = "9:00",
-                        endTime = "18:00",
-                        title = "동아리 버스킹 공연",
-                        location = "운동장",
-                    ),
-                    ScheduleEventUiModel(
-                        id = 2,
-                        status = ScheduleEventUiStatus.UPCOMING,
-                        startTime = "9:00",
-                        endTime = "18:00",
-                        title = "동아리 버스킹 공연 동아리 버스킹 공연 동아리 버스킹 공연",
-                        location = "운동장",
-                    ),
-                    ScheduleEventUiModel(
-                        id = 3,
-                        status = ScheduleEventUiStatus.COMPLETED,
-                        startTime = "9:00",
-                        endTime = "18:00",
-                        title = "동아리 버스킹 공연",
-                        location = "운동장",
-                    ),
+            successContent =
+                ScheduleEventsUiState.Content.Success(
+                    events =
+                        listOf(
+                            ScheduleEventUiModel(
+                                id = 1,
+                                status = ScheduleEventUiStatus.ONGOING,
+                                startTime = "9:00",
+                                endTime = "18:00",
+                                title = "동아리 버스킹 공연",
+                                location = "운동장",
+                            ),
+                            ScheduleEventUiModel(
+                                id = 2,
+                                status = ScheduleEventUiStatus.UPCOMING,
+                                startTime = "9:00",
+                                endTime = "18:00",
+                                title = "동아리 버스킹 공연 동아리 버스킹 공연 동아리 버스킹 공연",
+                                location = "운동장",
+                            ),
+                            ScheduleEventUiModel(
+                                id = 3,
+                                status = ScheduleEventUiStatus.COMPLETED,
+                                startTime = "9:00",
+                                endTime = "18:00",
+                                title = "동아리 버스킹 공연",
+                                location = "운동장",
+                            ),
+                        ),
+                    currentEventPosition = 0,
                 ),
         )
     }

@@ -34,7 +34,7 @@ class ScheduleViewModel(
 
     fun loadSchedules(
         scheduleUiState: ScheduleUiState = ScheduleUiState.InitialLoading,
-        scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState.InitialLoading,
+        scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState(ScheduleEventsUiState.Content.InitialLoading),
         selectedDatePosition: Int? = null,
         preloadCount: Int = PRELOAD_PAGE_COUNT,
     ) {
@@ -79,7 +79,7 @@ class ScheduleViewModel(
 
     fun loadEventsInRange(
         currentPosition: Int,
-        scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState.InitialLoading,
+        scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState(ScheduleEventsUiState.Content.InitialLoading),
         preloadCount: Int = PRELOAD_PAGE_COUNT,
     ) {
         (_scheduleUiState.value as? ScheduleUiState.Success)?.dates?.let { scheduleDates ->
@@ -122,13 +122,23 @@ class ScheduleViewModel(
                 updateEventUiState(
                     position = position,
                     scheduleEventsUiState =
-                        ScheduleEventsUiState.Success(
-                            events = uiModels,
-                            currentEventPosition = getCurrentEventPosition(uiModels),
+                        ScheduleEventsUiState(
+                            content =
+                                ScheduleEventsUiState.Content.Success(
+                                    events = uiModels,
+                                    currentEventPosition = getCurrentEventPosition(uiModels),
+                                ),
+                            isRefreshing = false,
                         ),
                 )
             }.onFailure {
-                updateEventUiState(position, ScheduleEventsUiState.Error(it))
+                updateEventUiState(
+                    position,
+                    ScheduleEventsUiState(
+                        content = ScheduleEventsUiState.Content.Error(it),
+                        isRefreshing = false,
+                    ),
+                )
             }
     }
 
@@ -141,8 +151,7 @@ class ScheduleViewModel(
 
         _scheduleUiState.value =
             currentUiState.copy(
-                eventsUiStateByPosition =
-                    currentUiState.eventsUiStateByPosition + (position to scheduleEventsUiState),
+                eventsUiStateByPosition = currentUiState.eventsUiStateByPosition + (position to scheduleEventsUiState),
             )
     }
 
@@ -179,7 +188,7 @@ class ScheduleViewModel(
     private fun isEventLoaded(position: Int): Boolean {
         val currentScheduleUiState = _scheduleUiState.value
         if (currentScheduleUiState !is ScheduleUiState.Success) return false
-        return currentScheduleUiState.eventsUiStateByPosition[position] is ScheduleEventsUiState.Success
+        return currentScheduleUiState.eventsUiStateByPosition[position]?.content is ScheduleEventsUiState.Content.Success
     }
 
     companion object {

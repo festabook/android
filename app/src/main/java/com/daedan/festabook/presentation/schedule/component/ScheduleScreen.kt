@@ -92,10 +92,11 @@ fun ScheduleScreen(
                     ScheduleTabPage(
                         pagerState = pageState,
                         scheduleUiState = currentStateSuccess,
-                        onRefresh = { lastState ->
+                        onRefresh = { content ->
                             scheduleViewModel.loadSchedules(
                                 scheduleUiState = ScheduleUiState.Refreshing(currentStateSuccess),
-                                scheduleEventUiState = ScheduleEventsUiState.Refreshing(lastState),
+                                scheduleEventUiState =
+                                    ScheduleEventsUiState(content = content, isRefreshing = true),
                                 selectedDatePosition = pageState.currentPage,
                                 preloadCount = 0,
                             )

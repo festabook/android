@@ -2,19 +2,22 @@ package com.daedan.festabook.presentation.schedule
 
 import com.daedan.festabook.presentation.schedule.model.ScheduleEventUiModel
 
-sealed interface ScheduleEventsUiState {
-    data object InitialLoading : ScheduleEventsUiState
+data class ScheduleEventsUiState(
+    val content: Content,
+    val isRefreshing: Boolean = false,
+) {
+    sealed interface Content {
+        data object InitialLoading : Content
 
-    data class Refreshing(
-        val lastState: ScheduleEventsUiState,
-    ) : ScheduleEventsUiState
+        data class Success(
+            val events: List<ScheduleEventUiModel>,
+            val currentEventPosition: Int,
+        ) : Content {
+            val isEventsEmpty get() = events.isEmpty()
+        }
 
-    data class Success(
-        val events: List<ScheduleEventUiModel>,
-        val currentEventPosition: Int,
-    ) : ScheduleEventsUiState
-
-    data class Error(
-        val throwable: Throwable = Throwable("알수 없는 오류"),
-    ) : ScheduleEventsUiState
+        data class Error(
+            val throwable: Throwable,
+        ) : Content
+    }
 }
