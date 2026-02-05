@@ -1,5 +1,6 @@
 package com.daedan.festabook.presentation.schedule.component
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,20 +44,19 @@ import timber.log.Timber
 @Composable
 fun ScheduleTabPage(
     pagerState: PagerState,
-    scheduleUiState: ScheduleUiState.Success,
+    scheduleUiStateContentSuccess: ScheduleUiState.Content.Success,
     onRefresh: (ScheduleEventsUiState.Content) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.pulse_circle))
+    val scrollState = rememberScrollState()
     HorizontalPager(
         state = pagerState,
         modifier = modifier,
         beyondViewportPageCount = PRELOAD_PAGE_COUNT,
     ) { index ->
         val scheduleEventsUiState =
-            scheduleUiState.eventsUiStateByPosition[index] ?: ScheduleEventsUiState(
-                ScheduleEventsUiState.Content.Error(Throwable("잘못된 포지션 인덱스")),
-            )
+            scheduleUiStateContentSuccess.eventsUiStateByPosition[index] ?: return@HorizontalPager
 
         PullToRefreshContainer(
             isRefreshing = scheduleEventsUiState.isRefreshing,
@@ -71,16 +71,17 @@ fun ScheduleTabPage(
                                 .fillMaxSize()
                                 .padding(end = festabookSpacing.paddingScreenGutter)
                                 .then(graphicsLayer)
-                                .verticalScroll(rememberScrollState()),
+                                .verticalScroll(scrollState),
                     )
                 }
 
-                ScheduleEventsUiState.Content.InitialLoading -> {
+                is ScheduleEventsUiState.Content.InitialLoading -> {
                     LoadingStateScreen()
                 }
 
                 is ScheduleEventsUiState.Content.Success -> {
                     ScheduleTabContent(
+                        scrollState = scrollState,
                         composition = composition,
                         successContent = content,
                         currentEventPosition = content.currentEventPosition,
@@ -97,13 +98,13 @@ fun ScheduleTabPage(
 
 @Composable
 private fun ScheduleTabContent(
+    scrollState: ScrollState,
     composition: LottieComposition?,
     successContent: ScheduleEventsUiState.Content.Success,
     modifier: Modifier = Modifier,
     currentEventPosition: Int = DEFAULT_POSITION,
 ) {
     val listState = rememberLazyListState()
-    val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         listState.animateScrollToItem(currentEventPosition)
@@ -145,6 +146,7 @@ private fun ScheduleTabContent(
 private fun ScheduleTabContentPreview() {
     FestabookTheme {
         ScheduleTabContent(
+            scrollState = rememberScrollState(),
             composition = null,
             successContent =
                 ScheduleEventsUiState.Content.Success(

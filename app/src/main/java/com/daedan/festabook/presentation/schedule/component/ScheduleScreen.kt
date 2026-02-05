@@ -35,22 +35,14 @@ fun ScheduleScreen(
 ) {
     val scheduleUiState by scheduleViewModel.scheduleUiState.collectAsStateWithLifecycle()
     val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)
-    val currentState =
-        when (scheduleUiState) {
-            is ScheduleUiState.Refreshing -> (scheduleUiState as ScheduleUiState.Refreshing).lastSuccessState
-            is ScheduleUiState.Success -> scheduleUiState
-            else -> scheduleUiState
-        }
 
-    LaunchedEffect(currentState) {
-        when (currentState) {
-            is ScheduleUiState.Error -> {
-                currentOnShowErrorSnackbar(currentState.throwable)
+    LaunchedEffect(scheduleUiState.content) {
+        when (val scheduleUiStateContent = scheduleUiState.content) {
+            is ScheduleUiState.Content.Error -> {
+                currentOnShowErrorSnackbar(scheduleUiStateContent.throwable)
             }
 
-            else -> {
-                Unit
-            }
+            else -> {}
         }
     }
 
@@ -58,20 +50,19 @@ fun ScheduleScreen(
         topBar = { FestabookTopAppBar(title = stringResource(R.string.schedule_title)) },
         modifier = modifier,
     ) { innerPadding ->
-        when (currentState) {
-            ScheduleUiState.InitialLoading -> {
-                LoadingStateScreen()
-            }
-
-            is ScheduleUiState.Error -> {
-                Timber.w(currentState.throwable.stackTraceToString())
+        when (val scheduleUiStateContent = scheduleUiState.content) {
+            is ScheduleUiState.Content.Error -> {
+                Timber.w(scheduleUiStateContent.throwable.stackTraceToString())
                 ErrorStateScreen()
             }
 
-            else -> {
-                val currentStateSuccess = currentState as ScheduleUiState.Success
+            ScheduleUiState.Content.InitialLoading -> {
+                LoadingStateScreen()
+            }
+
+            is ScheduleUiState.Content.Success -> {
                 val pageState =
-                    rememberPagerState(initialPage = currentStateSuccess.currentDatePosition) { currentStateSuccess.dates.size }
+                    rememberPagerState(initialPage = scheduleUiStateContent.currentDatePosition) { scheduleUiStateContent.dates.size }
                 val scope = rememberCoroutineScope()
                 LaunchedEffect(pageState.currentPage) {
                     scheduleViewModel.loadEventsInRange(currentPosition = pageState.currentPage)
@@ -81,7 +72,7 @@ fun ScheduleScreen(
                     ScheduleTabRow(
                         pageState = pageState,
                         scope = scope,
-                        dates = currentStateSuccess.dates,
+                        dates = scheduleUiStateContent.dates,
                     )
                     Spacer(modifier = Modifier.height(festabookSpacing.paddingBody4))
                     HorizontalDivider(
@@ -91,12 +82,18 @@ fun ScheduleScreen(
                     )
                     ScheduleTabPage(
                         pagerState = pageState,
-                        scheduleUiState = currentStateSuccess,
-                        onRefresh = { content ->
+                        scheduleUiStateContentSuccess = scheduleUiStateContent,
+                        onRefresh = { scheduleEventsUiStateContent ->
                             scheduleViewModel.loadSchedules(
-                                scheduleUiState = ScheduleUiState.Refreshing(currentStateSuccess),
+                                scheduleUiState =
+                                    ScheduleUiState(
+                                        content = scheduleUiStateContent,
+                                    ),
                                 scheduleEventUiState =
-                                    ScheduleEventsUiState(content = content, isRefreshing = true),
+                                    ScheduleEventsUiState(
+                                        content = scheduleEventsUiStateContent,
+                                        isRefreshing = true,
+                                    ),
                                 selectedDatePosition = pageState.currentPage,
                                 preloadCount = 0,
                             )

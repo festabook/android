@@ -25,7 +25,9 @@ class ScheduleViewModel(
     private val scheduleRepository: ScheduleRepository,
 ) : ViewModel() {
     private val _scheduleUiState: MutableStateFlow<ScheduleUiState> =
-        MutableStateFlow(ScheduleUiState.InitialLoading)
+        MutableStateFlow(
+            ScheduleUiState(content = ScheduleUiState.Content.InitialLoading),
+        )
     val scheduleUiState: StateFlow<ScheduleUiState> = _scheduleUiState.asStateFlow()
 
     init {
@@ -33,7 +35,7 @@ class ScheduleViewModel(
     }
 
     fun loadSchedules(
-        scheduleUiState: ScheduleUiState = ScheduleUiState.InitialLoading,
+        scheduleUiState: ScheduleUiState = ScheduleUiState(content = ScheduleUiState.Content.InitialLoading),
         scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState(ScheduleEventsUiState.Content.InitialLoading),
         selectedDatePosition: Int? = null,
         preloadCount: Int = PRELOAD_PAGE_COUNT,
@@ -43,7 +45,7 @@ class ScheduleViewModel(
 
             if (datesResult.isSuccess) {
                 val currentPosition =
-                    (_scheduleUiState.value as ScheduleUiState.Success).currentDatePosition
+                    (_scheduleUiState.value.content as ScheduleUiState.Content.Success).currentDatePosition
                 loadEventsInRange(currentPosition, scheduleEventUiState, preloadCount)
             }
         }
@@ -63,15 +65,19 @@ class ScheduleViewModel(
                     selectedDatePosition ?: getCurrentDatePosition(scheduleDates)
 
                 _scheduleUiState.value =
-                    ScheduleUiState.Success(
-                        dates = scheduleDateUiModels,
-                        currentDatePosition = currentDatePosition,
+                    ScheduleUiState(
+                        content =
+                            ScheduleUiState.Content.Success(
+                                dates = scheduleDateUiModels,
+                                currentDatePosition = currentDatePosition,
+                            ),
                     )
 
                 Result.success(scheduleDateUiModels)
             },
             onFailure = { throwable ->
-                _scheduleUiState.value = ScheduleUiState.Error(throwable)
+                _scheduleUiState.value =
+                    ScheduleUiState(content = ScheduleUiState.Content.Error(throwable))
                 Result.failure(throwable)
             },
         )
@@ -82,7 +88,7 @@ class ScheduleViewModel(
         scheduleEventUiState: ScheduleEventsUiState = ScheduleEventsUiState(ScheduleEventsUiState.Content.InitialLoading),
         preloadCount: Int = PRELOAD_PAGE_COUNT,
     ) {
-        (_scheduleUiState.value as? ScheduleUiState.Success)?.dates?.let { scheduleDates ->
+        (_scheduleUiState.value.content as? ScheduleUiState.Content.Success)?.dates?.let { scheduleDates ->
             val range =
                 getPreloadRange(
                     totalPageSize = scheduleDates.size,
@@ -128,7 +134,6 @@ class ScheduleViewModel(
                                     events = uiModels,
                                     currentEventPosition = getCurrentEventPosition(uiModels),
                                 ),
-                            isRefreshing = false,
                         ),
                 )
             }.onFailure {
@@ -136,7 +141,6 @@ class ScheduleViewModel(
                     position,
                     ScheduleEventsUiState(
                         content = ScheduleEventsUiState.Content.Error(it),
-                        isRefreshing = false,
                     ),
                 )
             }
@@ -146,12 +150,16 @@ class ScheduleViewModel(
         position: Int,
         scheduleEventsUiState: ScheduleEventsUiState,
     ) {
-        val currentUiState = _scheduleUiState.value
-        if (currentUiState !is ScheduleUiState.Success) return
+        val currentState = _scheduleUiState.value
+        val content = currentState.content as? ScheduleUiState.Content.Success ?: return
 
         _scheduleUiState.value =
-            currentUiState.copy(
-                eventsUiStateByPosition = currentUiState.eventsUiStateByPosition + (position to scheduleEventsUiState),
+            currentState.copy(
+                content =
+                    content
+                        .copy(
+                            eventsUiStateByPosition = content.eventsUiStateByPosition + (position to scheduleEventsUiState),
+                        ),
             )
     }
 
@@ -186,9 +194,13 @@ class ScheduleViewModel(
     }
 
     private fun isEventLoaded(position: Int): Boolean {
-        val currentScheduleUiState = _scheduleUiState.value
-        if (currentScheduleUiState !is ScheduleUiState.Success) return false
-        return currentScheduleUiState.eventsUiStateByPosition[position]?.content is ScheduleEventsUiState.Content.Success
+        val currentScheduleUiStateContent = _scheduleUiState.value.content
+        if (currentScheduleUiStateContent !is ScheduleUiState.Content.Success) return false
+
+        val currentScheduleEventsUiStateContent =
+            currentScheduleUiStateContent.eventsUiStateByPosition[position]?.content ?: return false
+
+        return currentScheduleEventsUiStateContent is ScheduleEventsUiState.Content.Success
     }
 
     companion object {
