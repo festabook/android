@@ -64,14 +64,19 @@ class ScheduleViewModelTest {
             // when
 
             // then
-            val stateResult = scheduleViewModel.scheduleUiState.value
+            val stateResult = scheduleViewModel.scheduleUiState.value.content
             val expectedDate = FAKE_SCHEDULE_DATES.map { it.toUiModel() }
 
             assertAll(
                 { coVerify { scheduleRepository.fetchAllScheduleDates() } },
                 { coVerify { scheduleRepository.fetchScheduleEventsById(dateId) } },
-                { assertTrue(stateResult is ScheduleUiState.Success) },
-                { assertEquals(expectedDate, (stateResult as ScheduleUiState.Success).dates) },
+                { assertTrue(stateResult is ScheduleUiState.Content.Success) },
+                {
+                    assertEquals(
+                        expectedDate,
+                        (stateResult as ScheduleUiState.Content.Success).dates,
+                    )
+                },
             )
         }
 
@@ -82,14 +87,15 @@ class ScheduleViewModelTest {
             advanceUntilIdle()
 
             // when
-            val state = scheduleViewModel.scheduleUiState.value
+            val state = scheduleViewModel.scheduleUiState.value.content
 
             // then
             val successState =
-                state as? ScheduleUiState.Success ?: fail("ScheduleUiState.Success 가 아님: $state")
+                state as? ScheduleUiState.Content.Success
+                    ?: fail("ScheduleUiState.Success 가 아님: $state")
 
             val eventsState =
-                successState.eventsUiStateByPosition[0] as? ScheduleEventsUiState.Success
+                successState.eventsUiStateByPosition[0]?.content as? ScheduleEventsUiState.Content.Success
                     ?: fail("ScheduleEventsUiState.Success 가 아님")
 
             assertAll(
@@ -106,11 +112,12 @@ class ScheduleViewModelTest {
             advanceUntilIdle()
 
             // when
-            val state = scheduleViewModel.scheduleUiState.value
+            val state = scheduleViewModel.scheduleUiState.value.content
 
             // then
             val successState =
-                state as? ScheduleUiState.Success ?: fail("ScheduleUiState.Success 가 아님: $state")
+                state as? ScheduleUiState.Content.Success
+                    ?: fail("ScheduleUiState.Success 가 아님: $state")
 
             assertAll(
                 { coVerify { scheduleRepository.fetchAllScheduleDates() } },
@@ -126,13 +133,14 @@ class ScheduleViewModelTest {
             advanceUntilIdle()
 
             // when
-            val state = scheduleViewModel.scheduleUiState.value
+            val state = scheduleViewModel.scheduleUiState.value.content
 
             // then
             val successState =
-                state as? ScheduleUiState.Success ?: fail("ScheduleUiState.Success 가 아님: $state")
+                state as? ScheduleUiState.Content.Success
+                    ?: fail("ScheduleUiState.Success 가 아님: $state")
             val eventsState =
-                successState.eventsUiStateByPosition[0] as? ScheduleEventsUiState.Success
+                successState.eventsUiStateByPosition[0]?.content as? ScheduleEventsUiState.Content.Success
                     ?: fail("ScheduleEventsUiState.Success 가 아님")
 
             assertAll(
