@@ -69,8 +69,12 @@ fun ExploreSearchBar(
                 focusedBorderColor = FestabookColor.gray800,
                 unfocusedBorderColor = FestabookColor.gray400,
                 errorBorderColor = FestabookColor.error,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
+                cursorColor = FestabookColor.gray800,
+                errorCursorColor = FestabookColor.error,
+                disabledBorderColor = Color.Transparent,
+                errorContainerColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
             ),
         trailingIcon = {
             if (query.isNotEmpty()) {
