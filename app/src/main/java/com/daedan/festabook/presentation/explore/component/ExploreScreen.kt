@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -89,11 +90,12 @@ fun ExploreSearchScreen(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
+        modifier = modifier,
         containerColor = Color.White,
         topBar = {
             ExploreBackHeader(
                 onBackClick = onBackClick,
-                modifier = Modifier.padding(WindowInsets.statusBars.asPaddingValues()),
+                modifier = Modifier.statusBarsPadding(),
             )
         },
     ) { innerPadding ->
@@ -131,6 +133,7 @@ fun ExploreLandingScreen(
     val isSearchMode = query.isNotBlank()
 
     Scaffold(
+        modifier = modifier,
         containerColor = Color.White,
     ) { innerPadding ->
         BoxWithConstraints(
@@ -150,7 +153,6 @@ fun ExploreLandingScreen(
                         initialContentExit = fadeOut(tween(200)),
                     )
                 },
-                label = "LandingSearchTransition",
             ) { searching ->
                 if (!searching) {
                     Column(
