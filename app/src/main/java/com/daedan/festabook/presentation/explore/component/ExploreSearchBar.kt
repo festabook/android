@@ -99,6 +99,7 @@ fun ExploreSearchBar(
         keyboardActions =
             KeyboardActions(
                 onSearch = {
+                    onSearch(query)
                     keyboardController?.hide()
                 },
             ),
