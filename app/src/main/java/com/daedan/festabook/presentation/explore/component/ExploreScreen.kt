@@ -136,15 +136,12 @@ fun ExploreLandingScreen(
         modifier = modifier,
         containerColor = Color.White,
     ) { innerPadding ->
-        BoxWithConstraints(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .imePadding(),
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .imePadding(),
         ) {
-            val topLandingPadding = maxHeight * 0.3f
-
             AnimatedContent(
                 targetState = isSearchMode,
                 transitionSpec = {
@@ -159,7 +156,7 @@ fun ExploreLandingScreen(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Spacer(modifier = Modifier.height(topLandingPadding))
+                        Spacer(modifier = Modifier.weight(0.3f))
 
                         Image(
                             painter = painterResource(id = R.drawable.logo_title),
@@ -177,6 +174,8 @@ fun ExploreLandingScreen(
                                 isError = isError,
                             )
                         }
+
+                        Spacer(modifier = Modifier.weight(0.7f))
                     }
                 } else {
                     Column(
@@ -207,6 +206,7 @@ fun ExploreLandingScreen(
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
