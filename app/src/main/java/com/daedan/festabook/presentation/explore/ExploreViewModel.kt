@@ -84,7 +84,7 @@ class ExploreViewModel(
     fun onUniversitySelected(university: SearchResultUiModel) {
         exploreRepository.saveFestivalId(university.festivalId)
         viewModelScope.launch {
-            _sideEffect.tryEmit(ExploreSideEffect.NavigateToMain(university))
+            _sideEffect.emit(ExploreSideEffect.NavigateToMain(university))
         }
     }
 
