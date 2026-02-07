@@ -7,16 +7,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -125,10 +121,7 @@ fun ExploreLandingScreen(
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val isSearchResultEmpty =
-        searchState is SearchUiState.Success && searchState.universitiesFound.isEmpty()
-    val isSearchError = searchState is SearchUiState.Error
-    val isError = isSearchResultEmpty || isSearchError
+    val isError = searchState.shouldShowErrorUi
 
     val isSearchMode = query.isNotBlank()
 
@@ -137,10 +130,11 @@ fun ExploreLandingScreen(
         containerColor = Color.White,
     ) { innerPadding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .imePadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .imePadding(),
         ) {
             AnimatedContent(
                 targetState = isSearchMode,
@@ -206,7 +200,6 @@ fun ExploreLandingScreen(
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

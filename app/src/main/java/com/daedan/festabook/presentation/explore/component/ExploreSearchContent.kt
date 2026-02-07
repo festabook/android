@@ -22,9 +22,7 @@ fun ExploreSearchContent(
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val isSearchResultEmpty =
-        searchState is SearchUiState.Success && searchState.universitiesFound.isEmpty()
-    val isSearchError = searchState is SearchUiState.Error
+    val isError = searchState.shouldShowErrorUi
 
     Column(
         modifier =
@@ -36,7 +34,7 @@ fun ExploreSearchContent(
                 query = query,
                 onQueryChange = onQueryChange,
                 onSearch = { keyboardController?.hide() },
-                isError = isSearchResultEmpty || isSearchError,
+                isError = isError,
             )
         }
 
