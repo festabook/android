@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.R
+import com.daedan.festabook.presentation.common.component.ErrorStateScreen
 import com.daedan.festabook.presentation.common.component.FestabookTopAppBar
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.schedule.ScheduleEventsUiState
@@ -34,22 +35,14 @@ fun ScheduleScreen(
 ) {
     val scheduleUiState by scheduleViewModel.scheduleUiState.collectAsStateWithLifecycle()
     val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)
-    val currentState =
-        when (scheduleUiState) {
-            is ScheduleUiState.Refreshing -> (scheduleUiState as ScheduleUiState.Refreshing).lastSuccessState
-            is ScheduleUiState.Success -> scheduleUiState
-            else -> scheduleUiState
-        }
 
-    LaunchedEffect(currentState) {
-        when (currentState) {
-            is ScheduleUiState.Error -> {
-                currentOnShowErrorSnackbar(currentState.throwable)
+    LaunchedEffect(scheduleUiState.content) {
+        when (val scheduleUiStateContent = scheduleUiState.content) {
+            is ScheduleUiState.Content.Error -> {
+                currentOnShowErrorSnackbar(scheduleUiStateContent.throwable)
             }
 
-            else -> {
-                Unit
-            }
+            else -> {}
         }
     }
 
@@ -57,19 +50,19 @@ fun ScheduleScreen(
         topBar = { FestabookTopAppBar(title = stringResource(R.string.schedule_title)) },
         modifier = modifier,
     ) { innerPadding ->
-        when (currentState) {
-            ScheduleUiState.InitialLoading -> {
+        when (val scheduleContent = scheduleUiState.content) {
+            is ScheduleUiState.Content.Error -> {
+                Timber.w(scheduleContent.throwable.stackTraceToString())
+                ErrorStateScreen()
+            }
+
+            ScheduleUiState.Content.InitialLoading -> {
                 LoadingStateScreen()
             }
 
-            is ScheduleUiState.Error -> {
-                Timber.w(currentState.throwable.stackTraceToString())
-            }
-
-            else -> {
-                val currentStateSuccess = currentState as ScheduleUiState.Success
+            is ScheduleUiState.Content.Success -> {
                 val pageState =
-                    rememberPagerState(initialPage = currentStateSuccess.currentDatePosition) { currentStateSuccess.dates.size }
+                    rememberPagerState(initialPage = scheduleContent.currentDatePosition) { scheduleContent.dates.size }
                 val scope = rememberCoroutineScope()
                 LaunchedEffect(pageState.currentPage) {
                     scheduleViewModel.loadEventsInRange(currentPosition = pageState.currentPage)
@@ -79,7 +72,7 @@ fun ScheduleScreen(
                     ScheduleTabRow(
                         pageState = pageState,
                         scope = scope,
-                        dates = currentStateSuccess.dates,
+                        dates = scheduleContent.dates,
                     )
                     Spacer(modifier = Modifier.height(festabookSpacing.paddingBody4))
                     HorizontalDivider(
@@ -89,11 +82,15 @@ fun ScheduleScreen(
                     )
                     ScheduleTabPage(
                         pagerState = pageState,
-                        scheduleUiState = currentStateSuccess,
-                        onRefresh = { oldEvents ->
+                        scheduleContent = scheduleContent,
+                        onRefresh = { currentEventsContent ->
                             scheduleViewModel.loadSchedules(
-                                scheduleUiState = ScheduleUiState.Refreshing(currentStateSuccess),
-                                scheduleEventUiState = ScheduleEventsUiState.Refreshing(oldEvents),
+                                scheduleUiState = ScheduleUiState(content = scheduleContent),
+                                scheduleEventUiState =
+                                    ScheduleEventsUiState(
+                                        content = currentEventsContent,
+                                        isRefreshing = true,
+                                    ),
                                 selectedDatePosition = pageState.currentPage,
                                 preloadCount = 0,
                             )
