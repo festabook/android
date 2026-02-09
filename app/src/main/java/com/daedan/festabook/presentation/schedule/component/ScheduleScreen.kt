@@ -50,9 +50,9 @@ fun ScheduleScreen(
         topBar = { FestabookTopAppBar(title = stringResource(R.string.schedule_title)) },
         modifier = modifier,
     ) { innerPadding ->
-        when (val scheduleUiStateContent = scheduleUiState.content) {
+        when (val scheduleContent = scheduleUiState.content) {
             is ScheduleUiState.Content.Error -> {
-                Timber.w(scheduleUiStateContent.throwable.stackTraceToString())
+                Timber.w(scheduleContent.throwable.stackTraceToString())
                 ErrorStateScreen()
             }
 
@@ -62,7 +62,7 @@ fun ScheduleScreen(
 
             is ScheduleUiState.Content.Success -> {
                 val pageState =
-                    rememberPagerState(initialPage = scheduleUiStateContent.currentDatePosition) { scheduleUiStateContent.dates.size }
+                    rememberPagerState(initialPage = scheduleContent.currentDatePosition) { scheduleContent.dates.size }
                 val scope = rememberCoroutineScope()
                 LaunchedEffect(pageState.currentPage) {
                     scheduleViewModel.loadEventsInRange(currentPosition = pageState.currentPage)
@@ -72,7 +72,7 @@ fun ScheduleScreen(
                     ScheduleTabRow(
                         pageState = pageState,
                         scope = scope,
-                        dates = scheduleUiStateContent.dates,
+                        dates = scheduleContent.dates,
                     )
                     Spacer(modifier = Modifier.height(festabookSpacing.paddingBody4))
                     HorizontalDivider(
@@ -82,16 +82,13 @@ fun ScheduleScreen(
                     )
                     ScheduleTabPage(
                         pagerState = pageState,
-                        scheduleUiStateContentSuccess = scheduleUiStateContent,
-                        onRefresh = { scheduleEventsUiStateContent ->
+                        scheduleContent = scheduleContent,
+                        onRefresh = { currentEventsContent ->
                             scheduleViewModel.loadSchedules(
-                                scheduleUiState =
-                                    ScheduleUiState(
-                                        content = scheduleUiStateContent,
-                                    ),
+                                scheduleUiState = ScheduleUiState(content = scheduleContent),
                                 scheduleEventUiState =
                                     ScheduleEventsUiState(
-                                        content = scheduleEventsUiStateContent,
+                                        content = currentEventsContent,
                                         isRefreshing = true,
                                     ),
                                 selectedDatePosition = pageState.currentPage,

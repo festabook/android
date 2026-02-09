@@ -44,7 +44,7 @@ import timber.log.Timber
 @Composable
 fun ScheduleTabPage(
     pagerState: PagerState,
-    scheduleUiStateContentSuccess: ScheduleUiState.Content.Success,
+    scheduleContent: ScheduleUiState.Content.Success,
     onRefresh: (ScheduleEventsUiState.Content) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -56,7 +56,7 @@ fun ScheduleTabPage(
         beyondViewportPageCount = PRELOAD_PAGE_COUNT,
     ) { index ->
         val scheduleEventsUiState =
-            scheduleUiStateContentSuccess.eventsUiStateByPosition[index] ?: return@HorizontalPager
+            scheduleContent.eventsUiStateByPosition[index] ?: return@HorizontalPager
 
         PullToRefreshContainer(
             isRefreshing = scheduleEventsUiState.isRefreshing,
@@ -83,7 +83,7 @@ fun ScheduleTabPage(
                     ScheduleTabContent(
                         scrollState = scrollState,
                         composition = composition,
-                        successContent = content,
+                        scheduleEventsContent = content,
                         currentEventPosition = content.currentEventPosition,
                         modifier =
                             Modifier
@@ -100,7 +100,7 @@ fun ScheduleTabPage(
 private fun ScheduleTabContent(
     scrollState: ScrollState,
     composition: LottieComposition?,
-    successContent: ScheduleEventsUiState.Content.Success,
+    scheduleEventsContent: ScheduleEventsUiState.Content.Success,
     modifier: Modifier = Modifier,
     currentEventPosition: Int = DEFAULT_POSITION,
 ) {
@@ -109,7 +109,7 @@ private fun ScheduleTabContent(
     LaunchedEffect(Unit) {
         listState.animateScrollToItem(currentEventPosition)
     }
-    if (successContent.isEventsEmpty) {
+    if (scheduleEventsContent.isEventsEmpty) {
         EmptyStateScreen(
             modifier =
                 modifier
@@ -130,7 +130,10 @@ private fun ScheduleTabContent(
                 contentPadding = PaddingValues(vertical = festabookSpacing.paddingBody5),
                 state = listState,
             ) {
-                items(items = successContent.events, key = { scheduleEvent -> scheduleEvent.id }) {
+                items(
+                    items = scheduleEventsContent.events,
+                    key = { scheduleEvent -> scheduleEvent.id },
+                ) {
                     ScheduleEventItem(
                         composition = composition,
                         scheduleEvent = it,
@@ -148,7 +151,7 @@ private fun ScheduleTabContentPreview() {
         ScheduleTabContent(
             scrollState = rememberScrollState(),
             composition = null,
-            successContent =
+            scheduleEventsContent =
                 ScheduleEventsUiState.Content.Success(
                     events =
                         listOf(
