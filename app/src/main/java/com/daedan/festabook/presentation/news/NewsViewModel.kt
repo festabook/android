@@ -162,12 +162,15 @@ class NewsViewModel(
     private fun updateNoticeUiState(onUpdate: (List<NoticeUiModel>) -> List<NoticeUiModel>) {
         _noticeUiState.value =
             when (val currentState = _noticeUiState.value) {
-                is NoticeUiState.Success ->
+                is NoticeUiState.Success -> {
                     currentState.copy(
                         notices = onUpdate(currentState.notices),
                     )
+                }
 
-                else -> currentState
+                else -> {
+                    currentState
+                }
             }
     }
 

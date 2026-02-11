@@ -1,10 +1,14 @@
 package com.daedan.festabook.presentation.news.notice.component
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -15,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
+import com.daedan.festabook.presentation.common.component.ErrorStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
 import com.daedan.festabook.presentation.news.component.NewsItem
@@ -33,9 +38,12 @@ fun NoticeScreen(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val scrollState = rememberScrollState()
+
     PullToRefreshContainer(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
+        modifier = modifier,
     ) { graphicsLayer ->
         when (uiState) {
             NoticeUiState.InitialLoading -> {
@@ -46,22 +54,31 @@ fun NoticeScreen(
                 LaunchedEffect(uiState) {
                     Timber.w(uiState.throwable.stackTraceToString())
                 }
+                ErrorStateScreen(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .then(graphicsLayer)
+                            .verticalScroll(scrollState),
+                )
             }
 
             is NoticeUiState.Refreshing -> {
                 NoticeContent(
+                    scrollState = scrollState,
                     notices = uiState.oldNotices,
                     onNoticeClick = onNoticeClick,
-                    modifier = modifier.then(graphicsLayer),
+                    modifier = Modifier.then(graphicsLayer),
                 )
             }
 
             is NoticeUiState.Success -> {
                 NoticeContent(
+                    scrollState = scrollState,
                     notices = uiState.notices,
                     expandPosition = uiState.expandPosition,
                     onNoticeClick = onNoticeClick,
-                    modifier = modifier.then(graphicsLayer),
+                    modifier = Modifier.then(graphicsLayer),
                 )
             }
         }
@@ -70,6 +87,7 @@ fun NoticeScreen(
 
 @Composable
 private fun NoticeContent(
+    scrollState: ScrollState,
     notices: List<NoticeUiModel>,
     onNoticeClick: (NoticeUiModel) -> Unit,
     modifier: Modifier = Modifier,
@@ -81,7 +99,12 @@ private fun NoticeContent(
         listState.animateScrollToItem(expandPosition)
     }
     if (notices.isEmpty()) {
-        EmptyStateScreen(modifier = modifier)
+        EmptyStateScreen(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
+        )
     } else {
         LazyColumn(
             modifier = modifier,
