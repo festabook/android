@@ -7,10 +7,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
+import com.daedan.festabook.presentation.common.component.ErrorStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.component.PullToRefreshContainer
 import com.daedan.festabook.presentation.news.component.NewsItem
@@ -42,6 +44,7 @@ fun LostItemScreen(
     modifier: Modifier = Modifier,
 ) {
     var clickedLostItem by remember { mutableStateOf<LostUiModel.Item?>(null) }
+    val scrollState = rememberScrollState()
 
     clickedLostItem?.let {
         LostItemModalDialog(
@@ -53,6 +56,7 @@ fun LostItemScreen(
     PullToRefreshContainer(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
+        modifier = modifier,
     ) { graphicsLayer ->
         when (lostUiState) {
             LostUiState.InitialLoading -> {
@@ -60,9 +64,14 @@ fun LostItemScreen(
             }
 
             is LostUiState.Error -> {
-                LaunchedEffect(lostUiState) {
-                    Timber.w(lostUiState.throwable.stackTraceToString())
-                }
+                Timber.w(lostUiState.throwable.stackTraceToString())
+                ErrorStateScreen(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .then(graphicsLayer)
+                            .verticalScroll(scrollState),
+                )
             }
 
             is LostUiState.Refreshing -> {
@@ -71,7 +80,7 @@ fun LostItemScreen(
                     onLostGuideClick = onLostGuideClick,
                     onLostItemClick = { },
                     modifier =
-                        modifier
+                        Modifier
                             .fillMaxSize()
                             .then(graphicsLayer),
                 )
@@ -83,7 +92,7 @@ fun LostItemScreen(
                     onLostGuideClick = onLostGuideClick,
                     onLostItemClick = { clickedLostItem = it },
                     modifier =
-                        modifier
+                        Modifier
                             .fillMaxSize()
                             .then(graphicsLayer),
                 )
@@ -101,7 +110,7 @@ private fun LostItemContent(
 ) {
     val isLostItemEmpty = lostItems.none { it is LostUiModel.Item }
     if (isLostItemEmpty) {
-        EmptyStateScreen()
+        EmptyStateScreen(modifier = modifier)
     }
 
     LazyVerticalGrid(
