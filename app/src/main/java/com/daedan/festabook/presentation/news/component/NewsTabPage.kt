@@ -27,7 +27,6 @@ fun NewsTabPage(
     lostUiState: LostUiState,
     onNoticeRefresh: () -> Unit,
     onLostItemRefresh: () -> Unit,
-    isLostItemRefreshing: Boolean,
     onNoticeClick: (NoticeUiModel) -> Unit,
     onFaqClick: (FAQItemUiModel) -> Unit,
     onLostGuideClick: () -> Unit,
@@ -61,7 +60,6 @@ fun NewsTabPage(
                 LostItemScreen(
                     lostUiState = lostUiState,
                     onLostGuideClick = onLostGuideClick,
-                    isRefreshing = isLostItemRefreshing,
                     onRefresh = onLostItemRefresh,
                     modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
                 )
@@ -77,10 +75,9 @@ private fun NewsTabPagePreview() {
         pageState = rememberPagerState { 3 },
         noticeUiState = NoticeUiState(content = NoticeUiState.Content.Success(emptyList(), 0)),
         faqUiState = FAQUiState.Success(emptyList()),
-        lostUiState = LostUiState.Success(emptyList()),
+        lostUiState = LostUiState(content = LostUiState.Content.Success(emptyList())),
         onNoticeRefresh = {},
         onLostItemRefresh = {},
-        isLostItemRefreshing = false,
         onNoticeClick = {},
         onFaqClick = {},
         onLostGuideClick = {},

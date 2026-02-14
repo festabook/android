@@ -43,7 +43,7 @@ class NewsViewModel(
     val faqUiState: StateFlow<FAQUiState> = _faqUiState.asStateFlow()
 
     private val _lostUiState: MutableStateFlow<LostUiState> =
-        MutableStateFlow(LostUiState.InitialLoading)
+        MutableStateFlow(LostUiState(content = LostUiState.Content.InitialLoading))
     val lostUiState: StateFlow<LostUiState> = _lostUiState.asStateFlow()
 
     private var noticeIdToExpand: Long? = null
@@ -51,7 +51,7 @@ class NewsViewModel(
     init {
         loadAllNotices(NoticeUiState(content = NoticeUiState.Content.InitialLoading))
         loadAllFAQs(FAQUiState.InitialLoading)
-        loadAllLostItems(LostUiState.InitialLoading)
+        loadAllLostItems(LostUiState(content = LostUiState.Content.InitialLoading))
     }
 
     fun loadAllNotices(state: NoticeUiState) {
@@ -138,7 +138,7 @@ class NewsViewModel(
                         null -> LostUiModel.Guide()
                     }
                 }
-            _lostUiState.value = LostUiState.Success(lostUiModels)
+            _lostUiState.value = LostUiState(content = LostUiState.Content.Success(lostUiModels))
         }
     }
 
@@ -185,10 +185,18 @@ class NewsViewModel(
 
     private fun updateLostUiState(onUpdate: (List<LostUiModel>) -> List<LostUiModel>) {
         val currentState = _lostUiState.value
+        val currentContent = currentState.content
         _lostUiState.value =
-            when (currentState) {
-                is LostUiState.Success -> currentState.copy(lostItems = onUpdate(currentState.lostItems))
-                else -> currentState
+            when (currentContent) {
+                is LostUiState.Content.Success -> {
+                    _lostUiState.value.copy(
+                        content = currentContent.copy(lostItems = onUpdate(currentContent.lostItems)),
+                    )
+                }
+
+                else -> {
+                    currentState
+                }
             }
     }
 }

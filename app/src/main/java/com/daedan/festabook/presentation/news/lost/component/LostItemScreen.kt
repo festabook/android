@@ -39,7 +39,6 @@ private const val SPAN_COUNT: Int = 2
 fun LostItemScreen(
     lostUiState: LostUiState,
     onLostGuideClick: () -> Unit,
-    isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -54,17 +53,17 @@ fun LostItemScreen(
     }
 
     PullToRefreshContainer(
-        isRefreshing = isRefreshing,
+        isRefreshing = lostUiState.isRefreshing,
         onRefresh = onRefresh,
         modifier = modifier,
     ) { graphicsLayer ->
-        when (lostUiState) {
-            LostUiState.InitialLoading -> {
+        when (val content = lostUiState.content) {
+            LostUiState.Content.InitialLoading -> {
                 LoadingStateScreen()
             }
 
-            is LostUiState.Error -> {
-                Timber.w(lostUiState.throwable.stackTraceToString())
+            is LostUiState.Content.Error -> {
+                Timber.w(content.throwable.stackTraceToString())
                 ErrorStateScreen(
                     modifier =
                         Modifier
@@ -74,21 +73,9 @@ fun LostItemScreen(
                 )
             }
 
-            is LostUiState.Refreshing -> {
+            is LostUiState.Content.Success -> {
                 LostItemContent(
-                    lostItems = lostUiState.oldLostItems,
-                    onLostGuideClick = onLostGuideClick,
-                    onLostItemClick = { },
-                    modifier =
-                        Modifier
-                            .fillMaxSize()
-                            .then(graphicsLayer),
-                )
-            }
-
-            is LostUiState.Success -> {
-                LostItemContent(
-                    lostItems = lostUiState.lostItems,
+                    lostItems = content.lostItems,
                     onLostGuideClick = onLostGuideClick,
                     onLostItemClick = { clickedLostItem = it },
                     modifier =
