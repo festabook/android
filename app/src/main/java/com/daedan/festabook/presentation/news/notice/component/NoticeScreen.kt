@@ -34,26 +34,23 @@ import timber.log.Timber
 fun NoticeScreen(
     uiState: NoticeUiState,
     onNoticeClick: (NoticeUiModel) -> Unit,
-    isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
 
     PullToRefreshContainer(
-        isRefreshing = isRefreshing,
+        isRefreshing = uiState.isRefreshing,
         onRefresh = onRefresh,
         modifier = modifier,
     ) { graphicsLayer ->
-        when (uiState) {
-            NoticeUiState.InitialLoading -> {
+        when (val content = uiState.content) {
+            NoticeUiState.Content.InitialLoading -> {
                 LoadingStateScreen()
             }
 
-            is NoticeUiState.Error -> {
-                LaunchedEffect(uiState) {
-                    Timber.w(uiState.throwable.stackTraceToString())
-                }
+            is NoticeUiState.Content.Error -> {
+                Timber.e(content.throwable.stackTraceToString())
                 ErrorStateScreen(
                     modifier =
                         Modifier
@@ -63,20 +60,11 @@ fun NoticeScreen(
                 )
             }
 
-            is NoticeUiState.Refreshing -> {
+            is NoticeUiState.Content.Success -> {
                 NoticeContent(
                     scrollState = scrollState,
-                    notices = uiState.oldNotices,
-                    onNoticeClick = onNoticeClick,
-                    modifier = Modifier.then(graphicsLayer),
-                )
-            }
-
-            is NoticeUiState.Success -> {
-                NoticeContent(
-                    scrollState = scrollState,
-                    notices = uiState.notices,
-                    expandPosition = uiState.expandPosition,
+                    notices = content.notices,
+                    expandPosition = content.expandPosition,
                     onNoticeClick = onNoticeClick,
                     modifier = Modifier.then(graphicsLayer),
                 )
@@ -150,12 +138,14 @@ private fun NoticeContent(
 private fun NoticeScreenPreview() {
     NoticeScreen(
         uiState =
-            NoticeUiState.Success(
-                notices = emptyList(),
-                expandPosition = 0,
+            NoticeUiState(
+                content =
+                    NoticeUiState.Content.Success(
+                        notices = emptyList(),
+                        expandPosition = 0,
+                    ),
             ),
         onNoticeClick = { },
-        isRefreshing = false,
         onRefresh = {},
     )
 }
