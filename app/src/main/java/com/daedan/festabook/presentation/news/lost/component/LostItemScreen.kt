@@ -1,6 +1,7 @@
 package com.daedan.festabook.presentation.news.lost.component
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -95,48 +96,49 @@ private fun LostItemContent(
     onLostItemClick: (LostUiModel.Item) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isLostItemEmpty = lostItems.none { it is LostUiModel.Item }
-    if (isLostItemEmpty) {
-        EmptyStateScreen(modifier = modifier)
-    }
+    Box(modifier = modifier) {
+        val isLostItemEmpty = lostItems.none { it is LostUiModel.Item }
+        if (isLostItemEmpty) {
+            EmptyStateScreen()
+        }
 
-    LazyVerticalGrid(
-        modifier = modifier,
-        columns = GridCells.Fixed(SPAN_COUNT),
-        contentPadding =
-            PaddingValues(
-                top = festabookSpacing.paddingBody2,
-                bottom = festabookSpacing.paddingBody2,
-            ),
-        verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
-        horizontalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
-    ) {
-        item(span = { GridItemSpan(SPAN_COUNT) }) {
-            val guide = lostItems.firstOrNull() as? LostUiModel.Guide
-            guide?.let {
-                NewsItem(
-                    title = stringResource(R.string.lost_item_guide),
-                    description = it.description,
-                    isExpanded = it.isExpanded,
-                    onclick = onLostGuideClick,
-                    icon =
-                        {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_info),
-                                contentDescription = stringResource(R.string.info),
-                            )
-                        },
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(SPAN_COUNT),
+            contentPadding =
+                PaddingValues(
+                    top = festabookSpacing.paddingBody2,
+                    bottom = festabookSpacing.paddingBody2,
+                ),
+            verticalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
+            horizontalArrangement = Arrangement.spacedBy(festabookSpacing.paddingBody2),
+        ) {
+            item(span = { GridItemSpan(SPAN_COUNT) }) {
+                val guide = lostItems.firstOrNull() as? LostUiModel.Guide
+                guide?.let {
+                    NewsItem(
+                        title = stringResource(R.string.lost_item_guide),
+                        description = it.description,
+                        isExpanded = it.isExpanded,
+                        onclick = onLostGuideClick,
+                        icon =
+                            {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_info),
+                                    contentDescription = stringResource(R.string.info),
+                                )
+                            },
+                    )
+                }
+            }
+            items(
+                items = lostItems.drop(1).filterIsInstance<LostUiModel.Item>(),
+                key = { lostItem -> lostItem.lostItemId },
+            ) { lostItem ->
+                LostItem(
+                    url = lostItem.imageUrl,
+                    onLostItemClick = { onLostItemClick(lostItem) },
                 )
             }
-        }
-        items(
-            items = lostItems.drop(1).filterIsInstance<LostUiModel.Item>(),
-            key = { lostItem -> lostItem.lostItemId },
-        ) { lostItem ->
-            LostItem(
-                url = lostItem.imageUrl,
-                onLostItemClick = { onLostItemClick(lostItem) },
-            )
         }
     }
 }
