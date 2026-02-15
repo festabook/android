@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.request.ImageRequest
-import com.daedan.festabook.BuildConfig
 import com.daedan.festabook.R
+import com.daedan.festabook.presentation.common.convertImageUrl
 import com.daedan.festabook.presentation.theme.FestabookColor
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.coil3.CoilImage
@@ -162,10 +162,3 @@ private fun DiaplogPreview() {
         imageUrl = "",
     ) { }
 }
-
-fun String?.convertImageUrl() =
-    if (this != null && this.startsWith("/images/")) {
-        BuildConfig.FESTABOOK_URL.removeSuffix("/api/") + this
-    } else {
-        this
-    }

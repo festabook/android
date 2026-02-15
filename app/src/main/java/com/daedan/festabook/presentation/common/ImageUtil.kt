@@ -32,7 +32,7 @@ fun ImageView.loadImage(
 
 fun String?.convertImageUrl() =
     if (this != null && this.startsWith("/images/")) {
-        BuildConfig.FESTABOOK_URL.removeSuffix("/api/") + this
+        BuildConfig.FESTABOOK_IMAGE_URL + this
     } else {
         this
     }

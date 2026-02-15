@@ -103,10 +103,20 @@ android {
                     "BASE_URL is missing or not a String in local.properties"
                 }
 
+            val imageBaseUrl =
+                checkNotNull(localProperties["IMAGE_BASE_URL_DEV"] as? String) {
+                    "IMAGE_BASE_URL is missing or not a String in local.properties"
+                }
+
             buildConfigField(
                 "String",
                 "FESTABOOK_URL",
                 baseUrl,
+            )
+            buildConfigField(
+                "String",
+                "FESTABOOK_IMAGE_URL",
+                imageBaseUrl,
             )
         }
 
@@ -124,11 +134,20 @@ android {
                 checkNotNull(localProperties["BASE_URL"] as? String) {
                     "BASE_URL is missing or not a String in local.properties"
                 }
+            val imageBaseUrl =
+                checkNotNull(localProperties["IMAGE_BASE_URL"] as? String) {
+                    "IMAGE_BASE_URL is missing or not a String in local.properties"
+                }
 
             buildConfigField(
                 "String",
                 "FESTABOOK_URL",
                 baseUrl,
+            )
+            buildConfigField(
+                "String",
+                "FESTABOOK_IMAGE_URL",
+                imageBaseUrl,
             )
         }
     }
