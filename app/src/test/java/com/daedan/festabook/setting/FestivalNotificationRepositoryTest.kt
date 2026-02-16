@@ -181,10 +181,10 @@ class FestivalNotificationRepositoryTest {
                 ApiResult.Success(
                     listOf(
                         RegisteredFestivalNotificationResponse(
-                            festivalId = 1,
                             festivalNotificationId = 10,
-                            universityName = "",
-                            festivalName = "",
+                            festivalId = 1,
+                            organizationName = "test",
+                            festivalName = "test",
                         ),
                     ),
                 )
