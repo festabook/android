@@ -9,8 +9,8 @@ data class RegisteredFestivalNotificationResponse(
     val festivalNotificationId: Long,
     @SerialName("festivalId")
     val festivalId: Long,
-    @SerialName("universityName")
-    val universityName: String,
+    @SerialName("organizationName")
+    val organizationName: String,
     @SerialName("festivalName")
     val festivalName: String,
 )
