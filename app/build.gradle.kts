@@ -100,12 +100,11 @@ android {
 
             val baseUrl =
                 checkNotNull(localProperties["BASE_URL_DEV"] as? String) {
-                    "BASE_URL is missing or not a String in local.properties"
+                    "BASE_URL_DEV is missing or not a String in local.properties"
                 }
-
             val imageBaseUrl =
                 checkNotNull(localProperties["IMAGE_BASE_URL_DEV"] as? String) {
-                    "IMAGE_BASE_URL is missing or not a String in local.properties"
+                    "IMAGE_BASE_URL_DEV is missing or not a String in local.properties"
                 }
 
             buildConfigField(
