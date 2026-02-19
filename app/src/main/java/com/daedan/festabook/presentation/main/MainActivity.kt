@@ -18,11 +18,12 @@ import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.NotificationPermissionRequester
 import com.daedan.festabook.presentation.common.isGranted
 import com.daedan.festabook.presentation.common.showNotificationDeniedSnackbar
-import com.daedan.festabook.presentation.explore.ExploreActivity
 import com.daedan.festabook.presentation.main.component.MainScreen
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
 import com.daedan.festabook.presentation.setting.SettingViewModel
+import com.daedan.festabook.presentation.splash.AppVersionManager
+import com.daedan.festabook.presentation.splash.SplashViewModel
 import com.daedan.festabook.presentation.theme.FestabookTheme
 import com.naver.maps.map.util.FusedLocationSource
 import dev.zacsweers.metro.Inject
@@ -40,9 +41,14 @@ class MainActivity :
     @Inject
     private lateinit var notificationPermissionManagerFactory: NotificationPermissionManager.Factory
 
+    @Inject
+    private lateinit var appVersionManagerFactory: AppVersionManager.Factory
+
     private val mainViewModel: MainViewModel by viewModels()
     private val newsViewModel: NewsViewModel by viewModels()
     private val settingViewModel: SettingViewModel by viewModels()
+
+    private val splashViewModel: SplashViewModel by viewModels()
 
     private val notificationPermissionManager by lazy {
         notificationPermissionManagerFactory.create(
@@ -52,9 +58,22 @@ class MainActivity :
         )
     }
 
+    private val updateResultLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult(),
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                splashViewModel.handleVersionCheckResult(Result.success(false))
+            } else {
+                splashViewModel.handleVersionCheckResult(Result.failure(Exception("Update failed")))
+            }
+        }
+
     private val locationSource by lazy {
         FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE)
     }
+
+    private val appVersionManager by lazy { appVersionManagerFactory.create(updateResultLauncher) }
 
     override val permissionLauncher: ActivityResultLauncher<String> =
         registerForActivityResult(
@@ -95,9 +114,7 @@ class MainActivity :
                     onSubscriptionConfirm = {
                         notificationPermissionManager.requestNotificationPermission(this)
                     },
-                    onNavigateToExplore = {
-                        startActivity(ExploreActivity.newIntent(this))
-                    },
+                    appVersionManager = appVersionManager,
                 )
             }
         }

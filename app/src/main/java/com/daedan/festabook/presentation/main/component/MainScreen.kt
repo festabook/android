@@ -21,11 +21,14 @@ import com.daedan.festabook.presentation.common.ObserveAsEvents
 import com.daedan.festabook.presentation.common.component.FestabookSnackbar
 import com.daedan.festabook.presentation.common.component.SnackbarManager
 import com.daedan.festabook.presentation.common.component.rememberAppSnackbarManager
+import com.daedan.festabook.presentation.explore.ExploreViewModel
+import com.daedan.festabook.presentation.explore.navigation.exploreNavGraph
 import com.daedan.festabook.presentation.home.HomeViewModel
 import com.daedan.festabook.presentation.home.navigation.homeNavGraph
 import com.daedan.festabook.presentation.main.FestabookMainTab
 import com.daedan.festabook.presentation.main.FestabookNavigator
 import com.daedan.festabook.presentation.main.FestabookRoute
+import com.daedan.festabook.presentation.main.MainTabRoute
 import com.daedan.festabook.presentation.main.MainViewModel
 import com.daedan.festabook.presentation.main.rememberFestabookNavigator
 import com.daedan.festabook.presentation.news.NewsViewModel
@@ -54,7 +57,6 @@ fun MainScreen(
     appVersionManager: AppVersionManager,
     onAppFinish: () -> Unit,
     onSubscriptionConfirm: () -> Unit,
-    onNavigateToExplore: () -> Unit, // TODO 검색화면 마이그레이션 시 제거
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel = viewModel(),
     homeViewModel: HomeViewModel = viewModel(),
@@ -63,6 +65,7 @@ fun MainScreen(
     newsViewModel: NewsViewModel = viewModel(),
     settingViewModel: SettingViewModel = viewModel(),
     splashViewModel: SplashViewModel = viewModel(),
+    exploreViewModel: ExploreViewModel = viewModel(),
 ) {
     val navigator = rememberFestabookNavigator()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -159,10 +162,10 @@ fun MainScreen(
             newsViewModel = newsViewModel,
             settingViewModel = settingViewModel,
             notificationPermissionManager = notificationPermissionManager,
-            onNavigateToExplore = onNavigateToExplore,
             onSubscriptionConfirm = onSubscriptionConfirm,
             snackbarManager = snackbarManager,
             splashViewModel = splashViewModel,
+            exploreViewModel = exploreViewModel,
             appVersionManager = appVersionManager,
         )
     }
@@ -178,8 +181,8 @@ private fun FestabookNavHost(
     newsViewModel: NewsViewModel,
     settingViewModel: SettingViewModel,
     splashViewModel: SplashViewModel,
+    exploreViewModel: ExploreViewModel,
     notificationPermissionManager: NotificationPermissionManager,
-    onNavigateToExplore: () -> Unit,
     onSubscriptionConfirm: () -> Unit,
     snackbarManager: SnackbarManager,
     appVersionManager: AppVersionManager,
@@ -194,13 +197,18 @@ private fun FestabookNavHost(
             viewModel = splashViewModel,
             appVersionManager = appVersionManager,
             onNavigateToExplore = { navigator.navigate(FestabookRoute.Explore) },
-            onNavigateToMain = { navigator.navigateToMainTab(FestabookMainTab.HOME) },
+            onNavigateToMain = { navigator.navigate(MainTabRoute.Home) },
             onFinishApp = { navigator.popBackStack() },
+        )
+        exploreNavGraph(
+            viewModel = exploreViewModel,
+            onBackClick = { navigator.popBackStack() },
+            onNavigateToMain = { navigator.navigate(MainTabRoute.Home) },
         )
         homeNavGraph(
             viewModel = homeViewModel,
             mainViewModel = mainViewModel,
-            onNavigateToExplore = onNavigateToExplore,
+            onNavigateToExplore = { navigator.navigate(FestabookRoute.Explore) },
             onSubscriptionConfirm = onSubscriptionConfirm,
             onShowErrorSnackbar = snackbarManager::showError,
         )
