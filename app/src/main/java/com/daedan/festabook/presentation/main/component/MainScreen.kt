@@ -39,6 +39,9 @@ import com.daedan.festabook.presentation.schedule.ScheduleViewModel
 import com.daedan.festabook.presentation.schedule.navigation.scheduleNavGraph
 import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.daedan.festabook.presentation.setting.navigation.settingNavGraph
+import com.daedan.festabook.presentation.splash.AppVersionManager
+import com.daedan.festabook.presentation.splash.SplashViewModel
+import com.daedan.festabook.presentation.splash.navigation.splashNavGraph
 import com.naver.maps.map.util.FusedLocationSource
 
 @Composable
@@ -48,6 +51,7 @@ fun MainScreen(
     logger: DefaultFirebaseLogger,
     locationSource: FusedLocationSource,
     placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
+    appVersionManager: AppVersionManager,
     onAppFinish: () -> Unit,
     onSubscriptionConfirm: () -> Unit,
     onNavigateToExplore: () -> Unit, // TODO 검색화면 마이그레이션 시 제거
@@ -58,6 +62,7 @@ fun MainScreen(
     placeMapViewModel: PlaceMapViewModel = viewModel(),
     newsViewModel: NewsViewModel = viewModel(),
     settingViewModel: SettingViewModel = viewModel(),
+    splashViewModel: SplashViewModel = viewModel(),
 ) {
     val navigator = rememberFestabookNavigator()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -157,6 +162,8 @@ fun MainScreen(
             onNavigateToExplore = onNavigateToExplore,
             onSubscriptionConfirm = onSubscriptionConfirm,
             snackbarManager = snackbarManager,
+            splashViewModel = splashViewModel,
+            appVersionManager = appVersionManager,
         )
     }
 }
@@ -170,10 +177,12 @@ private fun FestabookNavHost(
     placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
     newsViewModel: NewsViewModel,
     settingViewModel: SettingViewModel,
+    splashViewModel: SplashViewModel,
     notificationPermissionManager: NotificationPermissionManager,
     onNavigateToExplore: () -> Unit,
     onSubscriptionConfirm: () -> Unit,
     snackbarManager: SnackbarManager,
+    appVersionManager: AppVersionManager,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -181,6 +190,13 @@ private fun FestabookNavHost(
         startDestination = navigator.startRoute,
         navController = navigator.navController,
     ) {
+        splashNavGraph(
+            viewModel = splashViewModel,
+            appVersionManager = appVersionManager,
+            onNavigateToExplore = { navigator.navigate(FestabookRoute.Explore) },
+            onNavigateToMain = { navigator.navigateToMainTab(FestabookMainTab.HOME) },
+            onFinishApp = { navigator.popBackStack() },
+        )
         homeNavGraph(
             viewModel = homeViewModel,
             mainViewModel = mainViewModel,

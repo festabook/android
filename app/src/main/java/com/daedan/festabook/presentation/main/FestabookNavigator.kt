@@ -36,7 +36,7 @@ class FestabookNavigator(
                 currentDestination?.hasRoute(it::class) ?: false
             } != null
 
-    val startRoute = MainTabRoute.Home // TODO: Splash와 Explore 연동 시 변경
+    val startRoute = FestabookRoute.Splash
 
     fun navigateToMainTab(tab: FestabookMainTab) {
         navController.navigate(
