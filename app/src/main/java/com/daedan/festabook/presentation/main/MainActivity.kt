@@ -118,7 +118,6 @@ class MainActivity :
         mainViewModel.registerDeviceAndFcmToken()
     }
 
-    // TODO SnackBarHost로 변경
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

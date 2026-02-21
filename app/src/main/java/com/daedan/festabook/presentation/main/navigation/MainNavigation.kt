@@ -10,6 +10,7 @@ import com.daedan.festabook.presentation.main.FestabookNavigator
 import com.daedan.festabook.presentation.main.FestabookRoute
 import com.daedan.festabook.presentation.main.component.MainScreen
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
+import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.naver.maps.map.util.FusedLocationSource
 
 fun NavGraphBuilder.mainNavGraph(
@@ -20,6 +21,7 @@ fun NavGraphBuilder.mainNavGraph(
     logger: DefaultFirebaseLogger,
     onSubscriptionConfirm: () -> Unit,
     festabookNavigator: FestabookNavigator,
+    settingViewModel: SettingViewModel,
 ) {
     composable<FestabookRoute.Main> {
         val mainBackEntry =
@@ -37,7 +39,7 @@ fun NavGraphBuilder.mainNavGraph(
             scheduleViewModel = viewModel(mainBackEntry, factory = defaultViewModelFactory),
             placeMapViewModel = viewModel(mainBackEntry, factory = defaultViewModelFactory),
             newsViewModel = viewModel(mainBackEntry, factory = defaultViewModelFactory),
-            settingViewModel = viewModel(mainBackEntry, factory = defaultViewModelFactory),
+            settingViewModel = settingViewModel,
         )
     }
 }
