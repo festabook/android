@@ -17,6 +17,9 @@ sealed interface FestabookRoute {
 
     @Serializable
     data object Explore : FestabookRoute
+
+    @Serializable
+    data object Main : FestabookRoute
 }
 
 @Serializable

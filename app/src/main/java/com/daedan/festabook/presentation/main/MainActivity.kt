@@ -14,11 +14,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.ViewModelProvider
 import com.daedan.festabook.R
 import com.daedan.festabook.di.appGraph
+import com.daedan.festabook.presentation.FestabookScreen
 import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.NotificationPermissionRequester
 import com.daedan.festabook.presentation.common.isGranted
 import com.daedan.festabook.presentation.common.showNotificationDeniedSnackbar
-import com.daedan.festabook.presentation.main.component.MainScreen
 import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
 import com.daedan.festabook.presentation.setting.SettingViewModel
@@ -105,16 +105,13 @@ class MainActivity :
             }
 
             FestabookTheme {
-                MainScreen(
+                FestabookScreen(
                     notificationPermissionManager = notificationPermissionManager,
                     logger = appGraph.defaultFirebaseLogger,
                     locationSource = locationSource,
                     placeDetailViewModelFactory = viewModelFactory,
-                    onAppFinish = { finish() },
-                    onSubscriptionConfirm = {
-                        notificationPermissionManager.requestNotificationPermission(this)
-                    },
                     appVersionManager = appVersionManager,
+                    defaultViewModelFactory = defaultViewModelProviderFactory,
                 )
             }
         }
