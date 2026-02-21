@@ -9,8 +9,10 @@ import com.daedan.festabook.logging.DefaultFirebaseLogger
 import com.daedan.festabook.presentation.explore.ExploreViewModel
 import com.daedan.festabook.presentation.explore.navigation.exploreNavGraph
 import com.daedan.festabook.presentation.main.FestabookRoute
+import com.daedan.festabook.presentation.main.MainViewModel
 import com.daedan.festabook.presentation.main.navigation.mainNavGraph
 import com.daedan.festabook.presentation.main.rememberFestabookNavigator
+import com.daedan.festabook.presentation.news.NewsViewModel
 import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
 import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.daedan.festabook.presentation.splash.AppVersionManager
@@ -27,6 +29,8 @@ fun FestabookScreen(
     locationSource: FusedLocationSource,
     logger: DefaultFirebaseLogger,
     modifier: Modifier = Modifier,
+    newsViewModel: NewsViewModel = viewModel(),
+    mainViewModel: MainViewModel = viewModel(),
     settingViewModel: SettingViewModel = viewModel(),
     splashViewModel: SplashViewModel = viewModel(),
     exploreViewModel: ExploreViewModel = viewModel(),
@@ -59,6 +63,8 @@ fun FestabookScreen(
             onSubscriptionConfirm = { festabookNavigator.navigate(FestabookRoute.Main) },
             festabookNavigator = festabookNavigator,
             settingViewModel = settingViewModel,
+            mainViewModel = mainViewModel,
+            newsViewModel = newsViewModel,
         )
     }
 }
