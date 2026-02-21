@@ -63,9 +63,7 @@ class SelectEventHandler(
             is SelectEvent.OnPlacePreviewClick -> {
                 val selectedTimeTag = uiState.value.selectedTimeTag
                 val selectedPlace = event.place
-                if (selectedPlace is LoadState.Success &&
-                    selectedTimeTag is LoadState.Success
-                ) {
+                if (selectedPlace is LoadState.Success) {
                     context.scope.launch {
                         context.placeMapSideEffect.send(PlaceMapSideEffect.StartPlaceDetail(event.place))
                         logger.log(
@@ -74,7 +72,10 @@ class SelectEventHandler(
                                 placeName =
                                     selectedPlace.value.place.title
                                         ?: "undefined",
-                                timeTag = selectedTimeTag.value.name,
+                                timeTag =
+                                    (selectedTimeTag as? LoadState.Success<TimeTag>)
+                                        ?.value
+                                        ?.name ?: "undefined",
                                 category = selectedPlace.value.place.category.name,
                             ),
                         )
