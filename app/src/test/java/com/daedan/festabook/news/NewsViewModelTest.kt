@@ -21,8 +21,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -36,7 +35,7 @@ import org.junit.Test
 class NewsViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
-    private val testDispatcher = StandardTestDispatcher()
+    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var noticeRepository: NoticeRepository
     private lateinit var faqRepository: FAQRepository
     private lateinit var lostItemRepository: LostItemRepository
@@ -72,15 +71,14 @@ class NewsViewModelTest {
             coEvery { noticeRepository.fetchNotices() } returns Result.success(FAKE_NOTICES)
 
             // when
-            newsViewModel.loadAllNotices(NoticeUiState.InitialLoading)
-            advanceUntilIdle()
+            newsViewModel.loadAllNotices(NoticeUiState(content = NoticeUiState.Content.InitialLoading))
 
             // then
             val expected = FAKE_NOTICES.map { it.toUiModel() }
             val actual = newsViewModel.noticeUiState.value
             coVerify { noticeRepository.fetchNotices() }
             assertThat(actual).isEqualTo(
-                NoticeUiState.Success(expected, DEFAULT_POSITION),
+                NoticeUiState(content = NoticeUiState.Content.Success(expected, DEFAULT_POSITION)),
             )
         }
 
@@ -89,16 +87,18 @@ class NewsViewModelTest {
         runTest {
             // given
             val expected =
-                LostUiState.Success(
-                    listOf(
-                        (FAKE_LOST_ITEM[0] as Lost.Guide).toLostGuideItemUiModel(),
-                        (FAKE_LOST_ITEM[1] as Lost.Item).toLostItemUiModel(),
-                    ),
+                LostUiState(
+                    content =
+                        LostUiState.Content.Success(
+                            listOf(
+                                (FAKE_LOST_ITEM[0] as Lost.Guide).toLostGuideItemUiModel(),
+                                (FAKE_LOST_ITEM[1] as Lost.Item).toLostItemUiModel(),
+                            ),
+                        ),
                 )
 
             // when
-            newsViewModel.loadAllLostItems(LostUiState.InitialLoading)
-            advanceUntilIdle()
+            newsViewModel.loadAllLostItems(LostUiState(content = LostUiState.Content.InitialLoading))
 
             // then
             val actual = newsViewModel.lostUiState.value
@@ -114,11 +114,10 @@ class NewsViewModelTest {
             coEvery { noticeRepository.fetchNotices() } returns Result.failure(exception)
 
             // when
-            newsViewModel.loadAllNotices(NoticeUiState.InitialLoading)
-            advanceUntilIdle()
+            newsViewModel.loadAllNotices(NoticeUiState(content = NoticeUiState.Content.InitialLoading))
 
             // then
-            val expected = NoticeUiState.Error(exception)
+            val expected = NoticeUiState(content = NoticeUiState.Content.Error(exception))
             val actual = newsViewModel.noticeUiState.value
             coVerify { noticeRepository.fetchNotices() }
             assertThat(actual).isEqualTo(expected)
@@ -132,7 +131,6 @@ class NewsViewModelTest {
 
             // when
             newsViewModel = NewsViewModel(noticeRepository, faqRepository, lostItemRepository)
-            advanceUntilIdle()
 
             // then
             val expected = FAKE_FAQS.map { it.toUiModel() }
@@ -150,7 +148,6 @@ class NewsViewModelTest {
 
             // when
             newsViewModel = NewsViewModel(noticeRepository, faqRepository, lostItemRepository)
-            advanceUntilIdle()
 
             // then
             val expected = FAQUiState.Error(exception)
@@ -167,10 +164,9 @@ class NewsViewModelTest {
 
             // when
             newsViewModel.toggleNotice(notice)
-            advanceUntilIdle()
 
             // then
-            val expected =
+            val notices =
                 listOf(
                     notice.copy(isExpanded = true),
                     NoticeUiModel(
@@ -182,7 +178,9 @@ class NewsViewModelTest {
                     ),
                 )
             val actual = newsViewModel.noticeUiState.value
-            assertThat(actual).isEqualTo(NoticeUiState.Success(expected, DEFAULT_POSITION))
+            val expected =
+                NoticeUiState(content = NoticeUiState.Content.Success(notices, DEFAULT_POSITION))
+            assertThat(actual).isEqualTo(expected)
         }
 
     @Test
@@ -193,7 +191,6 @@ class NewsViewModelTest {
 
             // when
             newsViewModel.toggleFAQ(faq)
-            advanceUntilIdle()
 
             // then
             val expected = listOf(faq.copy(isExpanded = true))
@@ -206,7 +203,7 @@ class NewsViewModelTest {
         runTest {
             // given
             coEvery { noticeRepository.fetchNotices() } returns Result.success(FAKE_NOTICES)
-            val expected =
+            val notices =
                 listOf(
                     FAKE_NOTICES.first().toUiModel(),
                     FAKE_NOTICES[1].toUiModel().copy(isExpanded = true),
@@ -214,12 +211,12 @@ class NewsViewModelTest {
 
             // when
             newsViewModel.expandNotice(2)
-            advanceUntilIdle()
 
             // then
             val actual = newsViewModel.noticeUiState.value
+            val expected = NoticeUiState(content = NoticeUiState.Content.Success(notices, 1))
             coVerify { noticeRepository.fetchNotices() }
-            assertThat(actual).isEqualTo(NoticeUiState.Success(expected, 1))
+            assertThat(actual).isEqualTo(expected)
         }
 
     @Test
@@ -227,13 +224,16 @@ class NewsViewModelTest {
         runTest {
             // given
             val expected =
-                LostUiState.Success(
-                    FAKE_LOST_ITEM_UI_MODEL.map {
-                        when (it) {
-                            is LostUiModel.Guide -> it.copy(isExpanded = true)
-                            else -> it
-                        }
-                    },
+                LostUiState(
+                    content =
+                        LostUiState.Content.Success(
+                            FAKE_LOST_ITEM_UI_MODEL.map {
+                                when (it) {
+                                    is LostUiModel.Guide -> it.copy(isExpanded = true)
+                                    else -> it
+                                }
+                            },
+                        ),
                 )
 
             // when

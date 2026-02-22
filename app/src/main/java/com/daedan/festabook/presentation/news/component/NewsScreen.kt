@@ -35,33 +35,26 @@ fun NewsScreen(
     val faqUiState by newsViewModel.faqUiState.collectAsStateWithLifecycle()
     val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)
 
-    val isNoticeRefreshing = noticeUiState is NoticeUiState.Refreshing
-    val isLostItemRefreshing = lostUiState is LostUiState.Refreshing
-
     LaunchedEffect(noticeUiState) {
-        when (val uiState = noticeUiState) {
-            is NoticeUiState.Success -> {
+        when (val content = noticeUiState.content) {
+            is NoticeUiState.Content.Success -> {
                 pageState.animateScrollToPage(NewsTab.NOTICE.ordinal)
             }
 
-            is NoticeUiState.Error -> {
-                currentOnShowErrorSnackbar(uiState.throwable)
+            is NoticeUiState.Content.Error -> {
+                currentOnShowErrorSnackbar(content.throwable)
             }
 
-            else -> {
-                Unit
-            }
+            else -> {}
         }
     }
     LaunchedEffect(lostUiState) {
-        when (val uiState = lostUiState) {
-            is LostUiState.Error -> {
-                currentOnShowErrorSnackbar(uiState.throwable)
+        when (val content = lostUiState.content) {
+            is LostUiState.Content.Error -> {
+                currentOnShowErrorSnackbar(content.throwable)
             }
 
-            else -> {
-                Unit
-            }
+            else -> {}
         }
     }
 
@@ -71,9 +64,7 @@ fun NewsScreen(
                 currentOnShowErrorSnackbar(uiState.throwable)
             }
 
-            else -> {
-                Unit
-            }
+            else -> {}
         }
     }
 
@@ -90,17 +81,13 @@ fun NewsScreen(
                 noticeUiState = noticeUiState,
                 faqUiState = faqUiState,
                 lostUiState = lostUiState,
-                isNoticeRefreshing = isNoticeRefreshing,
-                isLostItemRefreshing = isLostItemRefreshing,
                 onNoticeRefresh = {
-                    val oldNotices =
-                        (noticeUiState as? NoticeUiState.Success)?.notices ?: emptyList()
-                    newsViewModel.loadAllNotices(NoticeUiState.Refreshing(oldNotices))
+                    val currentUiState = noticeUiState.copy(isRefreshing = true)
+                    newsViewModel.loadAllNotices(currentUiState)
                 },
                 onLostItemRefresh = {
-                    val oldLostItems =
-                        (lostUiState as? LostUiState.Success)?.lostItems ?: emptyList()
-                    newsViewModel.loadAllLostItems(LostUiState.Refreshing(oldLostItems))
+                    val currentUiState = lostUiState.copy(isRefreshing = true)
+                    newsViewModel.loadAllLostItems(currentUiState)
                 },
                 onNoticeClick = { newsViewModel.toggleNotice(it) },
                 onFaqClick = { newsViewModel.toggleFAQ(it) },

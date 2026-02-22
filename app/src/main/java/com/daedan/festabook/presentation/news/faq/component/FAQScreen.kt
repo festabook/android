@@ -2,16 +2,16 @@ package com.daedan.festabook.presentation.news.faq.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.component.EmptyStateScreen
+import com.daedan.festabook.presentation.common.component.ErrorStateScreen
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.news.component.NewsItem
 import com.daedan.festabook.presentation.news.faq.FAQUiState
@@ -27,12 +27,13 @@ fun FAQScreen(
 ) {
     when (uiState) {
         is FAQUiState.Error -> {
-            LaunchedEffect(uiState) {
-                Timber.w(uiState.throwable.stackTraceToString())
-            }
+            Timber.w(uiState.throwable.stackTraceToString())
+            ErrorStateScreen(modifier = modifier.fillMaxSize())
         }
 
-        is FAQUiState.InitialLoading -> LoadingStateScreen()
+        is FAQUiState.InitialLoading -> {
+            LoadingStateScreen()
+        }
 
         is FAQUiState.Success -> {
             if (uiState.faqs.isEmpty()) {

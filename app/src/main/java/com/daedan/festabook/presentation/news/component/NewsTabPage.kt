@@ -27,8 +27,6 @@ fun NewsTabPage(
     lostUiState: LostUiState,
     onNoticeRefresh: () -> Unit,
     onLostItemRefresh: () -> Unit,
-    isNoticeRefreshing: Boolean,
-    isLostItemRefreshing: Boolean,
     onNoticeClick: (NoticeUiModel) -> Unit,
     onFaqClick: (FAQItemUiModel) -> Unit,
     onLostGuideClick: () -> Unit,
@@ -41,30 +39,31 @@ fun NewsTabPage(
     ) { index ->
         val tab = NewsTab.entries[index]
         when (tab) {
-            NewsTab.NOTICE ->
+            NewsTab.NOTICE -> {
                 NoticeScreen(
                     uiState = noticeUiState,
                     onNoticeClick = onNoticeClick,
-                    isRefreshing = isNoticeRefreshing,
                     onRefresh = onNoticeRefresh,
                     modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
                 )
+            }
 
-            NewsTab.FAQ ->
+            NewsTab.FAQ -> {
                 FAQScreen(
                     uiState = faqUiState,
                     onFaqClick = onFaqClick,
                     modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
                 )
+            }
 
-            NewsTab.LOST_ITEM ->
+            NewsTab.LOST_ITEM -> {
                 LostItemScreen(
                     lostUiState = lostUiState,
                     onLostGuideClick = onLostGuideClick,
-                    isRefreshing = isLostItemRefreshing,
                     onRefresh = onLostItemRefresh,
                     modifier = Modifier.padding(horizontal = festabookSpacing.paddingScreenGutter),
                 )
+            }
         }
     }
 }
@@ -74,13 +73,11 @@ fun NewsTabPage(
 private fun NewsTabPagePreview() {
     NewsTabPage(
         pageState = rememberPagerState { 3 },
-        noticeUiState = NoticeUiState.Success(emptyList(), 0),
+        noticeUiState = NoticeUiState(content = NoticeUiState.Content.Success(emptyList(), 0)),
         faqUiState = FAQUiState.Success(emptyList()),
-        lostUiState = LostUiState.Success(emptyList()),
+        lostUiState = LostUiState(content = LostUiState.Content.Success(emptyList())),
         onNoticeRefresh = {},
         onLostItemRefresh = {},
-        isNoticeRefreshing = false,
-        isLostItemRefreshing = false,
         onNoticeClick = {},
         onFaqClick = {},
         onLostGuideClick = {},
