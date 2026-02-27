@@ -18,6 +18,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,17 +44,23 @@ fun FirstVisitDialog(
     onConfirm: () -> Unit,
     onDecline: () -> Unit = {},
 ) {
-    FirstVisitInfoDialog(
-        title = stringResource(id = R.string.main_alarm_dialog_title),
-        message = stringResource(id = R.string.main_alarm_dialog_message),
-        confirmButtonText = stringResource(id = R.string.main_alarm_dialog_confirm_button),
-        declineButtonText = stringResource(id = R.string.main_alarm_dialog_cancel_button),
-        iconResId = R.drawable.ic_alarm,
-        confirmButtonColor = FestabookColor.accentBlue,
-        declineButtonColor = FestabookColor.gray400,
-        onConfirm = onConfirm,
-        onDecline = onDecline,
-    )
+    var isVisible by remember { mutableStateOf(true) }
+    if (isVisible) {
+        FirstVisitInfoDialog(
+            title = stringResource(id = R.string.main_alarm_dialog_title),
+            message = stringResource(id = R.string.main_alarm_dialog_message),
+            confirmButtonText = stringResource(id = R.string.main_alarm_dialog_confirm_button),
+            declineButtonText = stringResource(id = R.string.main_alarm_dialog_cancel_button),
+            iconResId = R.drawable.ic_alarm,
+            confirmButtonColor = FestabookColor.accentBlue,
+            declineButtonColor = FestabookColor.gray400,
+            onConfirm = {
+                onConfirm()
+                isVisible = false
+            },
+            onDecline = onDecline,
+        )
+    }
 }
 
 @Composable
