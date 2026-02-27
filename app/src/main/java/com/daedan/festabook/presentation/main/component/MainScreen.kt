@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import com.daedan.festabook.R
 import com.daedan.festabook.logging.DefaultFirebaseLogger
@@ -26,6 +25,7 @@ import com.daedan.festabook.presentation.home.navigation.homeNavGraph
 import com.daedan.festabook.presentation.main.FestabookMainTab
 import com.daedan.festabook.presentation.main.FestabookNavigator
 import com.daedan.festabook.presentation.main.FestabookRoute
+import com.daedan.festabook.presentation.main.MainTabRoute
 import com.daedan.festabook.presentation.main.MainViewModel
 import com.daedan.festabook.presentation.main.rememberFestabookNavigator
 import com.daedan.festabook.presentation.news.NewsViewModel
@@ -50,23 +50,22 @@ fun MainScreen(
     placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
     onAppFinish: () -> Unit,
     onSubscriptionConfirm: () -> Unit,
-    onNavigateToExplore: () -> Unit, // TODO 검색화면 마이그레이션 시 제거
+    festabookNavigator: FestabookNavigator,
+    mainViewModel: MainViewModel,
+    homeViewModel: HomeViewModel,
+    scheduleViewModel: ScheduleViewModel,
+    placeMapViewModel: PlaceMapViewModel,
+    newsViewModel: NewsViewModel,
+    settingViewModel: SettingViewModel,
     modifier: Modifier = Modifier,
-    mainViewModel: MainViewModel = viewModel(),
-    homeViewModel: HomeViewModel = viewModel(),
-    scheduleViewModel: ScheduleViewModel = viewModel(),
-    placeMapViewModel: PlaceMapViewModel = viewModel(),
-    newsViewModel: NewsViewModel = viewModel(),
-    settingViewModel: SettingViewModel = viewModel(),
 ) {
-    val navigator = rememberFestabookNavigator()
+    val mainNavigator = rememberFestabookNavigator(MainTabRoute.Home)
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarManager = rememberAppSnackbarManager(snackbarHostState)
     val backPressExitMessage = stringResource(R.string.back_press_exit_message)
-    val noticeEnabledMessage = stringResource(R.string.setting_notice_enabled)
 
     ObserveAsEvents(flow = mainViewModel.navigateNewsEvent) {
-        navigator.navigateToMainTab(FestabookMainTab.NEWS)
+        mainNavigator.navigateToMainTab(FestabookMainTab.NEWS)
     }
     ObserveAsEvents(flow = mainViewModel.backPressEvent) { isDoublePress ->
         if (isDoublePress) {
@@ -76,7 +75,7 @@ fun MainScreen(
         }
     }
     ObserveAsEvents(flow = homeViewModel.navigateToScheduleEvent) {
-        navigator.navigateToMainTab(FestabookMainTab.SCHEDULE)
+        mainNavigator.navigateToMainTab(FestabookMainTab.SCHEDULE)
     }
 
     BackHandler {
@@ -89,10 +88,10 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            if (navigator.shouldShowBottomBar) {
+            if (mainNavigator.shouldShowBottomBar) {
                 FestabookBottomNavigationBar(
-                    currentTab = navigator.currentTab,
-                    onTabSelect = { navigator.navigateToMainTab(it) },
+                    currentTab = mainNavigator.currentTab,
+                    onTabSelect = { mainNavigator.navigateToMainTab(it) },
                     onTabReSelect = { tab ->
                         when (tab) {
                             FestabookMainTab.SCHEDULE -> {
@@ -114,7 +113,7 @@ fun MainScreen(
         },
         modifier = modifier,
     ) { innerPadding ->
-        val isVisible = navigator.currentTab == FestabookMainTab.PLACE_MAP
+        val isVisible = mainNavigator.currentTab == FestabookMainTab.PLACE_MAP
         PlaceMapRoute(
             modifier =
                 Modifier
@@ -137,7 +136,7 @@ fun MainScreen(
             logger = logger,
             onShowErrorSnackBar = snackbarManager::showError,
             onStartPlaceDetail = {
-                navigator.navigate(
+                mainNavigator.navigate(
                     FestabookRoute.PlaceDetail(
                         placeDetailUiModel = it.placeDetail.value,
                     ),
@@ -146,15 +145,15 @@ fun MainScreen(
         )
         FestabookNavHost(
             modifier = Modifier.padding(innerPadding),
-            navigator = navigator,
+            festabookNavigator = festabookNavigator,
+            navigator = mainNavigator,
             mainViewModel = mainViewModel,
             homeViewModel = homeViewModel,
             scheduleViewModel = scheduleViewModel,
+            settingViewModel = settingViewModel,
             placeDetailViewModelFactory = placeDetailViewModelFactory,
             newsViewModel = newsViewModel,
-            settingViewModel = settingViewModel,
             notificationPermissionManager = notificationPermissionManager,
-            onNavigateToExplore = onNavigateToExplore,
             onSubscriptionConfirm = onSubscriptionConfirm,
             snackbarManager = snackbarManager,
         )
@@ -164,6 +163,7 @@ fun MainScreen(
 @Composable
 private fun FestabookNavHost(
     navigator: FestabookNavigator,
+    festabookNavigator: FestabookNavigator,
     mainViewModel: MainViewModel,
     homeViewModel: HomeViewModel,
     scheduleViewModel: ScheduleViewModel,
@@ -171,7 +171,6 @@ private fun FestabookNavHost(
     newsViewModel: NewsViewModel,
     settingViewModel: SettingViewModel,
     notificationPermissionManager: NotificationPermissionManager,
-    onNavigateToExplore: () -> Unit,
     onSubscriptionConfirm: () -> Unit,
     snackbarManager: SnackbarManager,
     modifier: Modifier = Modifier,
@@ -184,7 +183,7 @@ private fun FestabookNavHost(
         homeNavGraph(
             viewModel = homeViewModel,
             mainViewModel = mainViewModel,
-            onNavigateToExplore = onNavigateToExplore,
+            onNavigateToExplore = { festabookNavigator.navigate(FestabookRoute.Explore) },
             onSubscriptionConfirm = onSubscriptionConfirm,
             onShowErrorSnackbar = snackbarManager::showError,
         )

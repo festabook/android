@@ -12,6 +12,7 @@ import androidx.navigation.navOptions
 
 class FestabookNavigator(
     val navController: NavHostController,
+    val startRoute: FestabookRoute = FestabookRoute.Splash,
 ) {
     private val currentDestination
         @Composable
@@ -35,8 +36,6 @@ class FestabookNavigator(
             FestabookMainTab.find {
                 currentDestination?.hasRoute(it::class) ?: false
             } != null
-
-    val startRoute = MainTabRoute.Home // TODO: Splash와 Explore 연동 시 변경
 
     fun navigateToMainTab(tab: FestabookMainTab) {
         navController.navigate(
@@ -74,9 +73,9 @@ class FestabookNavigator(
 }
 
 @Composable
-fun rememberFestabookNavigator(): FestabookNavigator {
+fun rememberFestabookNavigator(startRoute: FestabookRoute = FestabookRoute.Splash): FestabookNavigator {
     val navController = rememberNavController()
     return remember {
-        FestabookNavigator(navController = navController)
+        FestabookNavigator(navController = navController, startRoute = startRoute)
     }
 }
