@@ -1,5 +1,6 @@
 package com.daedan.festabook.presentation.main.component
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -36,6 +37,8 @@ import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceMapRoute
 import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
 import com.daedan.festabook.presentation.placeMap.navigation.placeMapNavGraph
+import com.daedan.festabook.presentation.platform.DeepLinkKeys
+import com.daedan.festabook.presentation.platform.RememberDeepLinkHandler
 import com.daedan.festabook.presentation.platform.rememberNotificationPermissionManager
 import com.daedan.festabook.presentation.platform.rememberOpenAppSettings
 import com.daedan.festabook.presentation.schedule.ScheduleViewModel
@@ -92,6 +95,10 @@ fun MainScreen(
 
     BackHandler {
         mainViewModel.onBackPressed()
+    }
+
+    RememberDeepLinkHandler { intent ->
+        handleNavigation(intent, newsViewModel, mainViewModel)
     }
     Scaffold(
         snackbarHost = {
@@ -221,4 +228,16 @@ private fun FestabookNavHost(
             onShowErrorSnackBar = snackbarManager::showError,
         )
     }
+}
+
+private fun handleNavigation(
+    intent: Intent,
+    newsViewModel: NewsViewModel,
+    mainViewModel: MainViewModel,
+) {
+    val noticeIdToExpand =
+        intent.getLongExtra(DeepLinkKeys.KEY_NOTICE_ID_TO_EXPAND, DeepLinkKeys.INITIALIZED_ID)
+    if (noticeIdToExpand != DeepLinkKeys.INITIALIZED_ID) newsViewModel.expandNotice(noticeIdToExpand)
+    val canNavigateToNews = intent.getBooleanExtra(DeepLinkKeys.KEY_CAN_NAVIGATE_TO_NEWS, false)
+    if (canNavigateToNews) mainViewModel.navigateToNews()
 }

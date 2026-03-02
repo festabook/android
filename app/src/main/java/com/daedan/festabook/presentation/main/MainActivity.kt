@@ -24,7 +24,9 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContent {
             FestabookTheme {
-                FestabookScreen()
+                FestabookScreen(
+                    onAppFinish = ::finish,
+                )
             }
         }
     }
@@ -58,7 +60,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         fun newIntent(context: Context) =
             Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
     }
 }

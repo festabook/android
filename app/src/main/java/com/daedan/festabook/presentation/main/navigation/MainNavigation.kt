@@ -10,6 +10,7 @@ import com.daedan.festabook.presentation.main.component.MainScreen
 import com.naver.maps.map.util.FusedLocationSource
 
 fun NavGraphBuilder.mainNavGraph(
+    onAppFinish: () -> Unit,
     appGraph: FestaBookAppGraph,
     locationSource: FusedLocationSource,
     festabookNavigator: FestabookNavigator,
@@ -20,7 +21,7 @@ fun NavGraphBuilder.mainNavGraph(
         MainScreen(
             appGraph = appGraph,
             locationSource = locationSource,
-            onAppFinish = festabookNavigator::popBackStack,
+            onAppFinish = onAppFinish,
             festabookNavigator = festabookNavigator,
             homeViewModel = viewModel(mainBackEntry, factory = appGraph.metroViewModelFactory),
             scheduleViewModel = viewModel(mainBackEntry, factory = appGraph.metroViewModelFactory),
