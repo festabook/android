@@ -52,9 +52,10 @@ class MainActivity :
 
     private val notificationPermissionManager by lazy {
         notificationPermissionManagerFactory.create(
-            requester = this,
             onPermissionGranted = { onPermissionGranted() },
             onPermissionDenied = { onPermissionDenied() },
+            shouldShowRationale = { shouldShowPermissionRationale(it) },
+            launchPermission = { permissionLauncher.launch(it) },
         )
     }
 

@@ -9,8 +9,7 @@ import androidx.core.content.ContextCompat
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.vectorToBitmap
 import com.daedan.festabook.presentation.main.MainActivity
-import com.daedan.festabook.presentation.main.MainActivity.Companion.KEY_CAN_NAVIGATE_TO_NEWS
-import com.daedan.festabook.presentation.main.MainActivity.Companion.KEY_NOTICE_ID_TO_EXPAND
+import com.daedan.festabook.presentation.platform.DeepLinkKeys
 
 object NotificationHelper {
     private const val CHANNEL_ID = "notice_channel"
@@ -41,8 +40,8 @@ object NotificationHelper {
     ) {
         val intent =
             MainActivity.newIntent(context).apply {
-                putExtra(KEY_CAN_NAVIGATE_TO_NEWS, true)
-                putExtra(KEY_NOTICE_ID_TO_EXPAND, announcementId.toLongOrNull())
+                putExtra(DeepLinkKeys.KEY_CAN_NAVIGATE_TO_NEWS, true)
+                putExtra(DeepLinkKeys.KEY_NOTICE_ID_TO_EXPAND, announcementId.toLongOrNull())
             }
 
         val pendingIntent =
