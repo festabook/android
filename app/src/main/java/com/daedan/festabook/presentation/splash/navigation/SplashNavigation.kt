@@ -1,14 +1,15 @@
 package com.daedan.festabook.presentation.splash.navigation
 
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.daedan.festabook.di.FestaBookAppGraph
 import com.daedan.festabook.presentation.main.FestabookRoute
 import com.daedan.festabook.presentation.splash.AppVersionManager
-import com.daedan.festabook.presentation.splash.SplashViewModel
 import com.daedan.festabook.presentation.splash.component.SplashScreen
 
 fun NavGraphBuilder.splashNavGraph(
-    viewModel: SplashViewModel,
+    appGraph: FestaBookAppGraph,
     appVersionManager: AppVersionManager,
     onNavigateToExplore: () -> Unit,
     onNavigateToMain: (Long) -> Unit,
@@ -16,7 +17,7 @@ fun NavGraphBuilder.splashNavGraph(
 ) {
     composable<FestabookRoute.Splash> {
         SplashScreen(
-            viewModel = viewModel,
+            viewModel = viewModel(factory = appGraph.metroViewModelFactory),
             appVersionManager = appVersionManager,
             onNavigateToExplore = onNavigateToExplore,
             onNavigateToMain = onNavigateToMain,

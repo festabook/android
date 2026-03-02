@@ -6,6 +6,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -14,7 +15,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
 import com.daedan.festabook.R
-import com.daedan.festabook.logging.DefaultFirebaseLogger
+import com.daedan.festabook.di.FestaBookAppGraph
 import com.daedan.festabook.presentation.NotificationPermissionManager
 import com.daedan.festabook.presentation.common.ObserveAsEvents
 import com.daedan.festabook.presentation.common.component.FestabookSnackbar
@@ -35,6 +36,8 @@ import com.daedan.festabook.presentation.placeMap.PlaceMapViewModel
 import com.daedan.festabook.presentation.placeMap.component.PlaceMapRoute
 import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
 import com.daedan.festabook.presentation.placeMap.navigation.placeMapNavGraph
+import com.daedan.festabook.presentation.platform.rememberNotificationPermissionManager
+import com.daedan.festabook.presentation.platform.rememberOpenAppSettings
 import com.daedan.festabook.presentation.schedule.ScheduleViewModel
 import com.daedan.festabook.presentation.schedule.navigation.scheduleNavGraph
 import com.daedan.festabook.presentation.setting.SettingViewModel
@@ -44,12 +47,9 @@ import com.naver.maps.map.util.FusedLocationSource
 @Composable
 @Suppress("ktlint:compose:vm-forwarding-check")
 fun MainScreen(
-    notificationPermissionManager: NotificationPermissionManager,
-    logger: DefaultFirebaseLogger,
+    appGraph: FestaBookAppGraph,
     locationSource: FusedLocationSource,
-    placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
     onAppFinish: () -> Unit,
-    onSubscriptionConfirm: () -> Unit,
     festabookNavigator: FestabookNavigator,
     mainViewModel: MainViewModel,
     homeViewModel: HomeViewModel,
@@ -63,6 +63,14 @@ fun MainScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarManager = rememberAppSnackbarManager(snackbarHostState)
     val backPressExitMessage = stringResource(R.string.back_press_exit_message)
+    val openAppSettings = rememberOpenAppSettings()
+
+    val notificationPermissionManager =
+        rememberNotificationPermissionManager(
+            factory = appGraph.notificationPermissionManagerFactory,
+            onPermissionGrant = { settingViewModel.saveNotificationId() },
+            onPermissionDeny = { snackbarManager.showPermissionDeniedSnackbar(openAppSettings) },
+        )
 
     ObserveAsEvents(flow = mainViewModel.navigateNewsEvent) {
         mainNavigator.navigateToMainTab(FestabookMainTab.NEWS)
@@ -76,6 +84,10 @@ fun MainScreen(
     }
     ObserveAsEvents(flow = homeViewModel.navigateToScheduleEvent) {
         mainNavigator.navigateToMainTab(FestabookMainTab.SCHEDULE)
+    }
+
+    LaunchedEffect(Unit) {
+        mainViewModel.registerDeviceAndFcmToken()
     }
 
     BackHandler {
@@ -133,7 +145,7 @@ fun MainScreen(
                     },
             placeMapViewModel = placeMapViewModel,
             locationSource = locationSource,
-            logger = logger,
+            logger = appGraph.defaultFirebaseLogger,
             onShowErrorSnackBar = snackbarManager::showError,
             onStartPlaceDetail = {
                 mainNavigator.navigate(
@@ -151,10 +163,9 @@ fun MainScreen(
             homeViewModel = homeViewModel,
             scheduleViewModel = scheduleViewModel,
             settingViewModel = settingViewModel,
-            placeDetailViewModelFactory = placeDetailViewModelFactory,
+            placeDetailViewModelFactory = appGraph.placeDetailViewModelFactory,
             newsViewModel = newsViewModel,
             notificationPermissionManager = notificationPermissionManager,
-            onSubscriptionConfirm = onSubscriptionConfirm,
             snackbarManager = snackbarManager,
         )
     }
@@ -171,7 +182,6 @@ private fun FestabookNavHost(
     newsViewModel: NewsViewModel,
     settingViewModel: SettingViewModel,
     notificationPermissionManager: NotificationPermissionManager,
-    onSubscriptionConfirm: () -> Unit,
     snackbarManager: SnackbarManager,
     modifier: Modifier = Modifier,
 ) {
@@ -184,8 +194,11 @@ private fun FestabookNavHost(
             viewModel = homeViewModel,
             mainViewModel = mainViewModel,
             onNavigateToExplore = { festabookNavigator.navigate(FestabookRoute.Explore) },
-            onSubscriptionConfirm = onSubscriptionConfirm,
+            onSubscriptionConfirm = { settingViewModel.notificationAllowClick() },
+            onShowSnackbar = snackbarManager::show,
             onShowErrorSnackbar = snackbarManager::showError,
+            settingViewModel = settingViewModel,
+            notificationPermissionManager = notificationPermissionManager,
         )
         scheduleNavGraph(
             viewModel = scheduleViewModel,

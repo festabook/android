@@ -1,41 +1,45 @@
 package com.daedan.festabook.presentation
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
-import com.daedan.festabook.logging.DefaultFirebaseLogger
-import com.daedan.festabook.presentation.explore.ExploreViewModel
 import com.daedan.festabook.presentation.explore.navigation.exploreNavGraph
 import com.daedan.festabook.presentation.main.FestabookRoute
 import com.daedan.festabook.presentation.main.MainViewModel
 import com.daedan.festabook.presentation.main.navigation.mainNavGraph
 import com.daedan.festabook.presentation.main.rememberFestabookNavigator
 import com.daedan.festabook.presentation.news.NewsViewModel
-import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
-import com.daedan.festabook.presentation.setting.SettingViewModel
-import com.daedan.festabook.presentation.splash.AppVersionManager
+import com.daedan.festabook.presentation.platform.DeepLinkKeys
+import com.daedan.festabook.presentation.platform.RememberDeepLinkHandler
+import com.daedan.festabook.presentation.platform.rememberAppGraph
+import com.daedan.festabook.presentation.platform.rememberAppVersionManager
+import com.daedan.festabook.presentation.platform.rememberLocationSource
 import com.daedan.festabook.presentation.splash.SplashViewModel
 import com.daedan.festabook.presentation.splash.navigation.splashNavGraph
-import com.naver.maps.map.util.FusedLocationSource
 
 @Composable
 fun FestabookScreen(
-    appVersionManager: AppVersionManager,
-    notificationPermissionManager: NotificationPermissionManager,
-    placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
-    defaultViewModelFactory: ViewModelProvider.Factory,
-    locationSource: FusedLocationSource,
-    logger: DefaultFirebaseLogger,
     modifier: Modifier = Modifier,
     newsViewModel: NewsViewModel = viewModel(),
-    mainViewModel: MainViewModel = viewModel(),
-    settingViewModel: SettingViewModel = viewModel(),
     splashViewModel: SplashViewModel = viewModel(),
-    exploreViewModel: ExploreViewModel = viewModel(),
+    mainViewModel: MainViewModel = viewModel(),
 ) {
+    val appGraph = rememberAppGraph()
+    val locationSource = rememberLocationSource()
     val festabookNavigator = rememberFestabookNavigator()
+
+    val appVersionManager =
+        rememberAppVersionManager(
+            factory = appGraph.appVersionManagerFactory,
+            onUpdateSuccess = { splashViewModel.handleVersionCheckResult(Result.success(false)) },
+            onUpdateFailure = { splashViewModel.handleVersionCheckResult(Result.failure(Exception("Update failed"))) },
+        )
+
+    RememberDeepLinkHandler { intent ->
+        handleNavigation(intent, newsViewModel, mainViewModel)
+    }
 
     NavHost(
         modifier = modifier,
@@ -43,28 +47,33 @@ fun FestabookScreen(
         navController = festabookNavigator.navController,
     ) {
         splashNavGraph(
-            viewModel = splashViewModel,
+            appGraph = appGraph,
             appVersionManager = appVersionManager,
             onNavigateToExplore = { festabookNavigator.navigate(FestabookRoute.Explore) },
             onNavigateToMain = { festabookNavigator.navigate(FestabookRoute.Main) },
             onFinishApp = { festabookNavigator.popBackStack() },
         )
         exploreNavGraph(
-            viewModel = exploreViewModel,
+            appGraph = appGraph,
             onBackClick = { festabookNavigator.popBackStack() },
             onNavigateToMain = { festabookNavigator.navigate(FestabookRoute.Main) },
         )
         mainNavGraph(
-            placeDetailViewModelFactory = placeDetailViewModelFactory,
-            defaultViewModelFactory = defaultViewModelFactory,
-            notificationPermissionManager = notificationPermissionManager,
+            appGraph = appGraph,
             locationSource = locationSource,
-            logger = logger,
-            onSubscriptionConfirm = { festabookNavigator.navigate(FestabookRoute.Main) },
             festabookNavigator = festabookNavigator,
-            settingViewModel = settingViewModel,
-            mainViewModel = mainViewModel,
-            newsViewModel = newsViewModel,
         )
     }
+}
+
+private fun handleNavigation(
+    intent: Intent,
+    newsViewModel: NewsViewModel,
+    mainViewModel: MainViewModel,
+) {
+    val noticeIdToExpand =
+        intent.getLongExtra(DeepLinkKeys.KEY_NOTICE_ID_TO_EXPAND, DeepLinkKeys.INITIALIZED_ID)
+    if (noticeIdToExpand != DeepLinkKeys.INITIALIZED_ID) newsViewModel.expandNotice(noticeIdToExpand)
+    val canNavigateToNews = intent.getBooleanExtra(DeepLinkKeys.KEY_CAN_NAVIGATE_TO_NEWS, false)
+    if (canNavigateToNews) mainViewModel.navigateToNews()
 }

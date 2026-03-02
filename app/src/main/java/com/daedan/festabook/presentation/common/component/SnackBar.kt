@@ -4,6 +4,7 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,6 +35,8 @@ class SnackbarManager(
     private val actionLabel: String,
     private val errorMessages: Map<KClass<out ApiResultException>, String>,
     private val defaultErrorMessage: String,
+    private val permissionDeniedMessage: String,
+    private val moveToSettingLabel: String,
 ) {
     fun show(message: String) {
         hostState.currentSnackbarData?.dismiss()
@@ -50,6 +53,21 @@ class SnackbarManager(
         val message = errorMessages[throwable::class] ?: defaultErrorMessage
         show(message)
     }
+
+    fun showPermissionDeniedSnackbar(onOpenSettings: () -> Unit) {
+        hostState.currentSnackbarData?.dismiss()
+        scope.launch {
+            val result =
+                hostState.showSnackbar(
+                    message = permissionDeniedMessage,
+                    actionLabel = moveToSettingLabel,
+                    duration = SnackbarDuration.Short,
+                )
+            if (result == SnackbarResult.ActionPerformed) {
+                onOpenSettings()
+            }
+        }
+    }
 }
 
 @Composable
@@ -62,6 +80,8 @@ fun rememberAppSnackbarManager(
     val networkErrorMessage = stringResource(R.string.error_network_exception)
     val unknownErrorMessage = stringResource(R.string.error_unknown_exception)
     val actionLabel = stringResource(R.string.fail_snackbar_confirm)
+    val permissionDeniedMessage = stringResource(R.string.notification_permission_denied_message)
+    val moveToSettingLabel = stringResource(R.string.move_to_setting_text)
 
     val errorMessages =
         remember {
@@ -74,6 +94,14 @@ fun rememberAppSnackbarManager(
         }
 
     return remember(snackbarHostState, scope) {
-        SnackbarManager(snackbarHostState, scope, actionLabel, errorMessages, unknownErrorMessage)
+        SnackbarManager(
+            snackbarHostState,
+            scope,
+            actionLabel,
+            errorMessages,
+            unknownErrorMessage,
+            permissionDeniedMessage,
+            moveToSettingLabel,
+        )
     }
 }
