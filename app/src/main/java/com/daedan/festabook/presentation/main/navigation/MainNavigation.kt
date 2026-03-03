@@ -1,49 +1,34 @@
 package com.daedan.festabook.presentation.main.navigation
 
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.daedan.festabook.logging.DefaultFirebaseLogger
-import com.daedan.festabook.presentation.NotificationPermissionManager
+import com.daedan.festabook.di.FestaBookAppGraph
 import com.daedan.festabook.presentation.main.FestabookNavigator
 import com.daedan.festabook.presentation.main.FestabookRoute
-import com.daedan.festabook.presentation.main.MainViewModel
 import com.daedan.festabook.presentation.main.component.MainScreen
-import com.daedan.festabook.presentation.news.NewsViewModel
-import com.daedan.festabook.presentation.placeDetail.PlaceDetailViewModel
-import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.naver.maps.map.util.FusedLocationSource
 
 fun NavGraphBuilder.mainNavGraph(
-    defaultViewModelFactory: ViewModelProvider.Factory,
-    placeDetailViewModelFactory: PlaceDetailViewModel.Factory,
-    notificationPermissionManager: NotificationPermissionManager,
+    onAppFinish: () -> Unit,
+    appGraph: FestaBookAppGraph,
     locationSource: FusedLocationSource,
-    logger: DefaultFirebaseLogger,
-    onSubscriptionConfirm: () -> Unit,
     festabookNavigator: FestabookNavigator,
-    settingViewModel: SettingViewModel,
-    mainViewModel: MainViewModel,
-    newsViewModel: NewsViewModel,
 ) {
     composable<FestabookRoute.Main> {
         val mainBackEntry =
             festabookNavigator.navController.getBackStackEntry<FestabookRoute.Main>()
         MainScreen(
-            notificationPermissionManager = notificationPermissionManager,
-            logger = logger,
+            appGraph = appGraph,
             locationSource = locationSource,
-            placeDetailViewModelFactory = placeDetailViewModelFactory,
-            onAppFinish = festabookNavigator::popBackStack,
-            onSubscriptionConfirm = onSubscriptionConfirm,
+            onAppFinish = onAppFinish,
             festabookNavigator = festabookNavigator,
-            homeViewModel = viewModel(mainBackEntry, factory = defaultViewModelFactory),
-            scheduleViewModel = viewModel(mainBackEntry, factory = defaultViewModelFactory),
-            placeMapViewModel = viewModel(mainBackEntry, factory = defaultViewModelFactory),
-            settingViewModel = settingViewModel,
-            mainViewModel = mainViewModel,
-            newsViewModel = newsViewModel,
+            homeViewModel = viewModel(mainBackEntry, factory = appGraph.metroViewModelFactory),
+            scheduleViewModel = viewModel(mainBackEntry, factory = appGraph.metroViewModelFactory),
+            placeMapViewModel = viewModel(mainBackEntry, factory = appGraph.metroViewModelFactory),
+            settingViewModel = viewModel(mainBackEntry, factory = appGraph.metroViewModelFactory),
+            mainViewModel = viewModel(mainBackEntry, factory = appGraph.metroViewModelFactory),
+            newsViewModel = viewModel(mainBackEntry, factory = appGraph.metroViewModelFactory),
         )
     }
 }

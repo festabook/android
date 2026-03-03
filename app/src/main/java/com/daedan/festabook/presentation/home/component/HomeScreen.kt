@@ -17,6 +17,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,8 @@ import com.daedan.festabook.R
 import com.daedan.festabook.domain.model.Festival
 import com.daedan.festabook.domain.model.Organization
 import com.daedan.festabook.domain.model.Poster
+import com.daedan.festabook.presentation.NotificationPermissionManager
+import com.daedan.festabook.presentation.common.ObserveAsEvents
 import com.daedan.festabook.presentation.common.component.LoadingStateScreen
 import com.daedan.festabook.presentation.common.formatFestivalPeriod
 import com.daedan.festabook.presentation.home.HomeViewModel
@@ -32,6 +35,7 @@ import com.daedan.festabook.presentation.home.LineUpItemGroupUiModel
 import com.daedan.festabook.presentation.home.LineupItemUiModel
 import com.daedan.festabook.presentation.home.LineupUiState
 import com.daedan.festabook.presentation.home.adapter.FestivalUiState
+import com.daedan.festabook.presentation.setting.SettingViewModel
 import com.daedan.festabook.presentation.theme.FestabookColor
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -39,13 +43,30 @@ import java.time.LocalDateTime
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
+    settingViewModel: SettingViewModel,
+    notificationPermissionManager: NotificationPermissionManager,
     onNavigateToExplore: () -> Unit,
+    onShowSnackBar: (String) -> Unit,
+    onShowErrorSnackbar: (Throwable) -> Unit,
     modifier: Modifier = Modifier,
-    onShowErrorSnackbar: (Throwable) -> Unit = {}, // TODO Fragment 제거 시 필수 파라미터로 변경
 ) {
+    val context = LocalContext.current
     val festivalUiState by viewModel.festivalUiState.collectAsStateWithLifecycle()
     val lineupUiState by viewModel.lineupUiState.collectAsStateWithLifecycle()
     val currentOnShowErrorSnackbar by rememberUpdatedState(onShowErrorSnackbar)
+
+    ObserveAsEvents(flow = settingViewModel.permissionCheckEvent) {
+        notificationPermissionManager.requestNotificationPermission(context)
+    }
+
+    ObserveAsEvents(flow = settingViewModel.success) {
+        onShowSnackBar(context.getString(R.string.setting_notice_enabled))
+    }
+
+    ObserveAsEvents(flow = settingViewModel.error) {
+        currentOnShowErrorSnackbar(it)
+    }
+
     LaunchedEffect(festivalUiState) {
         when (val state = festivalUiState) {
             is FestivalUiState.Error -> {
