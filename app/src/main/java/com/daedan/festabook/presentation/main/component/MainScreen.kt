@@ -201,7 +201,10 @@ private fun FestabookNavHost(
             viewModel = homeViewModel,
             mainViewModel = mainViewModel,
             onNavigateToExplore = { festabookNavigator.navigate(FestabookRoute.Explore) },
-            onSubscriptionConfirm = { settingViewModel.notificationAllowClick() },
+            onSubscriptionConfirm = {
+                settingViewModel.notificationAllowClick()
+                mainViewModel.declineAlert()
+            },
             onShowSnackbar = snackbarManager::show,
             onShowErrorSnackbar = snackbarManager::showError,
             settingViewModel = settingViewModel,
