@@ -1,7 +1,7 @@
 package com.daedan.festabook.presentation.placeMap.mapManager.internal
 
 import com.daedan.festabook.di.mapManager.PlaceMapScope
-import com.daedan.festabook.presentation.placeMap.MapClickListener
+import com.daedan.festabook.presentation.placeMap.listener.MapClickListener
 import com.daedan.festabook.presentation.placeMap.mapManager.MapCameraManager
 import com.daedan.festabook.presentation.placeMap.mapManager.MapMarkerManager
 import com.daedan.festabook.presentation.placeMap.model.PlaceCoordinateUiModel

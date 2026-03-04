@@ -4,7 +4,7 @@ import androidx.core.content.ContextCompat
 import com.daedan.festabook.BuildConfig
 import com.daedan.festabook.R
 import com.daedan.festabook.presentation.common.toPx
-import com.daedan.festabook.presentation.placeMap.MapClickListener
+import com.daedan.festabook.presentation.placeMap.listener.MapClickListener
 import com.daedan.festabook.presentation.placeMap.model.CoordinateUiModel
 import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
 import com.daedan.festabook.presentation.placeMap.model.toLatLng

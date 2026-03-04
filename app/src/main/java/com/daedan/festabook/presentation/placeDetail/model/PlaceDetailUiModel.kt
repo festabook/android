@@ -7,10 +7,12 @@ import com.daedan.festabook.presentation.news.notice.model.toUiModel
 import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Parcelize
+@Serializable
 data class PlaceDetailUiModel(
     val place: PlaceUiModel,
     val notices: List<NoticeUiModel>,

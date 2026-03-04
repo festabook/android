@@ -13,7 +13,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
 @ContributesBinding(AppScope::class)
-class LostItemRepositoryImpl @Inject constructor(
+@Inject
+class LostItemRepositoryImpl(
     private val lostItemDataSource: LostItemDataSource,
 ) : LostItemRepository {
     override suspend fun getPendingLostItems(): Result<List<Lost>> =

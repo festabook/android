@@ -1,14 +1,15 @@
 <resources>
     <!-- Base application theme. -->
     <style name="Base.Theme.Festabook" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowBackground">@color/gray050</item>
+        <item name="android:windowBackground">#FFFFFF</item>
         <item name="SkeletonBackground">@color/gray300</item>
         <item name="android:windowContentTransitions">true</item>
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
-    <style name="Theme.Festabook.Splash" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:windowBackground">@color/gray050</item>
+
+    <style name="Theme.Festabook.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/gray050</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_festabook_icon</item>
+        <item name="postSplashScreenTheme">@style/Theme.Festabook</item>
     </style>
 
     <style name="Theme.Festabook" parent="Base.Theme.Festabook" />

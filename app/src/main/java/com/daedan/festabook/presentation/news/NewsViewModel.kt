@@ -1,9 +1,5 @@
 package com.daedan.festabook.presentation.news
 
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.di.viewmodel.ViewModelKey
@@ -25,6 +21,9 @@ import com.daedan.festabook.presentation.news.notice.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
@@ -35,34 +34,29 @@ class NewsViewModel(
     private val faqRepository: FAQRepository,
     private val lostItemRepository: LostItemRepository,
 ) : ViewModel() {
-    var noticeUiState by mutableStateOf<NoticeUiState>(NoticeUiState.InitialLoading)
-        private set
+    private val _noticeUiState: MutableStateFlow<NoticeUiState> =
+        MutableStateFlow(NoticeUiState(content = NoticeUiState.Content.InitialLoading))
+    val noticeUiState: StateFlow<NoticeUiState> = _noticeUiState.asStateFlow()
 
-    val isNoticeScreenRefreshing by derivedStateOf {
-        noticeUiState is NoticeUiState.Refreshing
-    }
+    private val _faqUiState: MutableStateFlow<FAQUiState> =
+        MutableStateFlow(FAQUiState.InitialLoading)
+    val faqUiState: StateFlow<FAQUiState> = _faqUiState.asStateFlow()
 
-    var faqUiState by mutableStateOf<FAQUiState>(FAQUiState.InitialLoading)
-        private set
-
-    var lostUiState by mutableStateOf<LostUiState>(LostUiState.InitialLoading)
-        private set
-
-    val isLostItemScreenRefreshing by derivedStateOf {
-        lostUiState is LostUiState.Refreshing
-    }
+    private val _lostUiState: MutableStateFlow<LostUiState> =
+        MutableStateFlow(LostUiState(content = LostUiState.Content.InitialLoading))
+    val lostUiState: StateFlow<LostUiState> = _lostUiState.asStateFlow()
 
     private var noticeIdToExpand: Long? = null
 
     init {
-        loadAllNotices(NoticeUiState.InitialLoading)
-        loadAllFAQs()
-        loadAllLostItems(LostUiState.InitialLoading)
+        loadAllNotices(NoticeUiState(content = NoticeUiState.Content.InitialLoading))
+        loadAllFAQs(FAQUiState.InitialLoading)
+        loadAllLostItems(LostUiState(content = LostUiState.Content.InitialLoading))
     }
 
     fun loadAllNotices(state: NoticeUiState) {
         viewModelScope.launch {
-            noticeUiState = state
+            _noticeUiState.value = state
             val result = noticeRepository.fetchNotices()
             result
                 .onSuccess { notices ->
@@ -76,16 +70,19 @@ class NewsViewModel(
                         notices.indexOfFirst { it.id == noticeIdToExpand }.let {
                             if (it == -1) DEFAULT_POSITION else it
                         }
-                    noticeUiState =
-                        NoticeUiState.Success(updatedNotices, expandPosition)
+                    _noticeUiState.value =
+                        NoticeUiState(
+                            content =
+                                NoticeUiState.Content.Success(updatedNotices, expandPosition),
+                        )
                     noticeIdToExpand = null
                 }.onFailure {
-                    noticeUiState = NoticeUiState.Error(it)
+                    _noticeUiState.value = NoticeUiState(content = NoticeUiState.Content.Error(it))
                 }
         }
     }
 
-    fun toggleNoticeExpanded(notice: NoticeUiModel) {
+    fun toggleNotice(notice: NoticeUiModel) {
         updateNoticeUiState { notices ->
             notices.map { updatedNotice ->
                 if (notice.id == updatedNotice.id) {
@@ -97,19 +94,14 @@ class NewsViewModel(
         }
     }
 
-    fun expandNotice(noticeId: Long) {
-        this.noticeIdToExpand = noticeId
-        val notices =
-            when (val currentState = noticeUiState) {
-                is NoticeUiState.Refreshing -> currentState.oldNotices
-                is NoticeUiState.Success -> currentState.notices
-                else -> return
-            }
-
-        loadAllNotices(NoticeUiState.Refreshing(notices))
+    fun expandNotice(noticeIdToExpand: Long) {
+        this.noticeIdToExpand = noticeIdToExpand
+        if (_noticeUiState.value.content !is NoticeUiState.Content.InitialLoading) {
+            loadAllNotices(_noticeUiState.value)
+        }
     }
 
-    fun toggleFAQExpanded(faqItem: FAQItemUiModel) {
+    fun toggleFAQ(faqItem: FAQItemUiModel) {
         updateFAQUiState { faqItems ->
             faqItems.map { updatedFAQItem ->
                 if (faqItem.questionId == updatedFAQItem.questionId) {
@@ -121,7 +113,7 @@ class NewsViewModel(
         }
     }
 
-    fun toggleLostGuideExpanded() {
+    fun toggleLostGuide() {
         updateLostUiState { lostUiModels ->
             lostUiModels.map { lostUiModel ->
                 if (lostUiModel is LostUiModel.Guide) {
@@ -135,7 +127,7 @@ class NewsViewModel(
 
     fun loadAllLostItems(state: LostUiState) {
         viewModelScope.launch {
-            lostUiState = state
+            _lostUiState.value = state
             val result = lostItemRepository.getLost()
 
             val lostUiModels =
@@ -146,40 +138,45 @@ class NewsViewModel(
                         null -> LostUiModel.Guide()
                     }
                 }
-            lostUiState = LostUiState.Success(lostUiModels)
+            _lostUiState.value = LostUiState(content = LostUiState.Content.Success(lostUiModels))
         }
     }
 
-    private fun loadAllFAQs(state: FAQUiState = FAQUiState.InitialLoading) {
+    private fun loadAllFAQs(state: FAQUiState) {
         viewModelScope.launch {
-            faqUiState = state
+            _faqUiState.value = state
 
             val result = faqRepository.getAllFAQ()
 
             result
                 .onSuccess { faqItems ->
-                    faqUiState = FAQUiState.Success(faqItems.map { it.toUiModel() })
+                    _faqUiState.value = FAQUiState.Success(faqItems.map { it.toUiModel() })
                 }.onFailure {
-                    faqUiState = FAQUiState.Error(it)
+                    _faqUiState.value = FAQUiState.Error(it)
                 }
         }
     }
 
     private fun updateNoticeUiState(onUpdate: (List<NoticeUiModel>) -> List<NoticeUiModel>) {
-        noticeUiState =
-            when (val currentState = noticeUiState) {
-                is NoticeUiState.Success ->
+        val currentState = _noticeUiState.value
+        _noticeUiState.value =
+            when (val currentContent = currentState.content) {
+                is NoticeUiState.Content.Success -> {
                     currentState.copy(
-                        notices = onUpdate(currentState.notices),
+                        content =
+                            currentContent.copy(notices = onUpdate(currentContent.notices)),
                     )
+                }
 
-                else -> currentState
+                else -> {
+                    return
+                }
             }
     }
 
     private fun updateFAQUiState(onUpdate: (List<FAQItemUiModel>) -> List<FAQItemUiModel>) {
-        val currentState = faqUiState
-        faqUiState =
+        val currentState = _faqUiState.value
+        _faqUiState.value =
             when (currentState) {
                 is FAQUiState.Success -> currentState.copy(faqs = onUpdate(currentState.faqs))
                 else -> currentState
@@ -187,11 +184,19 @@ class NewsViewModel(
     }
 
     private fun updateLostUiState(onUpdate: (List<LostUiModel>) -> List<LostUiModel>) {
-        val currentState = lostUiState
-        lostUiState =
-            when (currentState) {
-                is LostUiState.Success -> currentState.copy(lostItems = onUpdate(currentState.lostItems))
-                else -> currentState
+        val currentState = _lostUiState.value
+        val currentContent = currentState.content
+        _lostUiState.value =
+            when (currentContent) {
+                is LostUiState.Content.Success -> {
+                    _lostUiState.value.copy(
+                        content = currentContent.copy(lostItems = onUpdate(currentContent.lostItems)),
+                    )
+                }
+
+                else -> {
+                    currentState
+                }
             }
     }
 }

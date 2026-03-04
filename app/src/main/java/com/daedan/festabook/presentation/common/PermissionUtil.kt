@@ -1,6 +1,5 @@
 package com.daedan.festabook.presentation.common
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -21,7 +20,7 @@ fun showNotificationDeniedSnackbar(
             view,
             text,
             Snackbar.LENGTH_LONG,
-        ).setAnchorView(view.rootView.findViewById(R.id.bab_menu))
+        ).setAnchorView(view.rootView.findViewById(R.id.cv_main))
         .setAction(context.getString(R.string.move_to_setting_text)) {
             val intent =
                 Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {

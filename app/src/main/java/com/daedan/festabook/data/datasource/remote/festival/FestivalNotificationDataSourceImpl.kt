@@ -3,13 +3,15 @@ package com.daedan.festabook.data.datasource.remote.festival
 import com.daedan.festabook.data.datasource.remote.ApiResult
 import com.daedan.festabook.data.model.request.FestivalNotificationRequest
 import com.daedan.festabook.data.model.response.festival.FestivalNotificationResponse
+import com.daedan.festabook.data.model.response.festival.RegisteredFestivalNotificationResponse
 import com.daedan.festabook.data.service.FestivalNotificationService
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class FestivalNotificationDataSourceImpl @Inject constructor(
+@Inject
+class FestivalNotificationDataSourceImpl(
     private val festivalNotificationService: FestivalNotificationService,
 ) : FestivalNotificationDataSource {
     override suspend fun saveFestivalNotification(
@@ -26,5 +28,10 @@ class FestivalNotificationDataSourceImpl @Inject constructor(
     override suspend fun deleteFestivalNotification(festivalNotificationId: Long): ApiResult<Unit> =
         ApiResult.toApiResult {
             festivalNotificationService.deleteFestivalNotification(festivalNotificationId)
+        }
+
+    override suspend fun getFestivalNotification(deviceId: Long): ApiResult<List<RegisteredFestivalNotificationResponse>> =
+        ApiResult.toApiResult {
+            festivalNotificationService.getFestivalNotification(deviceId)
         }
 }

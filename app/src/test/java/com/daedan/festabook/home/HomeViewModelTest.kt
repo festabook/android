@@ -2,18 +2,18 @@ package com.daedan.festabook.home
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.daedan.festabook.domain.repository.FestivalRepository
-import com.daedan.festabook.getOrAwaitValue
 import com.daedan.festabook.presentation.home.HomeViewModel
-import com.daedan.festabook.presentation.home.LineUpItemGroupUiModel
+import com.daedan.festabook.presentation.home.LineUpItemOfDayUiModel
 import com.daedan.festabook.presentation.home.LineupUiState
 import com.daedan.festabook.presentation.home.adapter.FestivalUiState
-import com.daedan.festabook.presentation.home.adapter.FestivalUiState.Loading
 import com.daedan.festabook.presentation.home.toUiModel
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -64,80 +64,94 @@ class HomeViewModelTest {
             advanceUntilIdle()
 
             // then
-            val actual = homeViewModel.festivalUiState.getOrAwaitValue()
-            assertThat(actual).isEqualTo(expect)
+            val actual = homeViewModel.festivalUiState.value
+            assertThat(actual).isInstanceOf(FestivalUiState.Success::class.java)
+            assertThat((actual as FestivalUiState.Success).organization).isEqualTo(FAKE_ORGANIZATION)
         }
 
     @Test
     fun `연예인 정보를 불러올 수 있다`() =
         runTest {
             // given
-            val expect =
-                LineupUiState.Success(
-                    LineUpItemGroupUiModel(
-                        mapOf(
-                            FAKE_LINEUP[0].performanceAt.toLocalDate() to FAKE_LINEUP.map { it.toUiModel() },
-                        ),
+            val expectedLineup =
+                listOf(
+                    LineUpItemOfDayUiModel(
+                        id = 0,
+                        date = FAKE_LINEUP[0].performanceAt.toLocalDate(),
+                        isDDay = false,
+                        lineupItems = FAKE_LINEUP.map { it.toUiModel() },
                     ),
                 )
 
             // when
-            HomeViewModel(festivalRepository)
             advanceUntilIdle()
 
             // then
-            val actual = homeViewModel.lineupUiState.getOrAwaitValue()
-            assertThat(actual).isEqualTo(expect)
+            val actual = homeViewModel.lineupUiState.value
+            assertThat(actual).isInstanceOf(LineupUiState.Success::class.java)
+
+            val actualItems = (actual as LineupUiState.Success).lineups
+            assertThat(actualItems)
+                .usingRecursiveComparison()
+                .ignoringFields("id")
+                .isEqualTo(expectedLineup)
         }
 
     @Test
     fun `축제 정보를 불러오는 동안은 Loading 상태로 전환한다`() =
         runTest {
             // given
-            var wasLoadingState = false
-            homeViewModel.festivalUiState.observeForever { state ->
-                if (state == Loading) {
-                    wasLoadingState = true
+            val results = mutableListOf<FestivalUiState>()
+            val job =
+                launch(UnconfinedTestDispatcher()) {
+                    homeViewModel.festivalUiState.collect { results.add(it) }
                 }
-            }
 
             // when
             homeViewModel.loadFestival()
-            advanceUntilIdle()
 
             // then
-            assertThat(wasLoadingState).isTrue()
+            testScheduler.runCurrent()
+            assertThat(results).contains(FestivalUiState.Loading)
+
+            advanceUntilIdle()
+            assertThat(results.last()).isInstanceOf(FestivalUiState.Success::class.java)
+
+            job.cancel()
         }
 
     @Test
     fun `축제 정보를 불러오는 데 실패하면 Error 상태로 전환한다`() =
         runTest {
             // given
-            val exception = Throwable("test")
+            val exception = Throwable("Network Error")
             coEvery { festivalRepository.getFestivalInfo() } returns Result.failure(exception)
 
-            // when
+            // when: 정보를 불러옴
             homeViewModel.loadFestival()
             advanceUntilIdle()
 
             // then
-            val expect = FestivalUiState.Error(exception)
-            val actual = homeViewModel.festivalUiState.getOrAwaitValue()
-            assertThat(actual).isEqualTo(expect)
+            val actual = homeViewModel.festivalUiState.value
+            assertThat(actual).isInstanceOf(FestivalUiState.Error::class.java)
         }
 
     @Test
     fun `스케줄 이동 이벤트를 발생시킬 수 있다`() =
         runTest {
-            //given
-            val expect = Unit
+            // given
+            val events = mutableListOf<Unit>()
+            val job =
+                launch(UnconfinedTestDispatcher()) {
+                    homeViewModel.navigateToScheduleEvent.collect { events.add(it) }
+                }
 
-            //when
+            // when
             homeViewModel.navigateToScheduleClick()
-            advanceUntilIdle()
 
-            //then
-            val actual = homeViewModel.navigateToScheduleEvent.value
-            assertThat(actual).isEqualTo(expect)
+            // then
+            assertThat(events).hasSize(1)
+
+            job.cancel()
         }
 }

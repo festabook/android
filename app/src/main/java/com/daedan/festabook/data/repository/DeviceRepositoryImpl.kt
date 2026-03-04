@@ -10,7 +10,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class DeviceRepositoryImpl @Inject constructor(
+@Inject
+class DeviceRepositoryImpl(
     private val deviceDataSource: DeviceDataSource,
     private val deviceLocalDataSource: DeviceLocalDataSource,
     private val fcmDataSource: FcmDataSource,

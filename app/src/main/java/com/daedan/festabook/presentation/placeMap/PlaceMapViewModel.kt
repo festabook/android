@@ -1,70 +1,96 @@
 package com.daedan.festabook.presentation.placeMap
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.daedan.festabook.di.placeMapHandler.PlaceMapHandlerGraph
 import com.daedan.festabook.di.viewmodel.ViewModelKey
-import com.daedan.festabook.domain.model.TimeTag
-import com.daedan.festabook.domain.repository.PlaceDetailRepository
 import com.daedan.festabook.domain.repository.PlaceListRepository
-import com.daedan.festabook.presentation.common.Event
-import com.daedan.festabook.presentation.common.SingleLiveData
-import com.daedan.festabook.presentation.placeDetail.model.PlaceDetailUiModel
-import com.daedan.festabook.presentation.placeDetail.model.toUiModel
-import com.daedan.festabook.presentation.placeMap.model.InitialMapSettingUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceCategoryUiModel
+import com.daedan.festabook.presentation.placeMap.intent.event.FilterEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.MapControlEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.PlaceMapEvent
+import com.daedan.festabook.presentation.placeMap.intent.event.SelectEvent
+import com.daedan.festabook.presentation.placeMap.intent.handler.EventHandlerContext
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.MapControlSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.sideEffect.PlaceMapSideEffect
+import com.daedan.festabook.presentation.placeMap.intent.state.ListLoadState
+import com.daedan.festabook.presentation.placeMap.intent.state.LoadState
+import com.daedan.festabook.presentation.placeMap.intent.state.PlaceMapUiState
+import com.daedan.festabook.presentation.placeMap.intent.state.await
 import com.daedan.festabook.presentation.placeMap.model.PlaceCoordinateUiModel
-import com.daedan.festabook.presentation.placeMap.model.PlaceListUiState
-import com.daedan.festabook.presentation.placeMap.model.SelectedPlaceUiState
+import com.daedan.festabook.presentation.placeMap.model.PlaceUiModel
 import com.daedan.festabook.presentation.placeMap.model.toUiModel
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(PlaceMapViewModel::class)
-class PlaceMapViewModel @Inject constructor(
+@Inject
+class PlaceMapViewModel(
     private val placeListRepository: PlaceListRepository,
-    private val placeDetailRepository: PlaceDetailRepository,
+    handlerGraphFactory: PlaceMapHandlerGraph.Factory,
 ) : ViewModel() {
-    private val _initialMapSetting: MutableLiveData<PlaceListUiState<InitialMapSettingUiModel>> =
-        MutableLiveData()
-    val initialMapSetting: LiveData<PlaceListUiState<InitialMapSettingUiModel>> = _initialMapSetting
+    private val cachedPlaces = MutableStateFlow(listOf<PlaceUiModel>())
+    private val cachedPlaceByTimeTag = MutableStateFlow<List<PlaceUiModel>>(emptyList())
 
-    private val _placeGeographies: MutableLiveData<PlaceListUiState<List<PlaceCoordinateUiModel>>> =
-        MutableLiveData()
-    val placeGeographies: LiveData<PlaceListUiState<List<PlaceCoordinateUiModel>>>
-        get() = _placeGeographies
+    private val _uiState = MutableStateFlow(PlaceMapUiState())
+    val uiState: StateFlow<PlaceMapUiState> = _uiState.asStateFlow()
 
-    private val _timeTags = MutableLiveData<List<TimeTag>>()
-    val timeTags: LiveData<List<TimeTag>> = _timeTags
+    private val _placeMapSideEffect = Channel<PlaceMapSideEffect>()
+    val placeMapSideEffect: Flow<PlaceMapSideEffect> = _placeMapSideEffect.receiveAsFlow()
 
-    private val _selectedTimeTag = MutableLiveData<TimeTag>()
-    val selectedTimeTag: LiveData<TimeTag> = _selectedTimeTag
+    private val _mapControlSideEffect = Channel<MapControlSideEffect>()
+    val mapControlSideEffect: Flow<MapControlSideEffect> = _mapControlSideEffect.receiveAsFlow()
 
-    private val _selectedPlace: MutableLiveData<SelectedPlaceUiState> = MutableLiveData()
-    val selectedPlace: LiveData<SelectedPlaceUiState> = _selectedPlace
-
-    private val _navigateToDetail = SingleLiveData<PlaceDetailUiModel>()
-    val navigateToDetail: LiveData<PlaceDetailUiModel> = _navigateToDetail
-
-    private val _isExceededMaxLength: MutableLiveData<Boolean> = MutableLiveData()
-    val isExceededMaxLength: LiveData<Boolean> = _isExceededMaxLength
-
-    private val _backToInitialPositionClicked: MutableLiveData<Event<Unit>> = MutableLiveData()
-    val backToInitialPositionClicked: LiveData<Event<Unit>> = _backToInitialPositionClicked
-
-    private val _selectedCategories: MutableLiveData<List<PlaceCategoryUiModel>> = MutableLiveData()
-    val selectedCategories: LiveData<List<PlaceCategoryUiModel>> = _selectedCategories
-
-    private val _onMapViewClick: MutableLiveData<Event<Unit>> = MutableLiveData()
-    val onMapViewClick: LiveData<Event<Unit>> = _onMapViewClick
+    private val handlerGraph =
+        handlerGraphFactory
+            .create(
+                EventHandlerContext(
+                    mapControlSideEffect = _mapControlSideEffect,
+                    placeMapSideEffect = _placeMapSideEffect,
+                    uiState = uiState,
+                    cachedPlaces = cachedPlaces,
+                    cachedPlaceByTimeTag = cachedPlaceByTimeTag,
+                    onUpdateCachedPlace = { cachedPlaceByTimeTag.tryEmit(it) },
+                    onUpdateState = { _uiState.update(it) },
+                    scope = viewModelScope,
+                ),
+            )
 
     init {
         loadOrganizationGeography()
         loadTimeTags()
+        loadAllPlaces()
+        observeErrorEvent()
+    }
+
+    fun onPlaceMapEvent(event: PlaceMapEvent) {
+        when (event) {
+            is FilterEvent -> handlerGraph.filterEventHandler(event)
+            is MapControlEvent -> handlerGraph.mapControlEventHandler(event)
+            is SelectEvent -> handlerGraph.selectEventHandler(event)
+        }
+    }
+
+    fun onMenuItemReClicked() {
+        _placeMapSideEffect.trySend(
+            PlaceMapSideEffect.MenuItemReClicked(
+                uiState.value.isPlacePreviewVisible || uiState.value.isPlaceSecondaryPreviewVisible,
+            ),
+        )
     }
 
     private fun loadTimeTags() {
@@ -72,79 +98,96 @@ class PlaceMapViewModel @Inject constructor(
             placeListRepository
                 .getTimeTags()
                 .onSuccess { timeTags ->
-                    _timeTags.value = timeTags
+                    _uiState.update {
+                        it.copy(
+                            timeTags = LoadState.Success(timeTags),
+                        )
+                    }
                 }.onFailure {
-                    _timeTags.value = emptyList()
+                    _uiState.update {
+                        it.copy(
+                            timeTags = LoadState.Empty,
+                        )
+                    }
                 }
 
-            //         기본 선택값
-            if (!timeTags.value.isNullOrEmpty()) {
-                _selectedTimeTag.value = _timeTags.value?.first()
-            } else {
-                _selectedTimeTag.value = TimeTag.Companion.EMPTY
+            // 기본 선택값
+            val timeTags = uiState.value.timeTags
+            val selectedTimeTag =
+                if (timeTags is LoadState.Success && timeTags.value.isNotEmpty()) {
+                    LoadState.Success(
+                        timeTags.value.first(),
+                    )
+                } else {
+                    LoadState.Empty
+                }
+            _uiState.update {
+                it.copy(selectedTimeTag = selectedTimeTag)
             }
+
+            val placeGeographies =
+                uiState.await<LoadState.Success<List<PlaceCoordinateUiModel>>> { it.placeGeographies }
+            _mapControlSideEffect.send(
+                MapControlSideEffect.SetMarkerByTimeTag(
+                    placeGeographies = placeGeographies.value,
+                    selectedTimeTag = selectedTimeTag,
+                    isInitial = true,
+                ),
+            )
         }
-    }
-
-    fun onDaySelected(item: TimeTag) {
-        _selectedTimeTag.value = item
-    }
-
-    fun selectPlace(placeId: Long) {
-        viewModelScope.launch {
-            _selectedPlace.value = SelectedPlaceUiState.Loading
-            placeDetailRepository
-                .getPlaceDetail(placeId = placeId)
-                .onSuccess {
-                    _selectedPlace.value = SelectedPlaceUiState.Success(it.toUiModel())
-                }.onFailure {
-                    _selectedPlace.value = SelectedPlaceUiState.Error(it)
-                }
-        }
-    }
-
-    fun unselectPlace() {
-        _selectedPlace.value = SelectedPlaceUiState.Empty
-    }
-
-    fun onExpandedStateReached() {
-        val currentPlace = _selectedPlace.value.let { it as? SelectedPlaceUiState.Success }?.value
-        if (currentPlace != null) {
-            _navigateToDetail.setValue(currentPlace)
-        }
-    }
-
-    fun onBackToInitialPositionClicked() {
-        _backToInitialPositionClicked.value = Event(Unit)
-    }
-
-    fun setIsExceededMaxLength(isExceededMaxLength: Boolean) {
-        _isExceededMaxLength.value = isExceededMaxLength
-    }
-
-    fun setSelectedCategories(categories: List<PlaceCategoryUiModel>) {
-        _selectedCategories.value = categories
-    }
-
-    fun onMapViewClick() {
-        _onMapViewClick.value = Event(Unit)
     }
 
     private fun loadOrganizationGeography() {
         viewModelScope.launch {
             placeListRepository.getOrganizationGeography().onSuccess { organizationGeography ->
-                _initialMapSetting.value =
-                    PlaceListUiState.Success(organizationGeography.toUiModel())
+                _uiState.update {
+                    it.copy(initialMapSetting = LoadState.Success(organizationGeography.toUiModel()))
+                }
             }
 
             launch {
                 placeListRepository
                     .getPlaceGeographies()
                     .onSuccess { placeGeographies ->
-                        _placeGeographies.value =
-                            PlaceListUiState.Success(placeGeographies.map { it.toUiModel() })
-                    }.onFailure {
-                        _placeGeographies.value = PlaceListUiState.Error(it)
+                        _uiState.update {
+                            it.copy(
+                                placeGeographies = LoadState.Success(placeGeographies.map { it.toUiModel() }),
+                            )
+                        }
+                    }.onFailure { item ->
+                        _uiState.update {
+                            it.copy(placeGeographies = LoadState.Error(item))
+                        }
+                    }
+            }
+        }
+    }
+
+    private fun loadAllPlaces() {
+        viewModelScope.launch {
+            val result = placeListRepository.getPlaces()
+            result
+                .onSuccess { places ->
+                    val placeUiModels = places.map { it.toUiModel() }
+                    cachedPlaces.tryEmit(placeUiModels)
+                    _uiState.update { it.copy(places = ListLoadState.PlaceLoaded(placeUiModels)) }
+                }.onFailure { error ->
+                    _uiState.update { it.copy(places = ListLoadState.Error(error)) }
+                }
+        }
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun observeErrorEvent() {
+        viewModelScope.launch {
+            launch {
+                uiState
+                    .map { it.hasAnyError }
+                    .distinctUntilChanged()
+                    .filterIsInstance<LoadState.Error>()
+                    .debounce(1000)
+                    .collect {
+                        _placeMapSideEffect.send(PlaceMapSideEffect.ShowErrorSnackBar(it))
                     }
             }
         }

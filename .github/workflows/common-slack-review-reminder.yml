@@ -1,0 +1,25 @@
+name: Slack Notification (Review Reminder)
+
+on:
+  schedule:
+    # 매일 한국 시간 오후 2시 (KST 14:00 == UTC 05:00)
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Reminder Script
+        uses: actions/github-script@v7
+        env:
+          SLACK_WEBHOOK_REVIEW: ${{ secrets.SLACK_WEBHOOK_REVIEW }}
+        with:
+          script: |
+            // .github/scripts/review-reminder.js 파일을 불러와서 실행
+            const script = require('./.github/scripts/review-reminder.js');
+            await script({ github, context, core });

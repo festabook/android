@@ -6,5 +6,5 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class PlaceDetailImageClick(
     override val baseLogData: BaseLogData.CommonLogData,
-    val index: Int
+    val index: Int,
 ) : BaseLogData

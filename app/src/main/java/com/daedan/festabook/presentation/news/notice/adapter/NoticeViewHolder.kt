@@ -21,7 +21,6 @@ class NoticeViewHolder(
     init {
         binding.layoutNoticeItem.setOnClickListener {
             noticeItem?.let {
-                newsClickListener.onNoticeClick(it)
             } ?: run {
                 Timber.w("${this::class.java.simpleName} 공지 아이템이 null입니다.")
             }

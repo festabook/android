@@ -5,13 +5,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
-import coil3.request.crossfade
-import com.daedan.festabook.R
+import com.daedan.festabook.presentation.common.convertImageUrl
 
 @Composable
 fun CoilImage(
@@ -24,23 +22,20 @@ fun CoilImage(
     AsyncImage(
         model =
             ImageRequest
-                .Builder(LocalContext.current)
+                .Builder(LocalPlatformContext.current)
                 .apply(builder)
-                .data(url)
-                .crossfade(true)
+                .data(url.convertImageUrl())
                 .build(),
         contentDescription = contentDescription,
         contentScale = contentScale,
         placeholder = ColorPainter(Color.LightGray),
-        fallback = painterResource(R.drawable.img_fallback),
-        error = painterResource(R.drawable.img_fallback),
         modifier = modifier,
     )
 }
 
 @Composable
 @Preview
-fun CoilImagePreview() {
+private fun CoilImagePreview() {
     CoilImage(
         url = "",
         contentDescription = "",

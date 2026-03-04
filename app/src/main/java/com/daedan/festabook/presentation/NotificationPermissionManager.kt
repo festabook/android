@@ -14,14 +14,16 @@ import timber.log.Timber
 
 @AssistedInject
 class NotificationPermissionManager(
-    @Assisted private val requester: NotificationPermissionRequester,
+    @Assisted private val launchPermission: (String) -> Unit,
+    @Assisted private val shouldShowRationale: (String) -> Boolean,
     @Assisted("granted") private val onPermissionGranted: () -> Unit = {},
     @Assisted("denied") private val onPermissionDenied: () -> Unit = {},
 ) {
     @AssistedFactory
     interface Factory {
         fun create(
-            requester: NotificationPermissionRequester,
+            launchPermission: (String) -> Unit,
+            shouldShowRationale: (String) -> Boolean,
             @Assisted("granted") onPermissionGranted: () -> Unit = {},
             @Assisted("denied") onPermissionDenied: () -> Unit = {},
         ): NotificationPermissionManager
@@ -39,7 +41,7 @@ class NotificationPermissionManager(
                     onPermissionGranted()
                 }
 
-                requester.shouldShowPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                shouldShowRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
                     // 이전에 거부했지만 "다시 묻지 않음"을 선택하지 않은 경우
                     // 권한이 필요한 이유를 설명하는 UI(예: AlertDialog)를 표시
                     Timber.d("Show rationale for notification permission")
@@ -50,7 +52,7 @@ class NotificationPermissionManager(
                     // 권한이 없으며, 이전에 "다시 묻지 않음"을 선택했거나 첫 요청인 경우
                     // 바로 권한 요청 다이얼로그 표시
                     Timber.d("Requesting notification permission for the first time or after 'don't ask again'")
-                    requester.permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    launchPermission(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
         } else {
@@ -65,7 +67,7 @@ class NotificationPermissionManager(
             .setMessage(R.string.notification_permission_message)
             .setPositiveButton(R.string.confirm) { dialog, _ ->
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    requester.permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    launchPermission(Manifest.permission.POST_NOTIFICATIONS)
                 }
                 dialog.dismiss()
             }.setNegativeButton(R.string.cancel) { dialog, _ ->

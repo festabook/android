@@ -2,6 +2,13 @@ package com.daedan.festabook
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
+import coil3.Image
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.asImage
+import coil3.request.crossfade
 import com.daedan.festabook.data.datasource.local.DeviceLocalDataSource
 import com.daedan.festabook.data.datasource.local.FcmDataSource
 import com.daedan.festabook.di.FestaBookAppGraph
@@ -17,7 +24,9 @@ import dev.zacsweers.metro.createGraphFactory
 import timber.log.Timber
 import java.util.UUID
 
-class FestaBookApp : Application() {
+class FestaBookApp :
+    Application(),
+    SingletonImageLoader.Factory {
     val festaBookGraph: FestaBookAppGraph by lazy {
         createGraphFactory<FestaBookAppGraph.Factory>().create(this)
     }
@@ -33,6 +42,12 @@ class FestaBookApp : Application() {
 
     @Inject
     private lateinit var fcmDataSource: FcmDataSource
+
+    private val defaultImage: Image? by lazy {
+        ContextCompat
+            .getDrawable(this, R.drawable.img_fallback)
+            ?.asImage()
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -50,6 +65,14 @@ class FestaBookApp : Application() {
         super.onLowMemory()
         Timber.w("FestabookApp: onLowMemory 호출됨")
     }
+
+    override fun newImageLoader(context: PlatformContext): ImageLoader =
+        ImageLoader
+            .Builder(context)
+            .crossfade(true)
+            .fallback(defaultImage)
+            .error(defaultImage)
+            .build()
 
     private fun sendUnsentReports() {
         Firebase.crashlytics.sendUnsentReports()

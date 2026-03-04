@@ -1,41 +1,53 @@
 package com.daedan.festabook.presentation.splash
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.daedan.festabook.data.datasource.local.FestivalLocalDataSource
 import com.daedan.festabook.di.viewmodel.ViewModelKey
-import com.daedan.festabook.di.viewmodel.ViewModelScope
-import com.daedan.festabook.presentation.common.SingleLiveData
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @ContributesIntoMap(AppScope::class)
 @ViewModelKey(SplashViewModel::class)
-class SplashViewModel @Inject constructor(
+@Inject
+class SplashViewModel(
     private val festivalLocalDataSource: FestivalLocalDataSource,
+    private val iODispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
-    private val _navigationState = SingleLiveData<NavigationState>()
-    val navigationState: LiveData<NavigationState> = _navigationState
+    private val _uiState = MutableStateFlow<SplashUiState>(SplashUiState.Loading)
+    val uiState: StateFlow<SplashUiState> = _uiState.asStateFlow()
 
-    private val _isValidationComplete = MutableLiveData(false)
-    val isValidationComplete: LiveData<Boolean> = _isValidationComplete
-
-    init {
-        checkFestivalId()
+    fun handleVersionCheckResult(result: Result<Boolean>) {
+        result
+            .onSuccess { isUpdateAvailable ->
+                if (isUpdateAvailable) {
+                    _uiState.value = SplashUiState.ShowUpdateDialog
+                } else {
+                    checkFestivalId()
+                }
+            }.onFailure {
+                _uiState.value = SplashUiState.ShowNetworkErrorDialog
+            }
     }
 
     private fun checkFestivalId() {
-        val festivalId = festivalLocalDataSource.getFestivalId()
-        Timber.d("festival ID : $festivalId")
-
-        if (festivalId == null) {
-            _navigationState.setValue(NavigationState.NavigateToExplore)
-        } else {
-            _navigationState.setValue(NavigationState.NavigateToMain(festivalId))
+        viewModelScope.launch(iODispatcher) {
+            val festivalId = festivalLocalDataSource.getFestivalId()
+            Timber.d("현재 접속중인 festival ID : $festivalId")
+            _uiState.value =
+                if (festivalId == null) {
+                    SplashUiState.NavigateToExplore
+                } else {
+                    SplashUiState.NavigateToMain(festivalId)
+                }
         }
-        _isValidationComplete.value = true
     }
 }

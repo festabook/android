@@ -16,7 +16,8 @@ import kotlinx.coroutines.tasks.await
 import java.time.LocalDateTime
 
 @SingleIn(AppScope::class)
-class DefaultFirebaseLogger @Inject constructor(
+@Inject
+class DefaultFirebaseLogger(
     private val firebaseAnalytics: FirebaseAnalytics,
     private val festivalLocalDataSource: FestivalLocalDataSource,
     private val festivalNotificationLocalDataSource: FestivalNotificationLocalDataSource,

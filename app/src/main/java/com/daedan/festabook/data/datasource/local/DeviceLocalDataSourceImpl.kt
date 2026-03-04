@@ -7,7 +7,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class DeviceLocalDataSourceImpl @Inject constructor(
+@Inject
+class DeviceLocalDataSourceImpl(
     private val prefs: SharedPreferences,
 ) : DeviceLocalDataSource {
     override fun saveUuid(uuid: String) {

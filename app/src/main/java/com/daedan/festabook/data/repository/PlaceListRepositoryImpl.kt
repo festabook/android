@@ -14,7 +14,8 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 @ContributesBinding(AppScope::class)
-class PlaceListRepositoryImpl @Inject constructor(
+@Inject
+class PlaceListRepositoryImpl(
     private val placeDataSource: PlaceDataSource,
 ) : PlaceListRepository {
     override suspend fun getTimeTags(): Result<List<TimeTag>> {

@@ -2,33 +2,37 @@ package com.daedan.festabook.presentation.splash
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.daedan.festabook.FestaBookApp
-import com.daedan.festabook.R
 import com.daedan.festabook.presentation.explore.ExploreActivity
 import com.daedan.festabook.presentation.main.MainActivity
+import com.daedan.festabook.presentation.splash.component.NetworkErrorDialog
+import com.daedan.festabook.presentation.splash.component.UpdateDialog
+import com.daedan.festabook.presentation.theme.FestabookTheme
 import dev.zacsweers.metro.Inject
-import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
     private val viewModel: SplashViewModel by viewModels()
-    private val launcher by lazy {
+
+    private val updateResultLauncher =
         registerForActivityResult(
             ActivityResultContracts.StartIntentSenderForResult(),
         ) { result ->
             if (result.resultCode == RESULT_OK) {
-                setupObserver()
+                viewModel.handleVersionCheckResult(Result.success(false))
             } else {
-                exitDialog().show()
+                viewModel.handleVersionCheckResult(Result.failure(Exception("Update failed")))
             }
         }
-    }
 
     @Inject
     override lateinit var defaultViewModelProviderFactory: ViewModelProvider.Factory
@@ -36,59 +40,64 @@ class SplashActivity : AppCompatActivity() {
     @Inject
     private lateinit var appVersionManagerFactory: AppVersionManager.Factory
 
-    private val appVersionManager by lazy { appVersionManagerFactory.create(launcher) }
+    private val appVersionManager by lazy { appVersionManagerFactory.create(updateResultLauncher) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen().setKeepOnScreenCondition {
-            viewModel.isValidationComplete.value != true
-        }
-        enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
         (application as FestaBookApp).festaBookGraph.inject(this)
-        setContentView(R.layout.activity_splash)
-        checkIsAppUpdateAvailable {
-            setupObserver()
-        }
-    }
 
-    private fun checkIsAppUpdateAvailable(onSuccess: () -> Unit) {
-        if (!isNetworkConnected()) {
-            exitDialog().show()
-            return
+        val splashScreen = installSplashScreen()
+        super.onCreate(savedInstanceState)
+
+        splashScreen.setKeepOnScreenCondition {
+            viewModel.uiState.value is SplashUiState.Loading
         }
 
-        lifecycleScope.launch {
-            appVersionManager
-                .getIsAppUpdateAvailable()
-                .onSuccess { isUpdateAvailable ->
-                    if (isUpdateAvailable) {
-                        updateDialog {
-                            appVersionManager.updateApp()
-                        }.show()
-                    } else {
-                        onSuccess()
+        enableEdgeToEdge()
+
+        setContent {
+            FestabookTheme {
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(Unit) {
+                    // 앱 실행 시 즉시 앱 버전 업데이트의 필요 유무 확인
+                    val result = appVersionManager.getIsAppUpdateAvailable()
+                    viewModel.handleVersionCheckResult(result)
+                }
+
+                LaunchedEffect(uiState) {
+                    when (val state = uiState) {
+                        is SplashUiState.NavigateToExplore -> {
+                            startActivity(Intent(this@SplashActivity, ExploreActivity::class.java))
+                            finish()
+                        }
+
+                        is SplashUiState.NavigateToMain -> {
+                            val intent =
+                                Intent(this@SplashActivity, MainActivity::class.java).apply {
+                                    putExtra("festivalId", state.festivalId)
+                                }
+                            startActivity(intent)
+                            finish()
+                        }
+
+                        else -> {}
                     }
-                }.onFailure {
-                    exitDialog().show()
-                }
-        }
-    }
-
-    private fun setupObserver() {
-        viewModel.navigationState.observe(this) { state ->
-            when (state) {
-                is NavigationState.NavigateToExplore -> {
-                    // ExploreActivity로 이동
-                    val intent = Intent(this@SplashActivity, ExploreActivity::class.java)
-                    startActivity(intent)
-                    finish()
                 }
 
-                is NavigationState.NavigateToMain -> {
-                    // MainActivity로 이동
-                    val intent = Intent(this@SplashActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                when (uiState) {
+                    is SplashUiState.ShowUpdateDialog -> {
+                        UpdateDialog(
+                            onConfirm = { appVersionManager.updateApp() },
+                        )
+                    }
+
+                    is SplashUiState.ShowNetworkErrorDialog -> {
+                        NetworkErrorDialog(
+                            onConfirm = { finish() },
+                        )
+                    }
+
+                    else -> {}
                 }
             }
         }

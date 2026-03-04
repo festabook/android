@@ -1,0 +1,121 @@
+name: Android CD
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  Upload-Release-Bundle:
+    runs-on: ubuntu-latest
+    outputs:
+      version_code: ${{ steps.get_version.outputs.version_code }}
+
+    steps:
+      - name: Repository Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/build-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/build.gradle.kts', 'android/**/settings.gradle.kts', 'android/**/gradle-wrapper.properties', 'android/gradle/libs.versions.toml', 'android/**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Create local.properties with BASE_URL
+        run: |
+          echo BASE_URL=\"${{ secrets.BASE_URL }}\" > local.properties
+          echo BASE_URL_DEV=\"${{ secrets.BASE_URL_DEV }}\" >> local.properties
+          echo NAVER_MAP_CLIENT_ID=\"${{ secrets.NAVER_MAP_CLIENT_ID }}\" >> local.properties
+          echo NAVER_MAP_STYLE_ID=\"${{ secrets.NAVER_MAP_STYLE_ID }}\" >> local.properties
+
+      - name: Load Google Service file
+        env:
+          DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo "$DATA" > app/google-services.json
+
+      - name: Restore keystore file
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > app/festabook_appkey.jks
+          echo "JKS_FILE_PATH=./festabook_appkey.jks" >> local.properties
+          echo "STORE_PASSWORD=${{ secrets.STORE_PASSWORD }}" >> local.properties
+          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> local.properties
+          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> local.properties
+
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+
+      - name: Build Release AAB
+        run: ./gradlew app:bundleRelease
+
+      #versionName의 숫자만 추출합니다 ex) versionName = "v1.2.1" -> 1.2.1
+      - name: Extract Version Code
+        id: get_version
+        run: |
+          VERSION_NAME=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts | head -1 | sed 's/[v ]//g')
+          echo "version_code=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "Extracted Version: $VERSION_NAME"
+
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-bundle-${{ steps.get_version.outputs.version_code }}
+          path: app/build/outputs/bundle/release/app-release.aab
+          retention-days: 7
+
+  #번들이 업로드가 완료된 후 버전 태그를 작성합니다
+  Release-Drafter:
+    runs-on: ubuntu-latest
+    needs: Upload-Release-Bundle
+
+    steps:
+      - name: Repository Checkout
+        uses: actions/checkout@v4
+
+      #추출한 버전을 drafter에 적용합니다
+      - name: Update Draft Release
+        uses: release-drafter/release-drafter@v6
+        with:
+          version: ${{ needs.Upload-Release-Bundle.outputs.version_code }}
+          config-name: template/release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # hotfix 머지 시, main의 변경사항을 develop에 자동 반영합니다
+  # 번들이 업로드가 완료된 후 실행됩니다
+  Reflect-Changes-Into-Develop:
+    runs-on: ubuntu-latest
+    needs: Upload-Release-Bundle
+
+    steps:
+      - name: Develop Branch Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git User
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Merge Main into Develop
+        run: |
+          git fetch origin main
+          git merge origin/main
+          git push origin develop
