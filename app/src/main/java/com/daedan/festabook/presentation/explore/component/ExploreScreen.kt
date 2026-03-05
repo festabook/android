@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -134,13 +135,27 @@ fun ExploreLandingScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .imePadding(),
+                    .imePadding()
+                    .clickable(
+                        onClick = {
+                            keyboardController?.hide()
+                        },
+                        indication = null,
+                        interactionSource = null,
+                    ),
         ) {
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier =
+                    Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(modifier = Modifier.weight(0.3f))
+                Spacer(
+                    modifier =
+                        Modifier
+                            .weight(0.3f),
+                )
 
                 Image(
                     painter = painterResource(id = R.drawable.logo_title),
@@ -166,7 +181,6 @@ fun ExploreLandingScreen(
                         )
                     },
                 ) { searching ->
-
                     if (searching) {
                         ExploreSearchResultList(
                             searchState = searchState,
