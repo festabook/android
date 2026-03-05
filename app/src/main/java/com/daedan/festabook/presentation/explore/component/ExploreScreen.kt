@@ -136,66 +136,47 @@ fun ExploreLandingScreen(
                     .padding(innerPadding)
                     .imePadding(),
         ) {
-            AnimatedContent(
-                targetState = isSearchMode,
-                transitionSpec = {
-                    ContentTransform(
-                        targetContentEnter = fadeIn(tween(200)),
-                        initialContentExit = fadeOut(tween(200)),
-                    )
-                },
-            ) { searching ->
-                if (!searching) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Spacer(modifier = Modifier.weight(0.3f))
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(modifier = Modifier.weight(0.3f))
 
-                        Image(
-                            painter = painterResource(id = R.drawable.logo_title),
-                            contentDescription = stringResource(id = R.string.explore_festabook_logo),
-                            modifier = Modifier.height(24.dp),
+                Image(
+                    painter = painterResource(id = R.drawable.logo_title),
+                    contentDescription = stringResource(id = R.string.explore_festabook_logo),
+                    modifier = Modifier.height(24.dp),
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+                ExploreSearchBar(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    onSearch = { keyboardController?.hide() },
+                    isError = isError,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                )
+
+                AnimatedContent(
+                    targetState = isSearchMode,
+                    transitionSpec = {
+                        ContentTransform(
+                            targetContentEnter = fadeIn(tween(200)),
+                            initialContentExit = fadeOut(tween(200)),
                         )
+                    },
+                ) { searching ->
 
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            ExploreSearchBar(
-                                query = query,
-                                onQueryChange = onQueryChange,
-                                onSearch = { keyboardController?.hide() },
-                                isError = isError,
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.weight(0.7f))
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Image(
-                            painter = painterResource(id = R.drawable.logo_title),
-                            contentDescription = "FestaBook Logo",
-                            modifier = Modifier.height(24.dp),
+                    if (searching) {
+                        ExploreSearchResultList(
+                            searchState = searchState,
+                            onUniversitySelect = onUniversitySelect,
+                            modifier = Modifier.weight(1f),
                         )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            ExploreSearchContent(
-                                query = query,
-                                searchState = searchState,
-                                onQueryChange = onQueryChange,
-                                onUniversitySelect = onUniversitySelect,
-                            )
-                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.weight(0.7f))
             }
         }
     }
