@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
+import androidx.navigation.navOptions
 import com.daedan.festabook.presentation.explore.navigation.exploreNavGraph
 import com.daedan.festabook.presentation.main.FestabookRoute
 import com.daedan.festabook.presentation.main.navigation.mainNavGraph
@@ -39,7 +40,16 @@ fun FestabookScreen(
         splashNavGraph(
             appGraph = appGraph,
             appVersionManager = appVersionManager,
-            onNavigateToExplore = { festabookNavigator.navigate(FestabookRoute.Explore) },
+            onNavigateToExplore = {
+                festabookNavigator.navigate(
+                    FestabookRoute.Explore,
+                    navOptions {
+                        popUpTo(FestabookRoute.Splash) {
+                            inclusive = true
+                        }
+                    },
+                )
+            },
             onNavigateToMain = { festabookNavigator.navigate(FestabookRoute.Main) },
             onFinishApp = onAppFinish,
         )
