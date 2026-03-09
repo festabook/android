@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -134,68 +135,62 @@ fun ExploreLandingScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .imePadding(),
+                    .imePadding()
+                    .clickable(
+                        onClick = {
+                            keyboardController?.hide()
+                        },
+                        indication = null,
+                        interactionSource = null,
+                    ),
         ) {
-            AnimatedContent(
-                targetState = isSearchMode,
-                transitionSpec = {
-                    ContentTransform(
-                        targetContentEnter = fadeIn(tween(200)),
-                        initialContentExit = fadeOut(tween(200)),
-                    )
-                },
-            ) { searching ->
-                if (!searching) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Spacer(modifier = Modifier.weight(0.3f))
+            Column(
+                modifier =
+                    Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(
+                    modifier =
+                        Modifier
+                            .weight(0.3f),
+                )
 
-                        Image(
-                            painter = painterResource(id = R.drawable.logo_title),
-                            contentDescription = stringResource(id = R.string.explore_festabook_logo),
-                            modifier = Modifier.height(24.dp),
+                Image(
+                    painter = painterResource(id = R.drawable.logo_title),
+                    contentDescription = stringResource(id = R.string.explore_festabook_logo),
+                    modifier = Modifier.height(24.dp),
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+                ExploreSearchBar(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    onSearch = { keyboardController?.hide() },
+                    isError = isError,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                )
+
+                AnimatedContent(
+                    targetState = isSearchMode,
+                    transitionSpec = {
+                        ContentTransform(
+                            targetContentEnter = fadeIn(tween(200)),
+                            initialContentExit = fadeOut(tween(200)),
                         )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            ExploreSearchBar(
-                                query = query,
-                                onQueryChange = onQueryChange,
-                                onSearch = { keyboardController?.hide() },
-                                isError = isError,
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.weight(0.7f))
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Image(
-                            painter = painterResource(id = R.drawable.logo_title),
-                            contentDescription = "FestaBook Logo",
-                            modifier = Modifier.height(24.dp),
+                    },
+                ) { searching ->
+                    if (searching) {
+                        ExploreSearchResultList(
+                            searchState = searchState,
+                            onUniversitySelect = onUniversitySelect,
+                            modifier = Modifier.weight(1f),
                         )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            ExploreSearchContent(
-                                query = query,
-                                searchState = searchState,
-                                onQueryChange = onQueryChange,
-                                onUniversitySelect = onUniversitySelect,
-                            )
-                        }
                     }
                 }
+
+                Spacer(modifier = Modifier.weight(0.7f))
             }
         }
     }

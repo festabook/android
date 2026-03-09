@@ -29,7 +29,7 @@ fun ExploreSearchContent(
             modifier
                 .fillMaxSize(),
     ) {
-        Box(modifier = Modifier.padding(top = 20.dp, bottom = 16.dp)) {
+        Box(modifier = Modifier.padding(bottom = 16.dp)) {
             ExploreSearchBar(
                 query = query,
                 onQueryChange = onQueryChange,
