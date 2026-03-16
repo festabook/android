@@ -51,6 +51,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun PlaceListScreen(
     placesUiState: ListLoadState<List<PlaceUiModel>>,
+    isPlaceListVisible: Boolean,
     modifier: Modifier = Modifier,
     map: NaverMap? = null,
     isExceededMaxLength: Boolean = false,
@@ -76,6 +77,8 @@ fun PlaceListScreen(
             else -> Unit
         }
     }
+
+    if (!isPlaceListVisible) return
 
     Box(modifier = modifier.fillMaxSize()) {
         if (bottomSheetState.currentValue != PlaceListBottomSheetValue.EXPANDED) {
@@ -128,10 +131,11 @@ fun PlaceListScreen(
             },
         ) {
             when (placesUiState) {
-                is ListLoadState.Loading ->
+                is ListLoadState.Loading -> {
                     LoadingStateScreen(
                         modifier = Modifier.offset(y = HALF_EXPANDED_OFFSET),
                     )
+                }
 
                 is ListLoadState.Error -> {
                     EmptyStateScreen(
@@ -154,7 +158,9 @@ fun PlaceListScreen(
                     }
                 }
 
-                is ListLoadState.PlaceLoaded -> Unit
+                is ListLoadState.PlaceLoaded -> {
+                    Unit
+                }
             }
         }
     }
@@ -298,6 +304,7 @@ private fun PlaceListScreenPreview() {
                         )
                     },
                 ),
+            isPlaceListVisible = true,
             modifier =
                 Modifier.padding(
                     horizontal = festabookSpacing.paddingScreenGutter,
