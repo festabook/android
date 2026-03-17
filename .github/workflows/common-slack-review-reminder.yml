@@ -6,6 +6,9 @@ on:
     - cron: '0 5 * * *'
   workflow_dispatch:
 
+permissions:
+  pull-requests: read
+
 jobs:
   remind:
     runs-on: ubuntu-latest

@@ -13,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -161,14 +160,7 @@ fun PlaceMapScreen(
                 )
 
                 PlaceListScreen(
-                    modifier =
-                        Modifier.alpha(
-                            if (uiState.selectedPlace is LoadState.Empty) {
-                                1f
-                            } else {
-                                0f
-                            },
-                        ),
+                    isPlaceListVisible = uiState.selectedPlace is LoadState.Empty,
                     placesUiState = uiState.places,
                     map = naverMap,
                     onPlaceClick = { onEvent(SelectEvent.OnPlaceClick(it.id)) },
